@@ -7,25 +7,31 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 HOME=/root
 
 # ── Data Collection (every 30 min) ───────────────────────────────────────────
-# Market scanner — produces OPPORTUNITIES.json
+# Market scanner — produces OPPORTUNITIES.json (TradingView screener API)
 */30 * * * * cd /root/openclawtrading/scripts && python3 market_scanner.py >> /root/.openclaw/logs/market_scanner.log 2>&1
 
 # Candle analyzer — produces CANDLES.json
 */30 * * * * cd /root/openclawtrading/scripts && python3 candle_analyzer.py >> /root/.openclaw/logs/candle_analyzer.log 2>&1
 
-# Bitget derivatives data — produces DERIVATIVES.json
-*/30 * * * * cd /root/openclawtrading/scripts && python3 bitget_unified_fetcher.py --funding-all >> /root/.openclaw/logs/bitget.log 2>&1
+# Bitget derivatives data — produces DERIVATIVES.json (bulk 537 symbols)
+*/30 * * * * cd /root/openclawtrading/scripts && python3 derivatives_fetcher.py >> /root/.openclaw/logs/derivatives.log 2>&1
+
+# Macro bias builder — produces MACRO_BIAS.json
+*/30 * * * * cd /root/openclawtrading/scripts && python3 macro_bias_builder.py >> /root/.openclaw/logs/macro_bias.log 2>&1
+
+# Watchlist generator — produces WATCHLISTS.json
+0 * * * * cd /root/openclawtrading/scripts && python3 watchlist_generator.py >> /root/.openclaw/logs/watchlist.log 2>&1
 
 # ── Macro (every 6 hours) ────────────────────────────────────────────────────
 # Economic calendar
-0 */6 * * * cd /root/openclawtrading/scripts && python3 economic_calendar_fetcher/economic_calendar_fetcher.py >> /root/.openclaw/logs/macro.log 2>&1
+0 */6 * * * cd /root/openclawtrading/scripts && python3 economic_calendar_fetcher.py >> /root/.openclaw/logs/macro.log 2>&1
 
 # ── Daily Tasks ──────────────────────────────────────────────────────────────
-# Night pipeline analysis (2 AM)
-0 2 * * * cd /root/openclawtrading/scripts && python3 night_pipeline_analysis.py >> /root/.openclaw/logs/night_pipeline.log 2>&1
+# Reset OpenFang agent sessions (3 AM — prevents 1M token limit freeze)
+0 3 * * * cd /root/openclawtrading/scripts && python3 reset_agent_sessions.py >> /root/.openclaw/logs/reset_sessions.log 2>&1
 
-# GitHub backup
-0 3 * * * cd /root/openclawtrading && bash scripts/nightly_github_backup.sh >> /root/.openclaw/logs/backup.log 2>&1
+# Liquidation heatmap screenshots (4 AM)
+0 4 * * * cd /root/openclawtrading/scripts && python3 liquidation_heatmap.py >> /root/.openclaw/logs/heatmap.log 2>&1
 
 # ── Health Checks (every 10 min) ─────────────────────────────────────────────
 # Gateway watchdog
