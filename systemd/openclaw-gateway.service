@@ -1,0 +1,27 @@
+[Unit]
+Description=OpenClaw Gateway (Kimi K2.6)
+Documentation=https://docs.openclaw.ai
+After=network-online.target tailscaled.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/.openclaw
+Environment="NODE_ENV=production"
+Environment="HOME=/root"
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/usr/bin/openclaw-gateway
+ExecStartPre=/root/chimera-deploy/scripts/fix-dns.sh
+Restart=always
+RestartSec=10
+StartLimitInterval=60s
+StartLimitBurst=3
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=openclaw-gateway
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,36 @@
+# Chimera Trading Pipeline — Kimi VPS Cron Jobs
+# Install: crontab trading-pipeline.crontab
+# Or: copy to /etc/cron.d/chimera-trading
+
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+HOME=/root
+
+# ── Data Collection (every 30 min) ───────────────────────────────────────────
+# Market scanner — produces OPPORTUNITIES.json
+*/30 * * * * cd /root/openclawtrading/scripts && python3 market_scanner.py >> /root/.openclaw/logs/market_scanner.log 2>&1
+
+# Candle analyzer — produces CANDLES.json
+*/30 * * * * cd /root/openclawtrading/scripts && python3 candle_analyzer.py >> /root/.openclaw/logs/candle_analyzer.log 2>&1
+
+# Bitget derivatives data — produces DERIVATIVES.json
+*/30 * * * * cd /root/openclawtrading/scripts && python3 bitget_unified_fetcher.py --funding-all >> /root/.openclaw/logs/bitget.log 2>&1
+
+# ── Macro (every 6 hours) ────────────────────────────────────────────────────
+# Economic calendar
+0 */6 * * * cd /root/openclawtrading/scripts && python3 economic_calendar_fetcher/economic_calendar_fetcher.py >> /root/.openclaw/logs/macro.log 2>&1
+
+# ── Daily Tasks ──────────────────────────────────────────────────────────────
+# Night pipeline analysis (2 AM)
+0 2 * * * cd /root/openclawtrading/scripts && python3 night_pipeline_analysis.py >> /root/.openclaw/logs/night_pipeline.log 2>&1
+
+# GitHub backup
+0 3 * * * cd /root/openclawtrading && bash scripts/nightly_github_backup.sh >> /root/.openclaw/logs/backup.log 2>&1
+
+# ── Health Checks (every 10 min) ─────────────────────────────────────────────
+# Gateway watchdog
+*/10 * * * * cd /root/chimera-deploy && bash scripts/gateway-watchdog.sh >> /root/.openclaw/logs/watchdog.log 2>&1
+
+# ── Log Rotation ─────────────────────────────────────────────────────────────
+# Keep logs from growing unbounded
+0 0 * * * find /root/.openclaw/logs -name "*.log" -size +10M -exec truncate -s 10M {} \;
