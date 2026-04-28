@@ -70,7 +70,7 @@ These are the models actually wired into the OpenClaw gateway. If it's not in th
 
 ## Default Agent Routing
 
-```
+```javascript
 Primary:   minimax/MiniMax-M2.7-highspeed
 Fallbacks:
   1. kimi-coding/k2.6
@@ -97,31 +97,60 @@ These are used on the Windows machine (this interactive session), NOT on the VPS
 
 ## Connection Methods Summary
 
-### MiniMax (VPS)
+### MiniMax (VPS — Anthropic SDK)
 ```bash
-# Anthropic SDK style (what VPS uses)
 base_url: https://api.minimax.io/anthropic
 api_key: sk-cp-...
 model: MiniMax-M2.5
-
-# OpenAI-compatible style (if needed elsewhere)
-base_url: https://api.minimax.io/v1
-api_key: sk-cp-...
-model: MiniMax-Text-01  # NOT in VPS config
 ```
 
-### Kimi (VPS)
+### Kimi (VPS — Anthropic SDK)
 ```bash
-# Anthropic SDK style (what VPS uses)
 base_url: https://api.kimi.com/coding
 api_key: sk-kimi-...
 model: k2.6
-
-# OpenAI-compatible style (Moonshot platform)
-base_url: https://api.moonshot.cn/v1
-api_key: sk-kimi-...
-model: kimi-k2.6  # Note: different model ID format
 ```
+
+### MiniMax (OpenCode Desktop/CLI — OpenAI-compatible)
+```json
+{
+  "provider": {
+    "minimax-coding-plan": {
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "baseURL": "https://api.minimax.io/v1"
+      },
+      "models": {
+        "MiniMax-M2.7-highspeed": { "name": "M2.7 High Speed" }
+      }
+    }
+  }
+}
+```
+**Config file**: `C:\Users\becke\.config\opencode\opencode.jsonc`
+**Command**: `opencode run -m minimax-coding-plan/MiniMax-M2.7-highspeed "prompt"`
+**Common mistakes**: Using `api.minimax.chat` (wrong domain), using `MiniMax-M2.7-High-Speed` (wrong case/spacing).
+
+### Kimi (OpenCode Desktop/CLI — OpenAI-compatible)
+```json
+{
+  "provider": {
+    "kimi-for-coding": {
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "baseURL": "https://api.kimi.com/coding/v1"
+      },
+      "models": {
+        "kimi-for-coding": { "name": "Kimi K2.6" }
+      }
+    }
+  }
+}
+```
+**Config file**: `C:\Users\becke\.config\opencode\opencode.jsonc`
+**Command**: `opencode run -m kimi-for-coding/kimi-for-coding "prompt"`
+**Critical**: Base URL MUST include `/v1` at the end (`coding/v1`, not just `/coding`).
+**Common mistakes**: Using `api.moonshot.ai` (old domain), using `kimi-k2-6` or `k2.6` as model ID (must be `kimi-for-coding`).
 
 ### Anthropic (Windows)
 ```bash
@@ -200,4 +229,4 @@ python3 -m json.tool /root/.openclaw/openclaw.json | grep -A20 'providers'
 
 ---
 
-*model-registry skill v1.0 | Last updated: 2026-04-28 | Source of truth: `/root/.openclaw/openclaw.json`*
+*model-registry skill v1.1 | Last updated: 2026-04-28 | Source of truth: `/root/.openclaw/openclaw.json`*
