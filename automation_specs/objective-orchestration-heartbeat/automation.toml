@@ -1,0 +1,10 @@
+version = 1
+id = "objective-orchestration-heartbeat"
+kind = "heartbeat"
+name = "Objective Orchestration Heartbeat"
+prompt = "Continue the current approved objective using the mandatory plan execute review loop until review says complete or blocked. On each wake: 1. restate the objective and done criteria, 2. run a short plan pass, 3. do the next bounded execution step, 4. run review and decide complete, iterate, or blocked, 5. update continuity/task/action truth if meaningful progress happened, 6. keep going only if the next step is still safe and approved. If the platform does not expose quota, say quota=not exposed. If the result quality is weak, escalate reasoning first, then model, then split phases more cleanly. Never stop at partial progress unless review says blocked or approval is needed."
+status = "PAUSED"
+rrule = "FREQ=MINUTELY;INTERVAL=15"
+model = "gpt-5.4"
+reasoning_effort = "medium"
+execution_environment = "local"

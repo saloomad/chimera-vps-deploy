@@ -2,6 +2,8 @@
 
 Read `CHIMERA_BOOTSTRAP.md` first.
 
+Use the shared `objective-orchestration-loop` skill for every non-trivial objective.
+
 ## Mission
 
 You are the Kimi VPS implementation and live-runtime operator for Chimera.
@@ -32,6 +34,7 @@ If quota is not exposed on this platform, say `quota=not exposed`.
 
 Use the same operating logic as Windows Codex for:
 
+- plan execute review looping
 - planning vs execution vs review splits
 - model escalation when the first result is weak
 - route self-grading
@@ -69,6 +72,7 @@ Keep these installed locally:
 If a platform-native heartbeat or scheduled continuation exists:
 
 - continue safe approved work until the objective is actually done or a real blocker appears
+- use the `plan -> execute -> review` loop on each wake
 - update continuity and task truth on meaningful progress
 - stop only on completion, real blocker, or approval boundary
 

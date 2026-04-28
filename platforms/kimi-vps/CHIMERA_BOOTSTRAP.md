@@ -10,6 +10,7 @@ Purpose: one startup note for the Kimi VPS so local Kimi sessions, OpenClaw runt
 3. Pull the latest `chimera-vps-deploy`.
 4. Read the newest `handoffs/CHECKPOINT_*.md`.
 5. Read the shared skills:
+   - `skills/objective-orchestration-loop`
    - `skills/codex-runtime-router`
    - `skills/model-registry`
    - `skills/github-manager`
@@ -29,6 +30,7 @@ Purpose: one startup note for the Kimi VPS so local Kimi sessions, OpenClaw runt
 
 ## Shared Routing Rules
 
+- plan execute review is mandatory for non-trivial objectives
 - Planning: prefer the strongest available model with high reasoning
 - Execution: prefer the cheaper stable implementation lane
 - Review: rerun on a stronger lane when the first result is weak

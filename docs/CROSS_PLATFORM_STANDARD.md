@@ -9,6 +9,7 @@ Keep the same Chimera project logic across platforms while still fitting each pl
 ## Same Across All Platforms
 
 - one shared routing contract
+- one shared objective orchestration loop
 - one shared model registry baseline
 - one shared GitHub sync contract
 - one shared task and action-trace structure
@@ -64,8 +65,10 @@ Mirror these across the platforms that own Chimera work:
 
 Heartbeat or recurring continuation flows should:
 
-1. restate the objective
-2. continue safe approved work
-3. stop only on completion, blocker, or approval boundary
-4. update continuity and task/action truth after meaningful progress
-5. leave a clean next action for the next wake or next session
+1. restate the objective and done criteria
+2. run a short `plan` phase
+3. run the next bounded `execute` phase
+4. run a `review` phase that decides `complete`, `iterate`, or `blocked`
+5. stop only on completion, blocker, or approval boundary
+6. update continuity and task/action truth after meaningful progress
+7. leave a clean next action for the next wake or next session

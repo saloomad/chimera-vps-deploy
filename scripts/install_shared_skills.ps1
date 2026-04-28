@@ -5,6 +5,7 @@ param(
 
 $skillNames = @(
     "codex-runtime-router",
+    "objective-orchestration-loop",
     "model-registry",
     "github-manager",
     "project-operations-manager",

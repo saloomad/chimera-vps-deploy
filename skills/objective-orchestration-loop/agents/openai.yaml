@@ -1,0 +1,2 @@
+name: objective-orchestration-loop
+description: Mandatory plan execute review loop with model routing, heartbeat continuation, and phase closeout.

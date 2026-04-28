@@ -28,7 +28,7 @@ Read `references/MODEL_ROUTING_SPEC.md` for the benchmark, pricing, quota, and p
 
 Start the reply with one compact line:
 
-`Runtime: model=<name> | reasoning=<effort> | quota=<value-or-not-exposed> | lane=<planning|execution|research|mixed> | why=<short reason>`
+`Runtime: model=<name> | reasoning=<effort> | quota=<value-or-not-exposed> | phase=<plan|execute|review|mixed> | why=<short reason>`
 
 Rules:
 
@@ -50,6 +50,7 @@ Current verified truth on this Windows Codex machine:
 - `codex login status` works
 - a verified quota command has not been found yet
 - the honest header value is still `quota=not exposed`
+- shared helper script: `scripts/check_codex_runtime_status.ps1`
 
 ## Platform Routing
 
@@ -292,6 +293,7 @@ Also capture:
 
 - model lane used
 - reasoning level used
+- phase used
 - whether a rerun happened
 - whether the route should change next time
 

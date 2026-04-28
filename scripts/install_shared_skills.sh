@@ -8,6 +8,7 @@ mkdir -p "$TARGET_SKILLS_HOME"
 
 for name in \
   codex-runtime-router \
+  objective-orchestration-loop \
   model-registry \
   github-manager \
   project-operations-manager \
