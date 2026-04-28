@@ -159,6 +159,24 @@ protocol: Anthropic Messages API
 The local runtime is not configured through this file with raw API credentials.
 Instead, use the Codex runtime's selected model and the routing policy in `codex-runtime-router`.
 
+### Space Agent (Visual Dashboard Layer)
+
+```bash
+url: http://100.67.172.114:3000
+mode: single-user (no login)
+customware: /srv/space/customware
+purpose: browser-first AI dashboard for Chimera trading data
+```
+
+Space Agent can be configured with any OpenAI-compatible endpoint:
+
+| Provider | API Endpoint | Model | Max Tokens |
+|----------|-------------|-------|------------|
+| MiniMax | `https://api.minimax.io/v1/chat/completions` | `MiniMax-M2.7-highspeed` | 200K |
+| Kimi | `https://api.kimi.com/coding/v1/chat/completions` | `kimi-for-coding` | 256K |
+
+Set these in the Space Agent UI → Agent Panel → Settings → API tab.
+
 ## Routing Notes That Matter In Practice
 
 - Use `gpt-5.5` when the cost of a weak plan is higher than the extra tokens
@@ -166,6 +184,9 @@ Instead, use the Codex runtime's selected model and the routing policy in `codex
 - Use `gpt-5.4-mini` only when the task is clearly mechanical
 - Use `k2.6` on the VPS when MiniMax output is not good enough for a hard coding or reasoning task
 - Keep `MiniMax-M2.7-highspeed` as the main live default because it is much cheaper and fast enough for most runtime work
+- Use **Space Agent** (`100.67.172.114:3000`) for visual dashboards, dynamic widgets, and browser-based agent interactions
+- Space Agent reads Chimera data from `/srv/space/customware/L2/user/chimera-data/` — pipeline scripts should write JSON there
+- Space Agent skills are plain `SKILL.md` files — any agent can write new skills that Space Agent immediately discovers
 
 ## Sources
 
@@ -188,4 +209,4 @@ When models, prices, or routes change:
 4. mirror shared skill changes into `chimera-vps-deploy`
 5. mention the sync state in the current handoff
 
-*model-registry skill v2.0 | Last updated: 2026-04-28 | Sources: official OpenAI, MiniMax, and Kimi docs linked above*
+*model-registry skill v2.1 | Last updated: 2026-04-29 | Sources: official OpenAI, MiniMax, and Kimi docs linked above*

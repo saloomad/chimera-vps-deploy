@@ -13,6 +13,7 @@
 | **Codex** (Windows) | `C:\Users\becke\.codex\skills\` | YAML + Markdown | Auto-detect at session start | `skill-creator` (`.codex/skills/skill-creator/`) |
 | **OpenClaw** (VPS) | `/root/.openclaw/skills/` + `/workspace/skills/` | YAML + Markdown + metadata JSON | Agent runtime + ClawHub | `skill-creator` (`workspace/skills/skill-creator/`) |
 | **OpenCode** (VPS CLI) | `/root/.opencode/skills/` (convention) | Shell scripts + prompt templates | Manual (no auto-detect) | `opencode-skill-pattern` (`workspace/skills/opencode-skill-pattern/`) |
+| **Space Agent** (VPS Browser) | `/srv/space/customware/L1/_admin/mod/chimera/ext/skills/` | YAML + Markdown + JS | Auto-detect at runtime | `space-agent-integration` (`chimera-vps-deploy/skills/space-agent-integration/`) |
 
 ---
 
@@ -85,16 +86,16 @@ Each platform's skill-creator has overlapping but distinct triggers:
 
 ## Key Differences Between Platforms
 
-| Aspect | Claude Code | Codex | OpenClaw | OpenCode |
-|--------|-------------|-------|----------|----------|
-| **Model** | Claude Sonnet/Opus | GPT-5.4/5.5 | MiniMax / Kimi | MiniMax (Kimi buggy) |
-| **OS** | Windows + Linux | Windows | Linux (Ubuntu 24.04) | Linux |
-| **Skill format** | YAML + Markdown | YAML + Markdown | YAML + Markdown + JSON | Shell + Markdown |
-| **Auto-discovery** | ✅ Session start | ✅ Session start | ✅ Agent runtime | ❌ None |
-| **Path style** | `C:\Users\...` | `C:\Users\...` | `/root/...` | `/root/...` |
-| **Needs metadata** | ❌ No | ❌ No | ✅ Yes (JSON block) | ❌ No |
-| **Needs triggers** | ✅ Yes | ✅ Yes | ✅ Yes | N/A |
-| **GitHub sync** | Manual | Manual | Via `chimera-deploy/` | Manual |
+| Aspect | Claude Code | Codex | OpenClaw | OpenCode | Space Agent |
+|--------|-------------|-------|----------|----------|-------------|
+| **Model** | Claude Sonnet/Opus | GPT-5.4/5.5 | MiniMax / Kimi | MiniMax (Kimi buggy) | MiniMax / Kimi / OpenRouter |
+| **OS** | Windows + Linux | Windows | Linux (Ubuntu 24.04) | Linux | Linux (browser UI) |
+| **Skill format** | YAML + Markdown | YAML + Markdown | YAML + Markdown + JSON | Shell + Markdown | YAML + Markdown + JS |
+| **Auto-discovery** | ✅ Session start | ✅ Session start | ✅ Agent runtime | ❌ None | ✅ Runtime |
+| **Path style** | `C:\Users\...` | `C:\Users\...` | `/root/...` | `/root/...` | `/srv/space/customware/...` |
+| **Needs metadata** | ❌ No | ❌ No | ✅ Yes (JSON block) | ❌ No | ✅ Yes (YAML frontmatter) |
+| **Needs triggers** | ✅ Yes | ✅ Yes | ✅ Yes | N/A | ✅ Yes |
+| **GitHub sync** | Manual | Manual | Via `chimera-deploy/` | Manual | Manual |
 
 ---
 
@@ -128,6 +129,11 @@ Each platform's skill-creator has overlapping but distinct triggers:
 1. Run: `ls /root/.opencode/skills/`
 2. Expected: Directory listing shows available prompt packs
 
+### Space Agent
+1. Open: `http://100.67.172.114:3000`
+2. Ask agent: "List available skills"
+3. Expected: Agent discovers `chimera-dashboard` skill and can use it
+
 ---
 
-*Platform Skill Index v1.0 | 2026-04-28 | Chimera Ecosystem*
+*Platform Skill Index v1.1 | 2026-04-29 | Chimera Ecosystem*
