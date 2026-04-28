@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Runtime Router"
+  short_description: "Route tasks by platform, model lane, and sync status."
+  default_prompt: "Use the Codex Runtime Router skill to choose the right platform, model lane, closeout sync path, and response header."

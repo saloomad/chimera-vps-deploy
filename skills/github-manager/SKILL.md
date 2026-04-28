@@ -58,6 +58,26 @@ gh auth status
 
 ## Workflows
 
+### 0. Session Closeout Sync
+
+Before ending a meaningful session that created durable work:
+
+1. list every skill created or updated
+2. list other durable outputs created or updated
+3. say whether each item is:
+   - local only
+   - shared in repo but not pushed yet
+   - pushed and available to other platforms
+4. if a shared Codex skill changed, mirror it into `chimera-vps-deploy/skills/`
+5. update the latest `handoffs/CHECKPOINT_*.md` with:
+   - skills created
+   - skills updated
+   - other files created
+   - sync status
+   - next pull target platform
+
+Do not say "synced" unless GitHub or the target platform was actually updated.
+
 ### 1. Push Changes (Any Platform)
 
 ```bash
@@ -155,6 +175,7 @@ git pull origin main
 - Cron job definitions
 - Scripts that are production-ready
 - Documentation updates
+- Handoff files that other platforms need to read
 
 ### Never Commit
 - API keys, tokens, secrets
@@ -215,4 +236,16 @@ git reset --hard origin/main
 
 ---
 
-*github-manager skill v2.0 | Cross-platform sync for Chimera*
+## Verification Rule
+
+When the claim is "GitHub has the latest skills" or "other platforms can pull this now", verify all three when possible:
+
+1. the local skill copy exists in `C:\Users\becke\.codex\skills\` or the live platform home
+2. the shared copy exists in `chimera-vps-deploy/skills/`
+3. the deploy repo is not ahead of `origin/main` if you are claiming GitHub is current
+
+If step 3 was not checked, say `shared locally but push not verified`.
+
+---
+
+*github-manager skill v2.1 | Cross-platform sync for Chimera*

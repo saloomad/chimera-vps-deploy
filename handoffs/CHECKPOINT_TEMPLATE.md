@@ -27,6 +27,17 @@
 |------|----------|-------------|
 | path/to/file | [Windows/VPS] | [brief description] |
 
+## Skills Created / Updated
+- [ ] [skill name] â€” [created or updated] â€” [local only / shared in repo / pushed]
+
+## Other Durable Outputs Created
+- [ ] [doc, script, dashboard, report, startup file, routing file, etc.] â€” [local only / shared in repo / pushed]
+
+## Sync Status
+- **GitHub status**: [not checked / local only / pushed and pullable]
+- **Other platforms that should pull this**: [Windows Codex / Windows Claude / Kimi VPS / space-agent.ai]
+- **What still needs sync**: [short plain-English list]
+
 ## Next Actions (for next agent)
 1. **[PRIORITY]** Do this first — [specific instruction]
 2. **[MEDIUM]** Then do this — [specific instruction]
