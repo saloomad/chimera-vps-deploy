@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Operations Manager"
+  short_description: "Front-door project management skill that reads the journal, classifies the situation, chooses the right sub-skill, and updates durable project truth."
+  default_prompt: "Use $project-operations-manager to check the delivery journal, classify the project-management situation, load the right project/continuity/monitoring skill, and update the durable files truthfully."

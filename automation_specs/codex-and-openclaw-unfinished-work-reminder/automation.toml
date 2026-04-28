@@ -1,0 +1,13 @@
+version = 1
+id = "codex-and-openclaw-unfinished-work-reminder"
+kind = "cron"
+name = "Codex And OpenClaw Unfinished Work Reminder"
+prompt = "Wake up every two hours to review unfinished tasks, unfinished projects, blocked recommendations, and deferred decisions across the current Codex workspace and OpenClaw. Start from the project-management front door: `DELIVERY_JOURNAL.md`, `reports/auto/DELIVERY_JOURNAL_STATUS.json`, `projects/PROJECT_REGISTRY.md`, `tasks/TASK_REGISTRY.md`, `trace/ACTION_LOG.md`, and `KANBAN.md`. Use [$project-operations-manager](C:/Users/becke/.codex/skills/project-operations-manager/SKILL.md), [$openclaw-monitor-and-brief](C:/Users/becke/.codex/skills/openclaw-monitor-and-brief/SKILL.md), [$codex-task-and-project-capture](C:/Users/becke/.codex/skills/codex-task-and-project-capture/SKILL.md), and [$codex-continuity-enforcer](C:/Users/becke/.codex/skills/codex-continuity-enforcer/SKILL.md) when applicable. When relevant, inspect the live OpenClaw workspace through `scripts/connect_openclaw_linux.sh`, including the live `DELIVERY_JOURNAL.md`, live `reports/auto/DELIVERY_JOURNAL_STATUS.json`, live `projects/PROJECT_REMINDERS.md`, and live `reports/auto/PROJECT_REMINDERS_STATUS.json`. Every wakeup, inspect all important unfinished work whether approved or not. Continue safe bounded unfinished work when the next step is clear. For blocked or not-yet-approved work, do safe prep only: inspect reality, gather evidence, update tracking, prepare the next implementation step, and explicitly remind Sal what needs approval. Do not implement blocked or newly risky changes until approved. Then publish a concise reminder brief grouped by project with: what changed, what unfinished work still matters, what is blocked, what approval is needed, who should act next, and the next safe action. If the project-management front door itself is drifting or stale, repair that first when the fix is safe and bounded. Do not take destructive or newly risky actions."
+status = "PAUSED"
+rrule = "FREQ=HOURLY;INTERVAL=2"
+model = "gpt-5.4"
+reasoning_effort = "medium"
+execution_environment = "local"
+cwds = ["C:\\Users\\becke\\claudecowork"]
+created_at = 1776910179293
+updated_at = 1777368658230

@@ -1,0 +1,10 @@
+version = 1
+id = "finish-agent-simulation"
+kind = "heartbeat"
+name = "Finish Agent Simulation And Monitor"
+prompt = "Continue Project Chimera P-005/P-010 agent-first simulation, orchestration, historical/backtest readiness, and monitor work until genuinely finished or blocked. Keep it human-readable: explain test/dashboard meaning in chat, not only file paths. On each wake, first verify the local monitor refresher process `trading_system/dashboard/run_monitor_portal_live.py --interval 60` is running; restart it if missing. Current truth: monitor refresh is alive; macro rows are populated but still need natural cron proof; scenario coverage and judge-pack proof exist; adaptive Deezoh routing remains preferred; live paper desk is healthy but waiting on no promoted setup; liquidation heatmap is not operational because market-maker points to missing `/home/open-claw/openclawtrading/scripts/coinglass_liquidation_heatmap/coinglass_liquidation_scraper.py`; the monitor now shows `missing_scraper` and derivatives fallback only. Continue enforcing Deezoh core-plus-adaptive questions, asked_question=true when questions exist, advisory routing vs hard blocking, chart supersedes generated zones, and the always-maintained three-long/three-short desk book with entry condition, trigger, invalidation, confluence, timeframe, trade type, and chart confirmation. Next priorities: restore or replace the missing liquidation heatmap extractor or route to a maintained provider path; add upstream source-age/recency metadata to YouTube/growth thesis inputs; verify the macro market-context cron naturally keeps SPX/oil/gold/Total3 populated; keep live OpenClaw proof honest. Stop this heartbeat only when scenario coverage, judge-on-tie, durable tracking, historical/backtest readiness status, dashboard/operator visibility, monitor refresh health, required live proof, heatmap extractor status, and YouTube recency guard are complete, or when a real blocker/approval boundary is found."
+status = "PAUSED"
+rrule = "FREQ=MINUTELY;INTERVAL=10"
+target_thread_id = "019d9d04-5f3f-7621-b400-585bd4e29722"
+created_at = 1776977329051
+updated_at = 1777368640948

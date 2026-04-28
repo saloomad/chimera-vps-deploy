@@ -1,76 +1,106 @@
 ---
 name: model-registry
-description: Central registry of ALL AI models used across the Chimera ecosystem. Read this BEFORE answering questions about model capabilities, endpoints, pricing, or connection methods. Prevents hallucinated model specs. Triggers: model info, which model, model capabilities, endpoint URL, API base, model pricing, connection method, what model to use.
+description: Central registry of the models currently used across Windows Codex, Windows Claude, Kimi VPS, and related coding surfaces. Read this BEFORE answering model questions, pricing questions, endpoint questions, or routing questions. Prevents guessed model specs and gives one routing baseline.
 ---
 
-# Model Registry — Chimera Ecosystem
+# Model Registry - Chimera Ecosystem
 
-> **READ THIS FIRST** before answering any question about models, endpoints, capabilities, or pricing. Do NOT guess. If info is missing here, say "I don't have that in the registry" rather than making it up.
+Read this before answering questions about:
 
----
+- model names
+- endpoints
+- fallback order
+- context windows
+- approximate cost
+- benchmark signals
+- which model should handle planning, execution, or review
 
-## VPS-Configured Models (source: `/root/.openclaw/openclaw.json`)
+If a fact is not in this registry or in the cited official source, say that plainly instead of guessing.
 
-These are the models actually wired into the OpenClaw gateway. If it's not in this list, the VPS cannot use it without config changes.
+## Current Routing Summary
+
+### Windows Codex
+
+- Current verified default: `gpt-5.4`
+- Current verified reasoning default: `medium`
+- Best use: implementation, patching, bounded testing
+- Stronger planning/review override when available: `gpt-5.5` with `high` or `xhigh`
+- Fast cheap lane when available: `gpt-5.4-mini` with `low`
+
+### Windows Claude
+
+- Use as the planning and synthesis surface when the work is high-ambiguity or cross-platform
+- Strong preferred lane: strongest available planning model with high reasoning
+
+### Kimi VPS / OpenClaw
+
+- Primary live model: `MiniMax-M2.7-highspeed`
+- Fallback #1: `k2.6`
+- Fallback #2: `k2.5`
+- Fallback #3: `MiniMax-M2.5`
+
+## Windows Codex Runtime Models
+
+These are the model lanes we currently route against in this Codex environment.
+
+| Model | Best use | Reasoning support | Context | Approx input / 1M | Approx output / 1M | Benchmark signals |
+|---|---|---|---|---|---|---|
+| `gpt-5.5` | planning, architecture, review, failure analysis | `none`, `low`, `medium`, `high`, `xhigh` | 1M | $5.00 | $30.00 | Terminal-Bench 2.0 `82.7`, SWE-Bench Pro `58.6`, GPQA Diamond `93.6`, HLE w/ tools `52.2` |
+| `gpt-5.4` | default execution and coding | `none`, `low`, `medium`, `high`, `xhigh` | 1.05M | $2.50 | $15.00 | Terminal-Bench 2.0 `65.4`, SWE-Bench Pro `57.7`, GPQA Diamond `92.8`, HLE w/ tools `52.1` |
+| `gpt-5.4-mini` | formatting, mechanical transforms, low-risk helper work | `none`, `low`, `medium`, `high`, `xhigh` | 400K | $0.75 | $4.50 | no main benchmark rule here; use when cost and speed matter more than top-end judgment |
+| `gpt-5.3-codex` | coding-specific fallback | runtime-supported | 400K | $1.75 | $14.00 | use when coding focus matters and explicit override is justified |
+| `gpt-5.3-codex-spark` | fastest coding fallback | runtime-supported | runtime-dependent | not verified here | not verified here | use only for speed-sensitive helper work |
+| `gpt-5.2` | lower-cost strong fallback | `low`, `medium`, `high`, `xhigh` | runtime-dependent | $1.75 | $14.00 | use when cheaper strong reasoning is enough |
+
+Important:
+
+- spawned agents inherit the parent model by default
+- only override a spawned agent model when the subtask clearly benefits from it
+- this runtime does not yet expose a verified hidden per-request auto-switch inside one session, so routing is a visible policy, not a fake auto-switch claim
+
+## VPS-Configured Models
+
+Source of truth for the live VPS wiring is `/root/.openclaw/openclaw.json`.
 
 ### Provider: `minimax`
 
-| Model ID (config) | Display Name | Endpoint | Status |
-|-------------------|--------------|----------|--------|
-| `MiniMax-M2.7-highspeed` | MiniMax M2.7 High Speed | `https://api.minimax.io/anthropic` | DEFAULT |
-| `MiniMax-M2.5` | MiniMax M2.5 | `https://api.minimax.io/anthropic` | Fallback #3 |
+| Model ID | Endpoint | Role | Notes |
+|---|---|---|---|
+| `MiniMax-M2.7-highspeed` | `https://api.minimax.io/anthropic` | Primary | same performance as M2.7 with faster inference |
+| `MiniMax-M2.5` | `https://api.minimax.io/anthropic` | Fallback #3 | cheaper fallback |
 
-**API Key**: `sk-cp-R9KqNRCZ8fM9xGEYEwz8_K3dcJ1bXTTyBLaWCStWU1rxKKujuJYUpceNJ-PbLdzdix4aCmv4AnnrD3CfQsAXJGpieYqHbT1PCHcBTgdptmJ-lnPWB5lhCck`
+Known official signals:
 
-**Protocol**: Anthropic Messages API (`/v1/messages`)
-
-**Docs**: https://platform.minimax.io/docs/guides/models-intro
-
-**What the architect got wrong before**:
-- Claimed `MiniMax-Text-01` was available — it is NOT in the VPS config
-- Claimed endpoint was `https://api.minimax.io/v1/chat/completions` — actual VPS uses `https://api.minimax.io/anthropic` (Claude SDK compatible)
-- Did not know M2.7-highspeed was configured but only as fallback
-
-**Known specs** (from official docs + web research):
-- M2.5: Optimized for code, fast inference
-- M2.7-highspeed: Same performance as M2.7, significantly faster inference
-- Context window for M2 series: **200k tokens**
-- Max output for M2 series: **128k tokens** (including CoT) (not documented)
-- MiniMax-Text-01 (NOT in config): 4M context, ~$0.20/1M in, ~$1.10/1M out
-
----
+- M2 series context: `200K`
+- M2 series max output: up to `128K`
+- M2.7-highspeed approximate price: `$0.60` input, `$2.40` output per 1M
+- M2.5 approximate price: `$0.30` input, `$1.20` output per 1M
 
 ### Provider: `kimi-coding`
 
-| Model ID (config) | Display Name | Endpoint | Status |
-|-------------------|--------------|----------|--------|
-| `k2.6` | Kimi K2.6 | `https://api.kimi.com/coding` | Fallback #1 |
-| `k2.5` | Kimi K2.5 | `https://api.kimi.com/coding` | Fallback #2 |
+| Model ID | Endpoint | Role | Notes |
+|---|---|---|---|
+| `k2.6` | `https://api.kimi.com/coding` | Fallback #1 | strongest VPS reasoning and coding rerun lane |
+| `k2.5` | `https://api.kimi.com/coding` | Fallback #2 | older but still strong fallback |
 
-**API Key**: `sk-kimi-zbLEAyaxC1vAcBdbSPklDLBgXlbg6H6sMdaH8hrKcPAXf5BTMu6IEEUmCb63fK9S`
+Known official signals:
 
-**Protocol**: Anthropic Messages API (`/v1/messages`)
+- K2.6 and K2.5 context: `256K`
+- K2.6 supports thinking mode
+- K2.5 supports thinking mode
+- K2.6 approximate API price: `$0.16` cached input, `$0.95` uncached input, `$4.00` output per 1M
+- K2.5 approximate API price: use as cheaper fallback; exact USD sheet not fully standardized in this registry yet
 
-**Docs**: https://platform.kimi.com/docs/api/chat (Moonshot) + https://www.kimi.com/code/docs/en/ (Kimi Code)
+K2.6 benchmark signals from Kimi's technical blog:
 
-**What the architect got wrong before**:
-- Claimed endpoint was `https://api.moonshot.cn/v1/chat/completions` — actual VPS uses `https://api.kimi.com/coding` (Anthropic-compatible)
-- Claimed model ID was `kimi-k2-6` — actual config ID is just `k2.6`
-- Claimed 262k context / 65k output without verifying — these numbers are NOT in the official docs
-
-**Known specs** (from official Moonshot docs):
-- k2.6: Supports `thinking` parameter with `type` and `keep` options ("Preserved Thinking")
-- k2.5: Supports `thinking` parameter with `type` only
-- Function calling: Supported (max 128 tools)
-- Vision: Supported via `image_url` and `video_url`
-- JSON mode: Supported via `response_format`
-- Context window and pricing: **NOT documented** in the API reference
-
----
+- HLE full with tools: `54.0`
+- DeepSearchQA accuracy: `83.0`
+- Terminal-Bench 2.0: `66.7`
+- SWE-Bench Pro: `58.6`
 
 ## Default Agent Routing
 
-```javascript
+```text
 Primary:   minimax/MiniMax-M2.7-highspeed
 Fallbacks:
   1. kimi-coding/k2.6
@@ -78,155 +108,84 @@ Fallbacks:
   3. minimax/MiniMax-M2.5
 ```
 
-**How to read this**: `minimax/MiniMax-M2.5` means provider `minimax`, model ID `MiniMax-M2.5`.
+## Planning / Execution / Review Routing
 
----
+| Work type | Preferred platform | Preferred model | Preferred reasoning |
+|---|---|---|---|
+| planning | Windows Claude or strong Codex override | `gpt-5.5` | `high` or `xhigh` |
+| execution | Windows Codex for local, Kimi VPS for live | `gpt-5.4` locally, `MiniMax-M2.7-highspeed` on VPS | `medium` locally |
+| review | Windows Codex or Windows Claude | `gpt-5.5` for judgment-heavy review, `gpt-5.4` for bounded code review | `high` or `medium` |
+| fast mechanical | Windows Codex | `gpt-5.4-mini` | `low` |
 
-## Windows-Only Models
+## Rerun And Escalation Rule
 
-These are used on the Windows machine (this interactive session), NOT on the VPS.
+If the result quality is weak:
 
-| Model | Provider | Endpoint | Where Used |
-|-------|----------|----------|------------|
-| `claude-sonnet-4` | Anthropic | `https://api.anthropic.com` | Windows Claude Code |
-| `claude-opus-4` | Anthropic | `https://api.anthropic.com` | Windows Claude Code (expensive) |
-| `claude-haiku-3.5` | Anthropic | `https://api.anthropic.com` | Windows Claude Code (fast) |
-| `anthropic/claude-sonnet-4.6` | OpenRouter | `https://openrouter.ai/api/v1` | User's local settings UI |
+1. raise reasoning first
+2. split planning from execution if the task was mixed
+3. rerun review on a stronger model
+4. record the better route for next time
 
----
+Do not pretend a cheap or weak lane was sufficient if the output quality says otherwise.
+
+## Quota And Usage Rule
+
+Verified current truth on this Windows Codex machine:
+
+- `codex login status` works
+- a reliable quota or remaining-usage command has not been found yet
+- header value should stay `quota=not exposed` until a real supported command exists
 
 ## Connection Methods Summary
 
-### MiniMax (VPS — Anthropic SDK)
+### MiniMax on VPS
+
 ```bash
 base_url: https://api.minimax.io/anthropic
-api_key: sk-cp-...
-model: MiniMax-M2.5
+model: MiniMax-M2.7-highspeed
+protocol: Anthropic Messages API
 ```
 
-### Kimi (VPS — Anthropic SDK)
+### Kimi on VPS
+
 ```bash
 base_url: https://api.kimi.com/coding
-api_key: sk-kimi-...
 model: k2.6
+protocol: Anthropic Messages API
 ```
 
-### MiniMax (OpenCode Desktop/CLI — OpenAI-compatible)
-```json
-{
-  "provider": {
-    "minimax-coding-plan": {
-      "npm": "@ai-sdk/openai-compatible",
-      "options": {
-        "baseURL": "https://api.minimax.io/v1"
-      },
-      "models": {
-        "MiniMax-M2.7-highspeed": { "name": "M2.7 High Speed" }
-      }
-    }
-  }
-}
-```
-**Config file**: `C:\Users\becke\.config\opencode\opencode.jsonc`
-**Command**: `opencode run -m minimax-coding-plan/MiniMax-M2.7-highspeed "prompt"`
-**Common mistakes**: Using `api.minimax.chat` (wrong domain), using `MiniMax-M2.7-High-Speed` (wrong case/spacing).
+### OpenAI models in Codex
 
-### Kimi (OpenCode Desktop/CLI — OpenAI-compatible)
-```json
-{
-  "provider": {
-    "kimi-for-coding": {
-      "npm": "@ai-sdk/openai-compatible",
-      "options": {
-        "baseURL": "https://api.kimi.com/coding/v1"
-      },
-      "models": {
-        "kimi-for-coding": { "name": "Kimi K2.6" }
-      }
-    }
-  }
-}
-```
-**Config file**: `C:\Users\becke\.config\opencode\opencode.jsonc`
-**Command**: `opencode run -m kimi-for-coding/kimi-for-coding "prompt"`
-**Critical**: Base URL MUST include `/v1` at the end (`coding/v1`, not just `/coding`).
-**Common mistakes**: Using `api.moonshot.ai` (old domain), using `kimi-k2-6` or `k2.6` as model ID (must be `kimi-for-coding`).
+The local runtime is not configured through this file with raw API credentials.
+Instead, use the Codex runtime's selected model and the routing policy in `codex-runtime-router`.
 
-### Anthropic (Windows)
-```bash
-base_url: https://api.anthropic.com/v1
-api_key: sk-ant-...
-model: claude-sonnet-4-20250514
-```
+## Routing Notes That Matter In Practice
 
----
+- Use `gpt-5.5` when the cost of a weak plan is higher than the extra tokens
+- Use `gpt-5.4` for most implementation work
+- Use `gpt-5.4-mini` only when the task is clearly mechanical
+- Use `k2.6` on the VPS when MiniMax output is not good enough for a hard coding or reasoning task
+- Keep `MiniMax-M2.7-highspeed` as the main live default because it is much cheaper and fast enough for most runtime work
 
-## When to Use What (VPS)
+## Sources
 
-| Task | Recommended Model | Why |
-|------|-------------------|-----|
-| Default agent responses | `minimax/MiniMax-M2.7-highspeed` | Free, fastest inference |
-| Complex analysis | `kimi-coding/k2.6` | Better reasoning, longer thinking |
-| Code generation | `minimax/MiniMax-M2.7-highspeed` | Optimized for code, fast |
-| Fallback if primary fails | `kimi-coding/k2.6` | Reliable backup |
-| Fallback if Kimi fails | `minimax/MiniMax-M2.5` | Stable workhorse |
+- OpenAI GPT-5.5: https://openai.com/index/introducing-gpt-5-5/
+- OpenAI GPT-5.4 docs: https://developers.openai.com/api/docs/models/gpt-5.4/
+- OpenAI pricing: https://platform.openai.com/docs/pricing/
+- MiniMax pricing: https://platform.minimax.io/docs/guides/pricing-paygo
+- MiniMax models intro: https://platform.minimax.io/docs/guides/models-intro
+- Kimi K2.6 benchmark blog: https://www.kimi.com/blog/kimi-k2-6
+- Kimi K2.6 quickstart: https://platform.kimi.com/docs/guide/kimi-k2-6-quickstart
+- Kimi K2.6 pricing: https://www.kimi.com/resources/kimi-k2-6-pricing
 
----
+## Update Rule
 
-## Why M2.7-highspeed is Now Default
+When models, prices, or routes change:
 
-The config was changed on 2026-04-28:
-```json
-"default": {
-  "primary": "minimax/MiniMax-M2.7-highspeed",
-  "fallbacks": ["kimi-coding/k2.6", "kimi-coding/k2.5", "minimax/MiniMax-M2.5"]
-}
-```
+1. verify with official docs first
+2. update this registry
+3. update `codex-runtime-router` if routing behavior changes
+4. mirror shared skill changes into `chimera-vps-deploy`
+5. mention the sync state in the current handoff
 
-**Rationale**: M2.7-highspeed offers same performance as M2.7 with significantly faster inference. Since it's free via our key and faster, it makes sense as primary.
-
-**Previous config** (before 2026-04-28): M2.5 was primary, M2.7-highspeed was fallback #3.
-
-**To revert to M2.5 as default**:
-```bash
-python3 -c "
-import json
-with open('/root/.openclaw/openclaw.json') as f:
-    d = json.load(f)
-d['agents']['defaults']['model']['primary'] = 'minimax/MiniMax-M2.5'
-with open('/root/.openclaw/openclaw.json', 'w') as f:
-    json.dump(d, f, indent=2)
-"
-systemctl restart openclaw-gateway
-```
-
----
-
-## Known Knowledge Gaps (Do NOT Guess)
-
-These are NOT in any official doc I have read. If asked, say "I don't have that information":
-
-1. **Exact context window** for MiniMax M2.5 and M2.7-highspeed
-2. **Exact pricing** for MiniMax M2.5 and M2.7-highspeed (they're free for us via the current key, but public pricing is unknown)
-3. **Exact context window** for Kimi k2.6 and k2.5
-4. **Exact pricing** for Kimi k2.6 and k2.5
-5. **Whether MiniMax-Text-01** can be added to the VPS config (likely yes, but not currently configured)
-6. **Vision support** on MiniMax models (unknown)
-
----
-
-## How to Update This Registry
-
-When new models are added to the VPS:
-```bash
-# 1. Read the actual config
-python3 -m json.tool /root/.openclaw/openclaw.json | grep -A20 'providers'
-
-# 2. Update this SKILL.md with the real values
-
-# 3. Update the Notion page
-```
-
----
-
-*model-registry skill v1.1 | Last updated: 2026-04-28 | Source of truth: `/root/.openclaw/openclaw.json`*
+*model-registry skill v2.0 | Last updated: 2026-04-28 | Sources: official OpenAI, MiniMax, and Kimi docs linked above*

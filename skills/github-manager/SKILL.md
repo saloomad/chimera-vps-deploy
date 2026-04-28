@@ -74,7 +74,15 @@ Before ending a meaningful session that created durable work:
    - skills updated
    - other files created
    - sync status
+   - routing used
    - next pull target platform
+
+Also capture:
+
+- model used
+- reasoning used
+- result quality
+- whether a stronger rerun was needed
 
 Do not say "synced" unless GitHub or the target platform was actually updated.
 

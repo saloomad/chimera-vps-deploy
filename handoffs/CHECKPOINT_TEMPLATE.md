@@ -38,6 +38,14 @@
 - **Other platforms that should pull this**: [Windows Codex / Windows Claude / Kimi VPS / space-agent.ai]
 - **What still needs sync**: [short plain-English list]
 
+## Routing Used
+- **Task lane**: [planning / execution / review / research / mixed]
+- **Model used**: [model name]
+- **Reasoning used**: [low / medium / high / xhigh / provider thinking mode]
+- **Result quality**: [strong / acceptable / weak]
+- **Rerun needed**: [yes / no]
+- **Better route next time**: [same / stronger reasoning / stronger model / split planning and execution]
+
 ## Next Actions (for next agent)
 1. **[PRIORITY]** Do this first — [specific instruction]
 2. **[MEDIUM]** Then do this — [specific instruction]

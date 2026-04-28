@@ -1,0 +1,4 @@
+interface:
+  display_name: "Replay And Backtest"
+  short_description: "Replay system behavior or backtest faster than waiting for live outcomes"
+  default_prompt: "Use $openclaw-replay-and-backtest to choose the right replay or backtest mode, run the fastest truthful proof path, and report what is still unproven."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "OpenClaw Workspace"
+  short_description: "Bootstrap, audit, or standardize OpenClaw agent workspaces, startup files, and persistent-vs-spawned role structure."
+  default_prompt: "Use OpenClaw Workspace when the task is about agent workspace standards, startup files, or persistent versus spawned role design."

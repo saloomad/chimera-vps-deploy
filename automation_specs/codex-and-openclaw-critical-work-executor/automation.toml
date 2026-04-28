@@ -1,0 +1,13 @@
+version = 1
+id = "codex-and-openclaw-critical-work-executor"
+kind = "cron"
+name = "Codex And OpenClaw Critical Work Executor"
+prompt = "Review unfinished tasks, previous recommendations, and continuity surfaces across the current Codex workspace and OpenClaw. Start from the project-management front door: `DELIVERY_JOURNAL.md`, `reports/auto/DELIVERY_JOURNAL_STATUS.json`, `projects/PROJECT_REGISTRY.md`, `tasks/TASK_REGISTRY.md`, `trace/ACTION_LOG.md`, and `KANBAN.md`. When OpenClaw is reachable, also inspect the live `projects/PROJECT_REMINDERS.md`, live `reports/auto/PROJECT_REMINDERS_STATUS.json`, and the paper-watch operator surfaces: `reports/auto/PAPER_DESK_PIPELINE_BRIEF.md`, `reports/auto/PAPER_DESK_INTERACTION_TRACE.md`, `reports/auto/PAPER_DESK_OPERATOR_SNAPSHOT.json`, `reports/auto/INTER_AGENT_INBOX.json`, `agents/deezoh/PENDING_QUESTIONS.json`, and `reports/auto/PAPER_DESK_HUMAN_ESCALATION.md` when it exists. Use [$project-operations-manager](C:/Users/becke/.codex/skills/project-operations-manager/SKILL.md), [$openclaw-monitor-and-brief](C:/Users/becke/.codex/skills/openclaw-monitor-and-brief/SKILL.md), [$codex-task-and-project-capture](C:/Users/becke/.codex/skills/codex-task-and-project-capture/SKILL.md), [$codex-continuity-enforcer](C:/Users/becke/.codex/skills/codex-continuity-enforcer/SKILL.md) when applicable. Inspect the live OpenClaw workspace through `scripts/connect_openclaw_linux.sh` when the unfinished work depends on Linux reality.\n\nPrefer following through on the latest paper-watch result before generic backlog work. Start by restating the latest paper-watch top summary in plain English: desk state, focus, top blocker, what actually ran, what did not actually run, and who owns the next action. Then continue only safe, already-scoped unfinished work that does not need fresh approval. If the delivery-journal status file, live OpenClaw reminder/front-door files, or paper-watch routing surfaces show drift, repair the tracking front door first when the fix is safe and bounded. If there is a live routed paper-watch issue or a human escalation note, treat that as the default next action instead of opening duplicate work. Do not take destructive or newly risky actions. If something still needs approval, stop short and publish a concise decision brief that names the blocked item, why approval is needed, what evidence matters, who should act next, and the next safe action. Always finish with: what changed, why it matters, what is still blocked, and who should act next."
+status = "PAUSED"
+rrule = "FREQ=HOURLY;INTERVAL=1"
+model = "gpt-5.4"
+reasoning_effort = "medium"
+execution_environment = "local"
+cwds = ["C:\\Users\\becke\\claudecowork"]
+created_at = 1776910178891
+updated_at = 1777368646853
