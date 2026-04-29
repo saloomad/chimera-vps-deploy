@@ -32,7 +32,7 @@ Before doing ANY work, check for pending handoffs from other agents:
 
 At the beginning of every user-facing reply, include:
 
-`Runtime: model=<name> | reasoning=<effort> | quota=<value-or-not-exposed> | lane=<planning|execution|research|mixed> | why=<short reason>`
+`Runtime: model=<name> | reasoning=<effort> | quota=<value-or-not-exposed> | phase=<plan|execute|review|mixed> | why=<short reason>`
 
 If live quota is not exposed in the runtime, say `quota=not exposed`.
 Do not invent quota numbers.

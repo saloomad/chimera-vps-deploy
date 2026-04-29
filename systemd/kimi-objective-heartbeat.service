@@ -1,0 +1,15 @@
+[Unit]
+Description=Kimi Objective Orchestration Heartbeat
+After=network-online.target tailscaled.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/root/.kimi
+Environment="HOME=/root"
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/usr/local/bin/run_objective_orchestration_heartbeat.sh /root/chimera-deploy
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=kimi-objective-heartbeat

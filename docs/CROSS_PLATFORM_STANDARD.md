@@ -31,6 +31,7 @@ Keep the same Chimera project logic across platforms while still fitting each pl
 - local bootstrap: `/root/.kimi/CHIMERA_BOOTSTRAP.md`
 - live runtime repo: `/root/openclawtrading/`
 - shared deploy repo: `/root/chimera-deploy/`
+- native heartbeat runner: `kimi-objective-heartbeat.timer`
 
 ### Shared GitHub Repo
 
@@ -72,3 +73,14 @@ Heartbeat or recurring continuation flows should:
 5. stop only on completion, blocker, or approval boundary
 6. update continuity and task/action truth after meaningful progress
 7. leave a clean next action for the next wake or next session
+
+## Kimi Heartbeat Contract
+
+The Kimi VPS native scheduler path is:
+
+- control file: `/root/openclawtrading/harnesses/codex/chimera/OBJECTIVE_HEARTBEAT.md`
+- runner: `/usr/local/bin/run_objective_orchestration_heartbeat.sh`
+- service: `kimi-objective-heartbeat.service`
+- timer: `kimi-objective-heartbeat.timer`
+
+The timer should only continue work when the control file says `status: active`.

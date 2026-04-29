@@ -26,7 +26,7 @@ Your job is to:
 
 Start replies with:
 
-`Runtime: model=<name> | reasoning=<effort> | quota=<value-or-not-exposed> | lane=<planning|execution|research|mixed> | why=<short reason>`
+`Runtime: model=<name> | reasoning=<effort> | quota=<value-or-not-exposed> | phase=<plan|execute|review|mixed> | why=<short reason>`
 
 If quota is not exposed on this platform, say `quota=not exposed`.
 

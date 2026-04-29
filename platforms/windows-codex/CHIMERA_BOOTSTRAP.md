@@ -72,7 +72,7 @@ These local skill copies already exist in:
 
 Start replies with:
 
-`Runtime: model=<name> | reasoning=<effort> | quota=<value-or-not-exposed> | lane=<planning|execution|research|mixed> | why=<short reason>`
+`Runtime: model=<name> | reasoning=<effort> | quota=<value-or-not-exposed> | phase=<plan|execute|review|mixed> | why=<short reason>`
 
 If live quota is not exposed, say `quota=not exposed`.
 Try Codex CLI before claiming quota, but if `codex login status` is all that is available, keep the honest value `not exposed`.
