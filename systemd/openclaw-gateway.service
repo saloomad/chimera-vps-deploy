@@ -11,8 +11,8 @@ WorkingDirectory=/root/.openclaw
 Environment="NODE_ENV=production"
 Environment="HOME=/root"
 Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-ExecStart=/usr/bin/openclaw-gateway
-ExecStartPre=/root/chimera-deploy/scripts/fix-dns.sh
+ExecStart=/usr/bin/openclaw gateway run --force
+ExecStartPre=/bin/bash /root/chimera-deploy/scripts/fix-dns.sh
 Restart=always
 RestartSec=10
 StartLimitInterval=60s
