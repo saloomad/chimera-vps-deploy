@@ -59,6 +59,37 @@ Important:
 - do not pretend the runtime secretly auto-switched models unless that was verified
 - if a result is weak, reroute to a stronger reasoning level or stronger model and say so plainly
 
+## OBJECTIVE LOOP
+
+For every non-trivial objective, use:
+
+`plan -> execute -> review -> repeat`
+
+Rules:
+
+- plan defines objective, done criteria, platform, and route
+- execute does the next bounded real step
+- review decides `complete`, `iterate`, or `blocked`
+- do not stop at partial progress unless review says blocked or approval is needed
+
+## CODEX THREAD HEARTBEAT ENFORCEMENT
+
+When a non-trivial objective in Codex will need more than one pass:
+
+1. create or update a thread heartbeat named `Thread Objective Completion Guard`
+2. use the heartbeat only for the current thread
+3. keep it cheap first and concise
+4. stop it when the objective is `complete`
+5. stop it when the objective is `blocked`
+6. stop it after `3` consecutive wakes with no meaningful visible progress
+7. after that stop, require fresh manual input from Sal before any further attempts
+
+Important:
+
+- a Codex heartbeat is thread-attached, so one heartbeat cannot automatically cover all future threads
+- the enforced rule is therefore: if orchestration starts in a new Codex thread and continuation is needed, create or update the guarded heartbeat for that thread too
+- do not let a Codex thread heartbeat run forever
+
 Platforms in this ecosystem:
 - Windows Claude (this session) — C:/Users/becke/claudecowork/
 - Windows Codex — C:/Users/becke/.codex/

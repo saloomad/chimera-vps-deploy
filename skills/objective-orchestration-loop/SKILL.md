@@ -111,6 +111,26 @@ If the objective is larger than one pass and the platform supports recurring con
 - make the heartbeat continue safe approved work only
 - make the heartbeat update continuity, task, and action truth after meaningful progress
 
+### Codex Thread Heartbeat Rule
+
+When the platform is the Codex desktop app and the objective needs continuation in the current thread:
+
+- create or update a thread heartbeat named `Thread Objective Completion Guard`
+- use a moderate cadence such as every 30 minutes unless the task clearly needs faster follow-up
+- keep the heartbeat concise and cheap first
+- prefer the lowest-cost route that can still do the next bounded step well
+- escalate reasoning or model only if review says the result is weak or ambiguous
+- stop the heartbeat when review says `complete`
+- stop the heartbeat when review says `blocked`
+- stop the heartbeat after `3` consecutive wakes with no meaningful visible progress
+- after that stop, require fresh manual user input before any further attempts
+
+Important:
+
+- a Codex thread heartbeat is attached to one thread, not all future threads
+- therefore the enforcement rule is: any Codex thread that begins a real multi-pass orchestration should create or update its own guarded heartbeat when continuation is needed
+- do not leave a Codex heartbeat running forever
+
 If the platform does not support native recurring continuation:
 
 - still use the same plan/execute/review logic
