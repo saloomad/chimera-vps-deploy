@@ -64,8 +64,27 @@ Spawned-agent model options exposed by this runtime:
 | coding implementation | execution | `gpt-5.4` | `medium` |
 | code review or failure analysis | review | `gpt-5.5` or `gpt-5.4` | `high` or `medium` |
 | repetitive formatting | fast mechanical | `gpt-5.4-mini` | `low` |
+| cheap worker fan-out | fast mechanical | `gpt-5.3-codex-spark` or `gpt-5.4-mini` | `low` |
 | live VPS execution | execution | `MiniMax-M2.7-highspeed` | provider default |
 | live VPS deep coding or rerun | review or planning | `k2.6` | thinking on |
+
+## Swarm Routing By Role
+
+| Role | Preferred lane | Preferred model | Preferred reasoning |
+|---|---|---|---|
+| orchestrator | planning | `gpt-5.5` | `high` |
+| dimension worker | fast mechanical | `gpt-5.3-codex-spark` or `gpt-5.4-mini` | `low` |
+| verifier | review | `gpt-5.5` | `high` |
+| final synthesizer | review or planning | `gpt-5.5` | `high` |
+| local skill/doc implementation | execution | `gpt-5.4` | `medium` |
+| VPS live worker | execution | `MiniMax-M2.7-highspeed` | provider default |
+| VPS rerun worker | review | `k2.6` | thinking on |
+
+Rule:
+
+- start cheap on the workers
+- rerun only failed or ambiguous slices
+- do not rerun the whole swarm unless the orchestrator plan itself was weak
 
 ## Escalation Ladder
 
@@ -79,10 +98,13 @@ Spawned-agent model options exposed by this runtime:
 To prove the routing worked, close out with:
 
 - task type
+- phase
+- worker class
 - chosen platform
 - chosen model
 - chosen reasoning level
 - why this lane was selected
+- rerun reason
 - whether a rerun was needed
 - result quality
 

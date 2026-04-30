@@ -10,6 +10,7 @@ Keep the same Chimera project logic across platforms while still fitting each pl
 
 - one shared routing contract
 - one shared objective orchestration loop
+- one shared deep research swarm pattern for evidence-heavy work
 - one shared model registry baseline
 - one shared GitHub sync contract
 - one shared task and action-trace structure
@@ -57,6 +58,8 @@ Mirror these across the platforms that own Chimera work:
 - `github-manager`
 - `project-operations-manager`
 - `agent-session-resume`
+- `deep-research-swarm`
+- `openclaw-orchestration-proof-router`
 - `openclaw-replay-and-backtest`
 - `strategy-backtest-lab`
 - `pipeline-simulation-lab`
@@ -73,6 +76,41 @@ Heartbeat or recurring continuation flows should:
 5. stop only on completion, blocker, or approval boundary
 6. update continuity and task/action truth after meaningful progress
 7. leave a clean next action for the next wake or next session
+
+## Orchestration Classes
+
+Every non-trivial objective should classify itself as one of:
+
+- `direct task`
+- `bounded build`
+- `deep research swarm`
+- `always-on pipeline`
+
+Rules:
+
+- keep `objective-orchestration-loop` as the universal base
+- use `deep-research-swarm` only for heavy research, theses, postmortems, and large comparisons
+- keep the live trading loop lean and always-on
+- do not force the full research swarm into every live cycle
+
+## Live Trading Loop Standard
+
+The normal live trading loop should be:
+
+1. monitor inputs
+2. detect setup
+3. gather only the needed specialists
+4. validate freshness, conflicts, and risk
+5. decide `execute`, `watch`, or `reject`
+6. manage the position or state
+7. review and update state
+
+Use the deep swarm only for bigger jobs such as:
+
+- weekly BTC or market thesis
+- major event-driven review
+- deep ambiguity that needs cross-verification
+- post-trade failure analysis
 
 ## Kimi Heartbeat Contract
 

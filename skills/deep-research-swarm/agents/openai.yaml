@@ -1,0 +1,4 @@
+interface:
+  display_name: "Deep Research Swarm"
+  short_description: "Specialized seven-phase research swarm for evidence-heavy work, cross-verification, and writing."
+  default_prompt: "Use Deep Research Swarm for heavy research, theses, postmortems, and large comparisons. Keep it separate from routine trading cycles and normal coding tasks."

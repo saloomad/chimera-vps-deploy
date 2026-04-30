@@ -1,6 +1,6 @@
 ---
 name: codex-runtime-router
-description: Decide where a task should run, which model lane it belongs to, what reasoning level to use, how spawned agents should inherit or override models, how to self-grade results, how to sync created skills and durable artifacts, and how to announce runtime status at the top of each reply. Use for platform routing, model routing, session closeout sync, and response-header discipline.
+description: Decide where a task should run, which model lane it belongs to, what reasoning level to use, how workers and reviewers should route, how spawned agents should inherit or override models, how to self-grade results, how to sync created skills and durable artifacts, and how to announce runtime status at the top of each reply. Use for platform routing, model routing, session closeout sync, swarm routing, and response-header discipline.
 ---
 
 # Codex Runtime Router
@@ -16,7 +16,9 @@ Also use it when deciding:
 
 - which model lane fits the task
 - which reasoning level fits the task
+- which worker classes should use the cheap lane first
 - whether to split work into planning, execution, and review
+- whether the task is a direct task, bounded build, deep research swarm, or always-on pipeline
 - whether a weak result should be rerun on a stronger model or higher reasoning effort
 - what model spawned agents should use
 - whether a new skill should stay local or be shared through GitHub
@@ -110,6 +112,25 @@ Rule:
 - spawned agents inherit the parent model by default
 - only override a spawned agent model when the subtask clearly benefits from it and the user wants the stronger routing behavior
 
+## Worker Class Defaults
+
+When a task fans out, treat these as separate roles:
+
+- `orchestrator`
+  - owns decomposition, phase gates, rerun decisions, and closeout
+- `worker`
+  - completes one bounded slice
+- `verifier`
+  - checks evidence, proof, contradictions, or completeness
+- `reviewer`
+  - gives the final `complete`, `iterate`, or `blocked` decision
+
+Default rule:
+
+- cheap route first for workers
+- stronger route for orchestrator, verifier, and reviewer
+- rerun only failed or ambiguous slices on the stronger route
+
 ## Work Split
 
 ### Planning
@@ -191,6 +212,23 @@ Use for:
 - bulk mechanical edits
 - low-judgment transforms
 
+## Swarm Routing Matrix
+
+Use this when the task is a specialized deep research swarm rather than a normal build loop.
+
+| Role | Preferred route | Why |
+|---|---|---|
+| orchestrator | `gpt-5.5` with `high` | better decomposition and gate control |
+| dimension worker | `gpt-5.3-codex-spark low` or `gpt-5.4-mini low` | cheap first-pass evidence gathering |
+| verifier | `gpt-5.5 high` | contradiction handling and quality judgment |
+| final synthesizer | `gpt-5.5 high` | final thesis quality matters |
+| local implementation helper | `gpt-5.4 medium` | steady document and skill edits |
+| VPS live execution | `MiniMax-M2.7-highspeed` | lower-cost live lane |
+| VPS rerun | `k2.6` with thinking on | stronger rerun when the first pass is weak |
+
+Use the swarm matrix only for research-heavy work.
+Do not force simple coding or live trading cycles into it.
+
 ## Routing Heuristic
 
 ### Choose `gpt-5.5`
@@ -221,6 +259,14 @@ When the task is:
 - formatting-heavy
 - primarily mechanical rather than judgment-heavy
 
+### Choose `gpt-5.3-codex-spark`
+
+When the task is:
+
+- cheap worker fan-out
+- heartbeat or automation pass that should stay low-cost
+- a first-pass slice where speed matters more than depth
+
 ### Escalate reasoning before escalating models
 
 When possible, escalate in this order:
@@ -247,17 +293,20 @@ Do not pretend the first lane was sufficient if the result quality says otherwis
 
 At closeout, grade the route internally in plain English. Capture at least:
 
+- `phase`
 - `task_type`
+- `worker_class`
 - `platform_used`
 - `model_used`
 - `reasoning_used`
+- `rerun_reason`
 - `result_quality` = strong / acceptable / weak
 - `rerun_needed` = yes / no
 - `next_time_better_route`
 
 Example:
 
-`execution coding | Windows Codex | gpt-5.4 medium | result_quality=strong | rerun_needed=no | next_time_better_route=same`
+`execute | coding | worker | Windows Codex | gpt-5.4 medium | rerun_reason=none | result_quality=strong | rerun_needed=no | next_time_better_route=same`
 
 ## Spawned Agent Rule
 

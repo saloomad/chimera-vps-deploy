@@ -8,6 +8,13 @@ Every non-trivial objective uses:
 
 `plan -> execute -> review -> repeat`
 
+Before the first `plan`, classify the task as:
+
+- `direct task`
+- `bounded build`
+- `deep research swarm`
+- `always-on pipeline`
+
 ## Windows Codex
 
 | Phase | Preferred model | Preferred reasoning | Notes |
@@ -15,6 +22,12 @@ Every non-trivial objective uses:
 | plan | `gpt-5.5` | `high` or `xhigh` | use when available |
 | execute | `gpt-5.4` | `medium` | current verified default |
 | review | `gpt-5.5` or `gpt-5.4` | `high` or `medium` | stronger review when ambiguous |
+
+Worker defaults:
+
+- orchestrator: `gpt-5.5 high`
+- cheap workers: `gpt-5.3-codex-spark low` or `gpt-5.4-mini low`
+- reviewer or verifier: `gpt-5.5 high`
 
 Quota path:
 
@@ -54,6 +67,12 @@ Current verified providers in local config:
 | plan | `k2.6` | thinking on | strongest VPS reasoning lane |
 | execute | `MiniMax-M2.7-highspeed` | provider default | primary live implementation lane |
 | review | `k2.6` | thinking on | use when the first result is weak |
+
+Live pipeline guidance:
+
+- routine trading cycle: lean pipeline, not deep swarm
+- swarm only for thesis, major event review, or post-trade analysis
+- rerun weak slices on `k2.6`, not the whole loop by default
 
 Fallbacks:
 

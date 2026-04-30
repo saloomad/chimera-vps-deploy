@@ -9,10 +9,12 @@ mkdir -p "$TARGET_SKILLS_HOME"
 for name in \
   codex-runtime-router \
   objective-orchestration-loop \
+  deep-research-swarm \
   model-registry \
   github-manager \
   project-operations-manager \
   agent-session-resume \
+  openclaw-orchestration-proof-router \
   openclaw-replay-and-backtest \
   strategy-backtest-lab \
   pipeline-simulation-lab \

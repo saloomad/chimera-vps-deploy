@@ -1,0 +1,4 @@
+interface:
+  display_name: "OpenClaw Orchestration Proof Router"
+  short_description: "Choose the right OpenClaw orchestration pattern and prove whether it is really working in docs, config, and runtime."
+  default_prompt: "Use OpenClaw Orchestration Proof Router when the job is not just to do the work, but to pick the right orchestration structure and prove it honestly."
