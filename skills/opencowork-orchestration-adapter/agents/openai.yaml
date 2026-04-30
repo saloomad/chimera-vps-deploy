@@ -1,0 +1,4 @@
+interface:
+  display_name: "OpenCowork Orchestration Adapter"
+  short_description: "Adapt the shared orchestration rules for OpenCowork or OpenCode planning, review, and handoff work."
+  default_prompt: "Use OpenCowork Orchestration Adapter when OpenCowork should shape a deep-swarm or multi-phase objective without forking the shared Chimera orchestration logic."

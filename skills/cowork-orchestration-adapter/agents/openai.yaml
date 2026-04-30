@@ -1,0 +1,4 @@
+interface:
+  display_name: "Cowork Orchestration Adapter"
+  short_description: "Windows Claude/Cowork adapter for the shared swarm and orchestration rules."
+  default_prompt: "Use Cowork Orchestration Adapter to shape or synthesize swarm-backed objectives in Windows Claude/Cowork without duplicating the core deep-swarm logic."

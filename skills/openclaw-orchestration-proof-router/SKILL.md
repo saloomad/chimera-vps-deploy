@@ -28,6 +28,7 @@ Use this skill when the job is not just "do the work," but "choose the right Ope
 - `tasks/TASK_REGISTRY.md`
 - `tasks/JOB_BOARD.md`
 - `trace/ACTION_LOG.md`
+- `references/OPENCLAW_WORKFLOW_AND_VERDICT_TEMPLATES.md`
 - `docs/OPENCLAW_LIVE_MIRROR_2026-04-16/orchestration/ORCHESTRATION_DECISION_MODEL.md`
 - `docs/OPENCLAW_LIVE_MIRROR_2026-04-16/orchestration/ORCHESTRATION_HANDOFF_CONTRACT.md`
 - `tmp_openclaw_patch_20260416_round3/OPENCLAW_BIBLE.md`
@@ -195,6 +196,14 @@ For major orchestration decisions, report:
 - config proof
 - runtime proof
 - remaining risk
+
+## Verdict Template
+
+When the result needs a reusable OpenClaw routing contract, use the shared template in:
+
+- `references/OPENCLAW_WORKFLOW_AND_VERDICT_TEMPLATES.md`
+
+That template should make the pattern choice explicit, keep timers separate from the real workflow, and leave behind a small human-proof checklist.
 
 ## Write Targets
 

@@ -1,4 +1,4 @@
 interface:
   display_name: "OpenClaw Orchestration Proof Router"
-  short_description: "Choose the right OpenClaw orchestration pattern and prove whether it is really working in docs, config, and runtime."
-  default_prompt: "Use OpenClaw Orchestration Proof Router when the job is not just to do the work, but to pick the right orchestration structure and prove it honestly."
+  short_description: "Choose and prove the right OpenClaw orchestration shape, including Lobster, Task Flow, heartbeat, hooks, and verdict templates."
+  default_prompt: "Use OpenClaw Orchestration Proof Router to pick the right OpenClaw workflow pattern, prove it with artifacts and gates, and keep timers, hooks, heartbeats, and orchestration clearly separated."

@@ -6,7 +6,11 @@ param(
 $skillNames = @(
     "codex-runtime-router",
     "objective-orchestration-loop",
+    "chimera-knowledge-wiki",
     "deep-research-swarm",
+    "cowork-orchestration-adapter",
+    "opencowork-orchestration-adapter",
+    "openclaw-feature-router",
     "model-registry",
     "github-manager",
     "project-operations-manager",

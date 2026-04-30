@@ -122,6 +122,19 @@ The concrete skill references now live under:
 - `skills/deep-research-swarm/references/SKILL_COMBINATION_MATRIX.md`
 - `skills/deep-research-swarm/references/CHALLENGE_SUITE.md`
 - `skills/deep-research-swarm/references/WORKER_VERDICT_SCHEMA.md`
+- `skills/openclaw-orchestration-proof-router/references/OPENCLAW_WORKFLOW_AND_VERDICT_TEMPLATES.md`
+
+The Claude/Cowork adapter now lives at:
+
+- `skills/cowork-orchestration-adapter/SKILL.md`
+
+The OpenCowork adapter now lives at:
+
+- `skills/opencowork-orchestration-adapter/SKILL.md`
+
+The OpenClaw feature router now lives at:
+
+- `skills/openclaw-feature-router/SKILL.md`
 
 The latest bounded proof note lives under:
 

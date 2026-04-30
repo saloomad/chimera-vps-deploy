@@ -1,0 +1,4 @@
+interface:
+  display_name: "OpenClaw Feature Router"
+  short_description: "Choose the right OpenClaw feature, map it to current Chimera implementation, and point to official docs and opportunities."
+  default_prompt: "Use OpenClaw Feature Router when you need to decide between Lobster, Task Flow, hooks, cron, heartbeats, background tasks, or other OpenClaw features, and explain what Chimera already uses versus what should be added."
