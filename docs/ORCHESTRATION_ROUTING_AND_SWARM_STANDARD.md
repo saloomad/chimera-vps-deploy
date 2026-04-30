@@ -37,6 +37,14 @@ It adds:
 - insight extraction
 - writing pipeline
 
+It now also requires:
+
+- a written `plan.md` before worker fan-out
+- file-first handoffs
+- explicit sub-agent roles
+- targeted reruns instead of whole-swarm restarts
+- a challenge suite for failure testing
+
 ## Model Routing By Role
 
 ### Orchestrator
@@ -85,6 +93,39 @@ The routine live loop:
 - deep ambiguity cases
 - post-trade failure analysis
 - large token or sector comparisons
+
+## Deep Swarm Role Set
+
+Use these roles when a platform supports worker fan-out:
+
+- `swarm-orchestrator`
+- `landscape-scanner`
+- `dimension-researcher`
+- `cross-verifier`
+- `targeted-validator`
+- `insight-synthesizer`
+- `chapter-writer`
+- `assembly-editor`
+- optional `docx-finisher`
+
+## Research Pack
+
+The reusable design notes now live under:
+
+- `research/orchestration/KIMI_ORCHESTRATION_SOURCE_SYNTHESIS_2026-04-30.md`
+- `research/orchestration/BITCOIN_SWARM_CASE_STUDY_2026-04-30.md`
+
+The concrete skill references now live under:
+
+- `skills/deep-research-swarm/references/PLAN_AND_STATE_TEMPLATE.md`
+- `skills/deep-research-swarm/references/SUBAGENT_ROLE_MAP.md`
+- `skills/deep-research-swarm/references/SKILL_COMBINATION_MATRIX.md`
+- `skills/deep-research-swarm/references/CHALLENGE_SUITE.md`
+- `skills/deep-research-swarm/references/WORKER_VERDICT_SCHEMA.md`
+
+The latest bounded proof note lives under:
+
+- `research/orchestration/ORCHESTRATION_CHALLENGE_RESULTS_2026-04-30.md`
 
 ## Pattern Selector For OpenClaw
 

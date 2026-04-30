@@ -40,6 +40,20 @@ Before the first plan phase, classify the task into one of these four shapes:
 
 If the task is not a research/report job, do not force it into the deep swarm.
 
+## File-First State Rule
+
+When work fans out across workers, platforms, or wakes, do not trust chat memory as the state store.
+
+Use files, control notes, checkpoints, or explicit artifacts as the real state.
+
+For `deep research swarm`, that normally means:
+
+- `plan.md`
+- dimension outputs
+- verification output
+- insights output
+- final deliverable output
+
 ## State Contract
 
 Every meaningful pass should be able to restate the current state in this shape:
@@ -133,6 +147,8 @@ For `deep research swarm`, gates should exist between:
 - cross-verification and targeted validation
 - validation and insight extraction
 - insight extraction and writing
+
+If the task is a deep swarm, the plan phase should write the state contract before the first worker fan-out.
 
 For `always-on pipeline`, gates should stay lean:
 

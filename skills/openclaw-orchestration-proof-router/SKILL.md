@@ -59,6 +59,8 @@ Choose for:
 - explicit gates and conditional reruns
 - a visible workflow contract
 
+Think of Lobster as the step graph and dependency engine.
+
 ### Task Flow
 
 Choose for:
@@ -66,6 +68,8 @@ Choose for:
 - durable restartable state
 - workflows that must recover after interruption
 - explicit phase or state-machine ownership
+
+Think of Task Flow as the state owner when restartability matters more than simple sequencing.
 
 ### Heartbeat
 
@@ -75,6 +79,8 @@ Choose for:
 - periodic objective re-checks
 - stall detection and stop rules
 
+Think of heartbeat as the wake-and-check loop, not as the whole orchestration design.
+
 ### Hooks
 
 Choose for:
@@ -82,6 +88,8 @@ Choose for:
 - validation after an agent or step finishes
 - event-driven reactions
 - quality gates tied to specific lifecycle events
+
+Think of hooks as enforcement points around agent or workflow lifecycle events.
 
 ### Cron Or Timers
 
@@ -113,6 +121,8 @@ Use the deep research swarm only when the task is materially bigger than the nor
 - deep ambiguity requiring cross-verification
 - post-trade failure analysis
 
+If the task is a routine live decision, do not route it into a large research swarm unless review proves the ambiguity is unusually deep.
+
 ## Discovery Rules
 
 Before claiming the "right agent" was chosen, check both:
@@ -141,6 +151,15 @@ For complex or ambiguous work, also evaluate:
 - `workflow` or tracker owner
 
 Use one execution-facing worker per real task unit when parallelism is justified.
+
+For swarm-style research on OpenClaw, the natural role set is:
+
+- `orchestrator`
+- `dimension worker`
+- `cross verifier`
+- `targeted validator`
+- `insight synthesizer`
+- `writer` or `assembly editor`
 
 ## Heartbeat Completion Contract
 
