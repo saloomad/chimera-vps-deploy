@@ -29,7 +29,9 @@ Do not assume the live VPS orchestration files live under `/root/openclawtrading
   - deterministic bounded pipelines
 - current status:
   - implemented
+  - partially wired
   - verify live runtime execution separately when the exact workflow matters
+  - verify allowlist or tool exposure separately from file existence
 
 ### Task Flow
 
@@ -41,6 +43,7 @@ Do not assume the live VPS orchestration files live under `/root/openclawtrading
   - durable flow cadence and restart-safe state
 - current status:
   - implemented
+  - verified live
   - should own the routine market-cycle state more clearly than it did before
 
 ### Hooks
@@ -61,7 +64,8 @@ Do not assume the live VPS orchestration files live under `/root/openclawtrading
   - startup, lifecycle, memory, and message routing
 - current status:
   - implemented
-  - event-driven layer is real
+  - partially wired
+  - event-driven layer is real, but workspace hooks still need explicit enablement to be live
 
 ### Cron
 
@@ -71,14 +75,23 @@ Do not assume the live VPS orchestration files live under `/root/openclawtrading
   - exact-time isolated wake-up
 - current status:
   - implemented
+  - opportunity only until real jobs are active
 
 ### Heartbeat
 
 - current role:
   - continuation or stall detection
 - current status:
-  - implemented in specific routes
+  - documented only or route-specific
   - should not be confused with the whole orchestration design
+
+### Standing Orders
+
+- current role:
+  - durable authority and recurring operating boundaries
+- current status:
+  - implemented in instructions
+  - partially wired live because some OpenClaw instruction surfaces still need freshness cleanup
 
 ## Underused Or Worth Promoting
 

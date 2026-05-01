@@ -15,6 +15,13 @@ Mandatory process:
 
 `plan -> execute -> review -> repeat`
 
+Rules:
+
+- plan defines the `ultimate objective`, the current bounded slice, and the done contract
+- review may say `complete`, `iterate`, or `blocked`
+- use `complete` only when the real user objective is done
+- if one slice lands but the broader mission is still open, the correct outcome is `iterate`
+
 Default starter stack for meaningful software work:
 
 1. `prompt-upgrade-engineer`

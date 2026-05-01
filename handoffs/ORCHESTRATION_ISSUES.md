@@ -43,3 +43,17 @@ Each issue should capture:
 - `next_fix`: run the new scenario loop against real future sessions and promote dedicated `test-writer`, `safe-refactor`, and `safe-migration` skills if the pattern repeats
 - `prevention_change`: added starter-stack rules, monitoring scorecard guidance, platform AGENTS updates, shared skill mirrors, and a durable operator-improvement workflow
 - `status`: fixed in instruction and workflow layer, real-session iteration still open
+
+## 2026-05-02 - Mini-Goal Mistaken For Objective Completion
+
+- `date`: 2026-05-02
+- `issue`: orchestration closed a bounded implementation slice as if it were the user's true objective
+- `symptom`: a heartbeat was deleted and the run was described as complete even though the broader user request still explicitly required more building, testing, and iteration
+- `root_cause`: the skill described the loop and done contract, but it did not force a strong enough distinction between the user's `ultimate objective` and the current bounded slice
+- `missed_trigger_or_wrong_rule`: `complete` was allowed to drift toward `slice complete` instead of staying reserved for `ultimate objective complete`
+- `impact`: the system could stop early, announce completion too strongly, and force the user to reopen the larger objective manually
+- `proof`: local and shared `objective-orchestration-loop` plus Windows Codex instruction layers now explicitly track `ultimate_objective` vs `current_slice`, require `iterate` when only a slice is done, and reserve heartbeat stop for the real objective
+- `owner`: `architect-codex`
+- `next_fix`: run future scenario tests where one strong slice lands inside a broader build-and-iterate request, and verify the system keeps the larger objective open
+- `prevention_change`: added an objective hierarchy rule, updated the state contract and review semantics, and tightened heartbeat stop language around the real objective
+- `status`: fixed in instruction layer, real-session validation next

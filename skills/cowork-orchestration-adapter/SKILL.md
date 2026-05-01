@@ -35,11 +35,13 @@ Before using this adapter, also read:
 
 ## Cowork-Specific Rules
 
+- run the orchestration precheck on every meaningful request, even when the final route stays light
 - start by deciding whether the task is really a deep swarm or should stay a lighter loop
 - if the task is a deep swarm, write or review the `plan.md` first
 - use the verdict schema for cheap worker decisions
 - let Codex own durable local file implementation when real repo edits are needed
 - let OpenClaw/Kimi own live runtime truth when operational claims matter
+- prefer Claude Code hooks and slash commands for enforcement when the local Cowork surface supports them
 
 ## Output Contract
 

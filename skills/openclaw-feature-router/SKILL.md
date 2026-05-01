@@ -28,6 +28,7 @@ Use this skill when the question is:
 - `references/CURRENT_CHIMERA_IMPLEMENTATION_MAP.md`
 - `references/PROBLEM_TO_FEATURE_MAP.md`
 - `references/OFFICIAL_OPENCLAW_DOCS.md`
+- `references/OPENCLAW_PLATFORM_ENFORCEMENT_2026-05-01.md`
 - `openclaw-orchestration-proof-router`
 
 ## Core Rule
@@ -40,6 +41,13 @@ Always separate:
 2. when to use it
 3. what Chimera already has on disk or live
 4. what is still only an opportunity
+
+Also say whether the feature should be:
+
+- suggested only
+- documented and prepared
+- enabled now
+- routed to another platform because this runtime is the wrong owner
 
 ## Plain-English Feature Roles
 
@@ -61,6 +69,21 @@ Always separate:
   - always-on behavior rules in bootstrap or `AGENTS.md`
 - `ACP`
   - external coding harness session
+
+## Feature Suggestion Rule
+
+When the task touches workflow, repetition, scheduling, event reactions, durable state, or approval gates, suggest the best OpenClaw feature explicitly.
+
+Good examples:
+
+- repeating step graph with checkpoints -> `Lobster`
+- durable state across runs or restarts -> `Task Flow`
+- event-driven enforcement -> `Hooks`
+- exact-time wake-up -> `Cron`
+- durable authority plus rules -> `Standing orders`
+- detached work audit, cancel, notify, maintenance -> `Background tasks`
+
+Do not leave the system at “manual chat logic only” when a stronger OpenClaw primitive is a better fit.
 
 ## Mandatory Answer Shape
 

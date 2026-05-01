@@ -25,6 +25,39 @@ The default loop for meaningful work is:
 
 But the skill must first decide whether that full loop is actually needed.
 
+Important:
+
+- `complete` means the user's real end objective is done
+- it does **not** mean one bounded slice or mini-goal finished
+- if one slice lands but the real objective is still open, the correct review outcome is `iterate`
+
+Do not silently shrink the user's objective into whatever slice happened to be convenient in the current pass.
+
+## Objective Hierarchy Rule
+
+For any multi-pass task, the skill must track **two levels** of goal:
+
+1. `ultimate_objective`
+   - the real user-requested end state
+   - this is the thing that decides whether orchestration is truly done
+
+2. `current_slice`
+   - the bounded iteration being worked right now
+   - this can finish many times before the ultimate objective is done
+
+The skill must never treat `current_slice complete` as `ultimate_objective complete`.
+
+Examples:
+
+- if the user wants `build, test, iterate until the system is good enough`, then:
+  - adding one module is a slice
+  - proving one symbol is a slice
+  - the objective is only complete when the broader testing-and-iteration contract is satisfied
+
+- if the user wants `compare these repos and implement the highest-value first slice`, then:
+  - that first slice can be a real completion
+  - but only if the original wording actually limited the objective to that slice
+
 ## Mandatory Per-Message Precheck
 
 Before every non-trivial reply, decide one of these orchestration decisions:
@@ -138,12 +171,14 @@ For `deep research swarm`, that normally means:
 
 Every meaningful pass should be able to restate the current state in this shape:
 
-- `objective`
+- `ultimate_objective`
+- `current_slice`
 - `orchestration_class`
 - `chosen_path`
 - `current_phase`
 - `current_reality`
-- `done_criteria`
+- `objective_done_criteria`
+- `slice_done_criteria`
 - `last_proof`
 - `next_step`
 - `stop_condition`
@@ -154,6 +189,15 @@ Use `review_outcome` with only:
 - `complete`
 - `iterate`
 - `blocked`
+
+Interpret them strictly:
+
+- `complete`
+  - the `ultimate_objective` is done
+- `iterate`
+  - the current slice finished or moved the work, but the `ultimate_objective` is still open
+- `blocked`
+  - the `ultimate_objective` cannot safely continue without something external
 
 For multi-pass bounded builds and deep research swarms:
 
@@ -170,7 +214,8 @@ For direct tasks:
 
 Always begin by deciding:
 
-- what the real objective is
+- what the real user objective is
+- what the current bounded slice is
 - which orchestration class fits it
 - what counts as done
 - which platform should own each part
@@ -181,11 +226,13 @@ Always begin by deciding:
 
 Plan output must name:
 
-- objective
+- ultimate objective
+- current slice
 - orchestration class
 - chosen path
 - current reality
-- done criteria
+- objective done criteria
+- slice done criteria
 - last proof
 - current phase
 - next execution step
@@ -241,9 +288,18 @@ Review decides one of only three outcomes:
 2. `iterate`
 3. `blocked`
 
+Review must not confuse slice completion with objective completion.
+
+If a bounded implementation slice is done but the broader requested mission still requires more building, testing, or iteration:
+
+- do **not** say `complete`
+- say `iterate`
+- restate the next slice against the same `ultimate_objective`
+
 Review must check:
 
 - did the objective actually move
+- did only the slice complete, or did the real objective complete
 - did the files or runtime really change
 - did the proof step match the claim
 - did the output meet the minimum quality bar

@@ -74,9 +74,11 @@ Before each meaningful reply, also run the orchestration precheck and say:
 
 Rules:
 
-- plan defines objective, done criteria, platform, and route
+- plan defines the `ultimate objective`, the current bounded slice, done criteria, platform, and route
 - execute does the next bounded real step
 - review decides `complete`, `iterate`, or `blocked`
+- only use `complete` when the real user objective is done
+- if a slice finished but the broader mission is still open, the correct outcome is `iterate`
 - do not stop at partial progress unless review says blocked or approval is needed
 
 ## KNOWLEDGE WIKI RULE
@@ -127,7 +129,7 @@ When a non-trivial objective in Codex will need more than one pass:
 6. for passes around `8` to `15` minutes, prefer a `15` minute wake
 7. use `30` minutes only when the next pass is truly long-running or mostly waiting on something external
 8. keep it cheap first and concise
-9. stop it when the objective is `complete`
+9. stop it only when the `ultimate objective` is `complete`
 10. stop it when the objective is `blocked`
 11. stop it after `3` consecutive wakes with no meaningful visible progress
 12. after that stop, require fresh manual input from Sal before any further attempts
@@ -159,7 +161,8 @@ When these cues appear:
 1. classify the work into the orchestration classes in `objective-orchestration-loop`
 2. if more than one pass is likely, create or update the current-thread heartbeat
 3. choose cadence from expected pass duration, not habit
-4. keep using `plan -> execute -> review -> repeat` until review says `complete` or `blocked`
+4. keep using `plan -> execute -> review -> repeat` until review says the `ultimate objective` is `complete` or `blocked`
+5. if a mini-goal or slice lands but the real objective remains open, record `iterate` and continue
 
 Cadence guardrails:
 

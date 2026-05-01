@@ -35,12 +35,14 @@ Before using this adapter, also read:
 
 ## OpenCowork-Specific Rules
 
+- run the orchestration precheck on every meaningful request, even when the final route stays light
 - start by deciding whether the task is really a `deep research swarm` or should stay a lighter loop
 - if it is a deep swarm, write or review the `plan.md` first
 - use the verdict schema for cheap worker decisions and rerun rules
 - let Codex own durable repo edits unless OpenCowork is the confirmed editing owner
 - let OpenClaw or Kimi own live runtime truth when operational claims matter
 - be honest that the current OpenCowork setup is verified mainly as config plus docs, not as a fully proven native skill auto-load path
+- be honest that a native OpenCowork hook surface is not separately verified in the current evidence set
 
 ## Output Contract
 
