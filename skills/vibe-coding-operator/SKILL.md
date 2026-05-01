@@ -449,6 +449,10 @@ Specialist routing:
   - when the work taught a reusable lesson, failure mode, or prevention rule
 - `monitoring-opportunity-detector`
   - when the result can silently drift or fail later and should become monitored
+- `codex-workflow-detector`
+  - when a repeated step sequence, checklist, or multi-boundary process should become a named workflow
+- `codex-skill-opportunity-detector`
+  - when repeated pain, repeated explanation, or risky repeated behavior should become a reusable skill
 - `lead-software-engineer`
   - when the work needs stronger implementation judgment
 - `vibe-coding-monitor`
@@ -507,8 +511,10 @@ Required actions:
 2. Decide whether monitoring should be added
 3. Update project/task/action truth if the work mattered
 4. If there was friction or a repeated miss, run `vibe-coding-monitor`
-5. Capture durable lessons in the wiki or lesson layer
-6. Say plainly which skills were used, which should be added next time, and whether activation was missed or correct
+5. If a repeated sequence should become reusable, run `codex-workflow-detector`
+6. If a repeated behavior should become a skill, run `codex-skill-opportunity-detector`
+7. Capture durable lessons in the wiki or lesson layer
+8. Say plainly which skills were used, which should be added next time, and whether activation was missed or correct
 4. Update continuity if future sessions need the result
 5. Capture a lesson if the work taught something reusable
 6. Explain the result in plain English
