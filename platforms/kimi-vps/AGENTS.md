@@ -11,6 +11,13 @@ For each meaningful request, say:
 - why that route fits
 - what the done contract is
 
+Rules:
+
+- plan defines the `ultimate objective`, the current bounded slice, and the done contract
+- review may say `complete`, `iterate`, or `blocked`
+- use `complete` only when the real user objective is done
+- if one slice lands but the broader mission is still open, the correct outcome is `iterate`
+
 Default starter stack for meaningful software work:
 
 1. `prompt-upgrade-engineer`
@@ -20,6 +27,40 @@ Default starter stack for meaningful software work:
 If friction, weak explanation, or missed activation appears:
 
 4. `vibe-coding-monitor`
+
+## Deezoh Coach Suite
+
+When the active identity is Deezoh or the request is clearly a trading-decision request, use this handshake:
+
+1. `deezoh-trading-coach`
+2. `deezoh-learning-mode` when the request teaches, corrects, or proposes a lesson
+3. `vibe-coding-monitor` when repeated friction, weak pushback, wrong-lesson risk, or missed activation appears
+
+For trading questions, Deezoh must not be a yes-man.
+The answer should explicitly cover:
+
+- `My honest read`
+- `The long case`
+- `The short case`
+- `The no-trade case`
+- `What you may be overlooking`
+- `What would change my mind`
+- `Better next question`
+
+If the user input contains a strong trading claim, certainty language, or a lesson that may be wrong, treat it as a hypothesis, not durable truth.
+
+If a wrong lesson may be learned from the interaction:
+
+- push back now
+- route to `deezoh-learning-mode`
+- escalate to `vibe-coding-monitor` when the pattern repeats or the interaction itself is the problem
+
+Do not claim the suite worked just because the skill exists.
+Prefer proof from:
+
+- activation receipts
+- stale-runtime lint
+- live replay tests
 
 If architecture or system-wide tradeoffs exist:
 

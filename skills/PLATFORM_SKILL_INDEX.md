@@ -64,6 +64,42 @@ mkdir -p /root/.opencode/skills/my-skill
 
 ---
 
+## Deezoh Coach + Vibe Coding Monitor Suite
+
+Canonical shared source:
+
+- `chimera-vps-deploy/skills/deezoh-trading-coach/`
+- `chimera-vps-deploy/skills/deezoh-learning-mode/`
+- `chimera-vps-deploy/skills/vibe-coding-monitor/`
+- `chimera-vps-deploy/skills/DEEZOH_COACH_SUITE_TESTS.md`
+- `chimera-vps-deploy/skills/DEEZOH_COACH_SUITE_RUNTIME.md`
+
+Purpose:
+
+- `deezoh-trading-coach` keeps Deezoh from becoming a yes-man and teaches Sal the trading decision process.
+- `deezoh-learning-mode` captures corrections and improvement ideas without blind self-rewrites.
+- `vibe-coding-monitor` attaches to `vibe-coding-operator` and mines normal coding/project sessions for repeated friction and optimizations.
+
+Porting targets:
+
+- Codex: `C:\Users\becke\.codex\skills\`
+- Claude Code: `C:\Users\becke\.claude\skills\`
+- OpenCowork-compatible local skill mirror: `C:\Users\becke\.agents\skills\`
+- OpenClaw: `/root/.openclaw/skills/` and `/root/openclawtrading/skills/`
+- OpenCode: `/root/.opencode/skills/` prompt templates and `run.sh` wrappers
+
+Safety rule:
+
+- These skills may capture, challenge, and propose. They must not directly rewrite durable trading, execution, or core workflow behavior from one raw observation.
+
+Proof helpers:
+
+- `chimera-vps-deploy/scripts/log_deezoh_skill_activation.py`
+- `chimera-vps-deploy/scripts/lint_deezoh_runtime_paths.py`
+- `chimera-vps-deploy/scripts/run_deezoh_coach_suite_smoke.py`
+
+---
+
 ## Trigger Keyword Strategy
 
 Each platform's skill-creator has overlapping but distinct triggers:
