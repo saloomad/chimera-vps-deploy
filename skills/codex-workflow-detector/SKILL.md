@@ -24,6 +24,7 @@ Create or update a workflow when:
 5. a skill needs a step-by-step companion
 6. the same conversation pattern keeps producing the same friction
 7. a workflow now matters enough to be promoted across platforms
+8. Sal keeps having to remind agents how to explain or close out the same kind of work
 
 ## Read First
 
@@ -37,7 +38,7 @@ Create or update a workflow when:
 
 - `workflows/codex/`
 - `workflows/openclaw/`
-- `.claude/skills/<related-skill>/SKILL.md` when the workflow should be referenced by a skill
+- `C:\Users\becke\.codex\skills\<related-skill>\SKILL.md` when the workflow should be referenced by a skill
 - `docs/` when the workflow needs a broader explanation
 - `chimera-vps-deploy/skills/` when the resulting skill or workflow should be shared across platforms
 
@@ -52,6 +53,7 @@ Each workflow should define:
 5. when to stop or escalate
 6. whether it is one-pass or loop-until-done
 7. which existing skill or workflow should call it
+8. how the workflow should be explained to Sal in plain English
 
 ## Promotion Rule
 

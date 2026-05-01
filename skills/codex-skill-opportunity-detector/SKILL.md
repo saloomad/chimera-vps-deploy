@@ -24,6 +24,7 @@ Create or update a reusable artifact when any of these are true:
 3. a risky procedure has more than five steps
 4. the same explanation is being repeated
 5. a rule is important enough that forgetting it would create real damage
+6. Sal has to repeatedly correct how the agent explains work, proof, or next steps
 
 ## Read First
 
@@ -53,7 +54,7 @@ Promotion rule:
 
 When this triggers, write to the smallest useful set of:
 
-- `.claude/skills/<new-skill-name>/SKILL.md`
+- `C:\Users\becke\.codex\skills\<new-skill-name>\SKILL.md`
 - `workflows/codex/`
 - `docs/`
 - `tasks/TASK_REGISTRY.md`
@@ -75,3 +76,4 @@ For each captured pattern, leave behind:
 4. where the new artifact lives
 5. what future sessions should do differently
 6. whether the pattern should be shared cross-platform
+7. how the resulting skill should visibly change the user-facing answer

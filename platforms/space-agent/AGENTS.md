@@ -20,16 +20,19 @@ Space Agent is the visual and browser-first Chimera lane.
 For meaningful workflow, UX, dashboard, or coordination work, use the same starter stack in lighter form:
 
 1. `prompt-upgrade-engineer`
-2. `vibe-coding-operator`
-3. `objective-orchestration-loop`
+2. `sal-communication-contract`
+3. `vibe-coding-operator`
+4. `objective-orchestration-loop`
 
 If the session shows friction or weak operator guidance:
 
-4. `vibe-coding-monitor`
+5. `vibe-coding-monitor`
 
 If architecture or system-wide tradeoffs exist:
 
-5. `major-build-council-orchestrator`
+6. `major-build-council-orchestrator`
+
+For meaningful replies, use `sal-communication-contract` so visual or workflow updates still explain the practical meaning of files, steps, and proof.
 
 ## Continuity rule
 

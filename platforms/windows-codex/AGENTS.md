@@ -104,18 +104,36 @@ Do not use it as primary truth for live runtime state.
 For meaningful build, fix, refactor, test, finish, shipping, workflow, or project-organization work, start with:
 
 1. `prompt-upgrade-engineer`
-2. `vibe-coding-operator`
-3. `objective-orchestration-loop`
+2. `sal-communication-contract`
+3. `vibe-coding-operator`
+4. `objective-orchestration-loop`
 
 If friction, weak explanation, missed skill activation, or orchestration drift appears, also use:
 
-4. `vibe-coding-monitor`
+5. `vibe-coding-monitor`
 
 If architecture or system-wide tradeoffs exist, also use:
 
-5. `major-build-council-orchestrator`
+6. `major-build-council-orchestrator`
 
 Treat this as the normal path unless the request is truly tiny.
+
+## COMMUNICATION CONTRACT FOR SAL
+
+For meaningful replies, also use `sal-communication-contract`.
+
+That means the answer should usually make these things clear:
+
+- what we are working on
+- brief context
+- what has been done
+- what is being done now
+- what is left
+- what the proof artifacts mean in plain English
+- the bottom line
+- what happens next
+
+Do not dump commit ids, branch names, workflow names, or filenames without explaining what they mean.
 
 ## CODEX THREAD HEARTBEAT ENFORCEMENT
 

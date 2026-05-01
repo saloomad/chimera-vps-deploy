@@ -7,13 +7,18 @@ Use this file to choose the right workflow loop for the task.
 For meaningful software and workflow requests, start with:
 
 1. `prompt-upgrade-engineer`
-2. `vibe-coding-operator`
-3. `objective-orchestration-loop`
+2. `sal-communication-contract`
+3. `vibe-coding-operator`
+4. `objective-orchestration-loop`
 
 Add:
 
-4. `major-build-council-orchestrator` when real tradeoffs exist
-5. `vibe-coding-monitor` when friction, misses, or weak explanation appear
+5. `major-build-council-orchestrator` when real tradeoffs exist
+6. `vibe-coding-monitor` when friction, misses, or weak explanation appear
+
+Communication rule:
+
+- do not cite a file, commit, branch, workflow, or detector without explaining what it is and why it matters
 
 ## Workflow Categories
 

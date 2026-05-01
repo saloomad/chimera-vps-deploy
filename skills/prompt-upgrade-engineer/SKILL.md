@@ -45,6 +45,7 @@ The skill should:
 - surface the few real forks that matter
 - point the next agent to the right proof path
 - make prompt enhancement visible when it materially changed the working brief
+- prepare the reply so Sal gets context, explanation, and a short conclusion instead of artifact dumps
 
 The skill should not:
 - hide uncertainty with polished wording
@@ -191,6 +192,7 @@ When this skill is used, produce an internal brief with:
 23. `user_visible_marker`
 24. `user_visible_summary`
 25. `rewritten_instruction_for_agent`
+26. `reply_shape_for_sal`
 
 For tiny direct asks, this can collapse into a short internal brief as long as the pass still happened.
 
@@ -212,6 +214,12 @@ For tiny direct asks, this can collapse into a short internal brief as long as t
 - one short line saying what the enhancement materially added
 - example:
   - `Added: objective, done criteria, proof path`
+
+`reply_shape_for_sal` means:
+- the brief reminder the next agent should give Sal at the start
+- what terms probably need definition
+- what proof artifacts need translation into plain English
+- what short conclusion should exist at the end
 
 ## Best Execution Shape
 
@@ -279,3 +287,4 @@ This skill is successful when:
 - unnecessary confusion and drift are reduced before execution starts
 - the transformation can be explained afterward in plain English if Sal asks what changed
 - when the pass materially helped, the user can also see that it happened through a short visible marker instead of having to trust hidden internal behavior
+- the next reply is easier for Sal to follow without opening files or decoding jargon

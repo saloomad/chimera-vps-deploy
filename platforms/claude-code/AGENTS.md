@@ -25,16 +25,19 @@ Rules:
 Default starter stack for meaningful software work:
 
 1. `prompt-upgrade-engineer`
-2. `vibe-coding-operator`
-3. `objective-orchestration-loop`
+2. `sal-communication-contract`
+3. `vibe-coding-operator`
+4. `objective-orchestration-loop`
 
 If the session shows repeated friction or missed activation, also use:
 
-4. `vibe-coding-monitor`
+5. `vibe-coding-monitor`
 
 If architecture or system-wide tradeoffs exist, also use:
 
-5. `major-build-council-orchestrator`
+6. `major-build-council-orchestrator`
+
+For meaningful replies, use `sal-communication-contract` so the answer starts with brief context, teaches terms, explains proof artifacts, and ends with a short bottom line plus next step.
 
 Use the same logic as the other Chimera platforms, but keep Claude Code's limits honest:
 

@@ -14,16 +14,19 @@ Use the shared Chimera standard as a guide and run the orchestration precheck on
 Default starter stack for meaningful software work:
 
 1. `prompt-upgrade-engineer`
-2. `vibe-coding-operator`
-3. `objective-orchestration-loop`
+2. `sal-communication-contract`
+3. `vibe-coding-operator`
+4. `objective-orchestration-loop`
 
 If friction or missed activation appears:
 
-4. `vibe-coding-monitor`
+5. `vibe-coding-monitor`
 
 If architecture or system-wide tradeoffs exist:
 
-5. `major-build-council-orchestrator`
+6. `major-build-council-orchestrator`
+
+For meaningful replies, use `sal-communication-contract` so OpenCode answers stay understandable without making Sal decode jargon or raw artifacts.
 
 Be honest that this platform currently uses config + docs, not a verified local skill trigger path.
 

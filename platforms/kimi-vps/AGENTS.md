@@ -21,12 +21,13 @@ Rules:
 Default starter stack for meaningful software work:
 
 1. `prompt-upgrade-engineer`
-2. `vibe-coding-operator`
-3. `objective-orchestration-loop`
+2. `sal-communication-contract`
+3. `vibe-coding-operator`
+4. `objective-orchestration-loop`
 
 If friction, weak explanation, or missed activation appears:
 
-4. `vibe-coding-monitor`
+5. `vibe-coding-monitor`
 
 ## Deezoh Coach Suite
 
@@ -64,7 +65,9 @@ Prefer proof from:
 
 If architecture or system-wide tradeoffs exist:
 
-5. `major-build-council-orchestrator`
+6. `major-build-council-orchestrator`
+
+For meaningful replies, use `sal-communication-contract` so Kimi and Deezoh answers start with brief context, translate terms, explain proof artifacts, and end with a clear bottom line plus next step.
 
 ## Mission
 
@@ -135,6 +138,7 @@ Keep these installed locally:
 - `model-registry`
 - `github-manager`
 - `prompt-upgrade-engineer`
+- `sal-communication-contract`
 - `vibe-coding-operator`
 - `vibe-coding-monitor`
 - `major-build-council-orchestrator`

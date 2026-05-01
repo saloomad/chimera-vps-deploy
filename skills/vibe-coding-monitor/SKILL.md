@@ -33,6 +33,11 @@ Look for:
 - stale source-of-truth
 - agent made Sal open files to understand the result
 - too much jargon
+- jargon used without definition
+- commit, branch, workflow, detector, or PM terms used without translation
+- proof dumped as filenames or commit ids without explanation
+- no brief context at the start of the answer
+- no end summary or next step
 - too many options when a recommendation was needed
 - hidden assumptions
 - repeated handoff drift
@@ -159,6 +164,7 @@ Intervene now when:
 - a stale claim is being reused as truth
 - a repeated user frustration is being explained away instead of fixed
 - a skill that should have activated clearly did not
+- the answer is technically correct but not understandable without opening files
 
 The intervention should be short and actionable:
 
@@ -202,6 +208,13 @@ Ask these before closeout when the session was meaningful:
 - what should Sal say next time to get a better result faster
 - what should the agent or skill layer change so Sal does not need to say it next time
 
+Also ask:
+
+- did the reply remind Sal what we were working on
+- were proof artifacts explained in plain English
+- was every important term translated instead of assumed
+- could Sal understand the result without opening files
+
 ## Discoverability And Iteration
 
 Use this monitor to improve discoverability too.
@@ -213,6 +226,17 @@ Check:
 - is the trigger language too narrow
 - does a small scenario suite exist for the main use cases
 - did a platform-specific mirror drift from the shared rule
+
+## Frustration Learning Rule
+
+When Sal is frustrated about explanation quality, treat that as a candidate durable lesson.
+
+If the complaint is valid and reusable:
+
+- capture it as `interaction_learning_gap`
+- say what the agent did wrong in plain English
+- propose the smallest instruction or skill change that would prevent it
+- prefer updating `sal-communication-contract`, `vibe-coding-operator`, or platform `AGENTS.md` over writing a dead-end report
 
 ## Council Review Mode
 

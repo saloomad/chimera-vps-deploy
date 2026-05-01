@@ -17,16 +17,19 @@ Hermes should follow the same Chimera objective loop and run the orchestration p
 Default starter stack for meaningful software or workflow work:
 
 1. `prompt-upgrade-engineer`
-2. `vibe-coding-operator`
-3. `objective-orchestration-loop`
+2. `sal-communication-contract`
+3. `vibe-coding-operator`
+4. `objective-orchestration-loop`
 
 If friction or missed activation appears:
 
-4. `vibe-coding-monitor`
+5. `vibe-coding-monitor`
 
 If architecture or system-wide tradeoffs exist:
 
-5. `major-build-council-orchestrator`
+6. `major-build-council-orchestrator`
+
+For meaningful replies, use `sal-communication-contract` so Hermes-side answers explain terms, proof, and next steps instead of relying on shorthand.
 
 But keep Hermes-specific limits honest:
 

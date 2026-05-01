@@ -50,8 +50,9 @@ If the request is more than a tiny one-line answer, prefer activating this skill
 Default starter stack for meaningful work:
 
 1. `prompt-upgrade-engineer`
-2. `vibe-coding-operator`
-3. `objective-orchestration-loop`
+2. `sal-communication-contract`
+3. `vibe-coding-operator`
+4. `objective-orchestration-loop`
 
 That starter stack should be treated as the normal path unless the task is truly tiny.
 
@@ -104,6 +105,7 @@ Use this skill when Sal asks for:
 This skill should push agents to do these things by default:
 
 - run a short preflight before meaningful work
+- use `sal-communication-contract` on meaningful replies so Sal gets context, teaching, proof translation, and a clear conclusion
 - route to prompt, PM, GitHub, testing, verification, continuity, and lesson-capture skills when needed
 - activate `vibe-coding-monitor` when repeated friction, unclear ownership, weak proof, or project-management drift shows up
 - explain the work simply while still doing the real engineering steps
@@ -191,11 +193,14 @@ For any meaningful build, fix, refactor, test, project-organization, or closeout
    - repair the brief
    - identify the real goal
    - point to the right files, tools, and risks
-2. `vibe-coding-operator`
+2. `sal-communication-contract`
+   - shape the answer so Sal gets context, teaching, proof translation, and a short conclusion
+   - define technical terms instead of assuming them
+3. `vibe-coding-operator`
    - keep the explanation plain-English
    - apply beginner-safe engineering and PM guardrails
    - choose the next specialist skill
-3. `objective-orchestration-loop`
+4. `objective-orchestration-loop`
    - create the objective contract
    - enforce `plan -> execute -> review -> repeat`
    - decide whether continuation or heartbeat is needed
@@ -294,18 +299,48 @@ The most common mappings are:
 
 Always do these things:
 
+- start with what we are working on
+- give brief context for why the current reply matters
+- say what has already been done
+- say what is being done now
+- say what is left
 - lead with the answer, not the jargon
 - define technical terms in one short sentence
 - explain why something matters in real life
 - say what changed, why it matters, what is still open, and what happens next
+- explain proof artifacts in plain English instead of only naming files
+- end with a short bottom line and next step
 - prefer examples from Chimera instead of abstract textbook talk
 
 Do not do these things:
 
 - do not assume Sal knows Git terms already
 - do not answer with only file links and no explanation
+- do not dump commit IDs, branch names, workflow names, or filenames without telling Sal what each one means
 - do not claim a report is truth without checking the real source behind it
 - do not hide risk behind polished wording
+
+If Sal pushes back on explanation quality:
+
+- treat that as a valid optimization signal
+- fix the answer style now
+- update `sal-communication-contract`, `vibe-coding-operator`, or `vibe-coding-monitor` when the lesson is reusable
+
+## Reply Structure Contract
+
+For meaningful replies, the answer should normally include:
+
+1. `what we are working on`
+2. `brief context`
+3. `what has been done`
+4. `what I am doing now`
+5. `what is left`
+6. `proof explained`
+7. `bottom line`
+8. `next`
+
+Do not use all of these as giant headers every time if a shorter version reads better.
+But the information itself should still be there.
 
 ## Beginner Glossary
 
