@@ -1,17 +1,79 @@
 ---
 name: objective-orchestration-loop
-description: Run every meaningful task through a mandatory plan, execute, review loop until review says the objective is complete, blocked, or needs escalation. Use for orchestration-class selection, phase control, heartbeat continuation, quality gates, and platform-optimized model routing.
+description: Run every meaningful task through a visible orchestration precheck, then choose the lightest honest route: direct answer, bounded loop, deep swarm, or always-on pipeline.
 ---
 
 # Objective Orchestration Loop
 
-Use this skill for any non-trivial task.
+Use this skill on every message as a decision layer, not only on large tasks.
 
-The default rule is:
+The model should always do a fast orchestration precheck, then say plainly:
+
+- whether full orchestration is needed
+- which orchestration class fits
+- why that route fits better than the main alternatives
+- what the done contract is
+
+Do not silently skip this thinking for meaningful work.
+Do not pretend a full loop ran when the direct route was the right choice.
+
+## Core Rule
+
+The default loop for meaningful work is:
 
 `plan -> execute -> review -> repeat until complete`
 
-Do not stop after one pass just because code changed or a report was written.
+But the skill must first decide whether that full loop is actually needed.
+
+## Mandatory Per-Message Precheck
+
+Before every non-trivial reply, decide one of these orchestration decisions:
+
+1. `direct response`
+   - the ask is small, self-contained, and should finish in one pass
+   - no durable orchestration state is worth creating
+
+2. `light orchestration`
+   - still one pass, but the answer should show objective, route, and done contract
+   - good for analysis, advice, comparisons, and bounded planning
+
+3. `bounded build`
+   - several real steps are needed
+   - use the full `plan -> execute -> review` loop
+
+4. `deep research swarm`
+   - evidence-heavy research across dimensions with verification and synthesis
+   - use the separate `deep-research-swarm` skill
+
+5. `always-on pipeline`
+   - recurring monitor or runtime loop
+   - use the platform-native scheduler, flow, or runtime automation when available
+
+The model should choose the lightest route that is still honest and sufficient.
+
+## Automatic Trigger Cues
+
+Treat the full loop as mandatory when the user asks for continued follow-through, not only when they name the skill.
+
+Auto-trigger the stronger orchestration path when the request includes cues like:
+
+- `continue until complete`
+- `continue until done`
+- `keep going`
+- `until the objective is achieved`
+- `until the contract is achieved`
+- `do not stop`
+- `stay on this`
+- `use orchestration`
+- `keep checking`
+- `follow through`
+- `work it until done`
+
+When these cues appear:
+
+- classify the orchestration shape before doing more work
+- write or restate the done contract
+- decide whether a continuation path is required on the current platform
 
 ## First Decision: Pick The Right Orchestration Class
 
@@ -23,22 +85,40 @@ Before the first plan phase, classify the task into one of these four shapes:
    - no recurring continuation path needed
 
 2. `bounded build`
-   - several implementation steps
-   - may need heartbeats, retries, or proof loops
+   - several implementation or verification steps
+   - may need retries, proof loops, or continuation
    - still centered on one concrete objective
+   - may need a file-backed `plan.md`
 
 3. `deep research swarm`
    - evidence-heavy research, thesis building, postmortems, large comparisons
    - multiple research dimensions
    - explicit verification and synthesis phases
-   - use the separate `deep-research-swarm` skill
 
 4. `always-on pipeline`
    - recurring monitor, watcher, or trading loop
    - should stay lean and stateful
    - must not turn every cycle into a full research swarm
 
-If the task is not a research/report job, do not force it into the deep swarm.
+If the task is not a research or report job, do not force it into the deep swarm.
+
+## Transparency Contract
+
+For any meaningful task, the user should be able to see the contract without opening files.
+
+Use this visible structure in the reasoning and, when helpful, in the user-facing answer:
+
+- `orchestration_decision`
+- `orchestration_class`
+- `reason_for_route`
+- `objective`
+- `done_contract`
+- `dimensions` when the work truly has several separable dimensions
+- `current_phase`
+- `next_step`
+- `review_outcome`
+
+Read `references/TRANSPARENCY_CONTRACT.md` for the compact output shape.
 
 ## File-First State Rule
 
@@ -60,13 +140,29 @@ Every meaningful pass should be able to restate the current state in this shape:
 
 - `objective`
 - `orchestration_class`
+- `chosen_path`
 - `current_phase`
 - `current_reality`
+- `done_criteria`
 - `last_proof`
 - `next_step`
 - `stop_condition`
+- `review_outcome`
 
-Use files, state notes, control files, or checkpoints when the task spans platforms or wakes.
+Use `review_outcome` with only:
+
+- `complete`
+- `iterate`
+- `blocked`
+
+For multi-pass bounded builds and deep research swarms:
+
+- keep this contract in a short file-backed `plan.md`
+- prefer the template at `C:\Users\becke\claudecowork\workflows\codex\OBJECTIVE_PLAN_TEMPLATE.md`
+
+For direct tasks:
+
+- the contract can stay in-chat only
 
 ## Mandatory Phases
 
@@ -79,18 +175,49 @@ Always begin by deciding:
 - what counts as done
 - which platform should own each part
 - which model and reasoning level fit this phase
-- whether a heartbeat or recurring continuation path is needed
+- whether a heartbeat, hook, slash command, Task Flow, Lobster, or scheduler should be involved
+- whether a build council is needed before execution
+- whether a file-backed `plan.md` is required
 
 Plan output must name:
 
 - objective
 - orchestration class
+- chosen path
 - current reality
 - done criteria
 - last proof
+- current phase
 - next execution step
 - review checks
 - stop condition
+
+Workflow choice should also be explicit.
+
+Use:
+
+- `C:\Users\becke\claudecowork\workflows\codex\WORKFLOW_CATALOG.md`
+
+to choose the right loop for:
+
+- direct software work
+- bounded build
+- major build with council
+- project start
+- project finish
+- GitHub publish and shared sync
+- dependency update
+- test failure and proof repair
+- workflow and skill promotion
+- PM/front-door reconciliation
+- trading and operator loops
+
+If a major build or architecture tradeoff exists, route through:
+
+- `major-build-council-orchestrator`
+- `C:\Users\becke\claudecowork\workflows\codex\major-build-council-and-delivery-loop.md`
+
+before normal execution continues.
 
 ### 2. Execute
 
@@ -104,8 +231,7 @@ Execution includes:
 - live runtime checks
 - bounded repairs
 - safe installs
-
-If execution reveals new facts, update the plan and keep going.
+- platform-native configuration
 
 ### 3. Review
 
@@ -120,14 +246,40 @@ Review must check:
 - did the objective actually move
 - did the files or runtime really change
 - did the proof step match the claim
-- should the next pass stay on the same model
-- should the next pass escalate model or reasoning
+- did the output meet the minimum quality bar
+- should the next pass stay on the same route
+- should the next pass escalate model, reasoning, or platform
 
-If review says `iterate`, go back to plan with the new facts and continue.
+## Test And Verification Rule
 
-If review says `blocked`, capture the blocker durably and stop honestly.
+Do not hide testing inside vague “review” language.
 
-## Quality Gate Rule
+For meaningful implementation work, call out:
+
+- `plan`
+- `execute`
+- `test or proof`
+- `review`
+
+If no real test ran, say so plainly.
+
+## Dimensions Rule
+
+Use dimensions only when they make the task easier to reason about.
+
+Good dimension use:
+
+- platform-by-platform research
+- several independent failure modes
+- several evidence lanes that need cross-verification
+- multi-part design decisions like runtime, automation, routing, and UX
+
+Bad dimension use:
+
+- one tiny code fix
+- a simple answer that does not benefit from fan-out
+
+## Quality Gates
 
 Use explicit gates between major phases when the task has enough surface area to drift.
 
@@ -148,8 +300,6 @@ For `deep research swarm`, gates should exist between:
 - validation and insight extraction
 - insight extraction and writing
 
-If the task is a deep swarm, the plan phase should write the state contract before the first worker fan-out.
-
 For `always-on pipeline`, gates should stay lean:
 
 - input freshness
@@ -167,19 +317,18 @@ Start user-facing replies with:
 Rules:
 
 - use the real active model and reasoning level
-- try to read quota or usage from the platform's native CLI or config helper first
 - if the platform does not expose a reliable quota surface, say `quota=not exposed`
 - do not fake hidden model switches
 
-## Model Routing By Phase
+## Platform Feature Routing
 
-Read `references/PLATFORM_PHASE_MATRIX.md` for the platform matrix.
+Read `references/PLATFORM_PHASE_MATRIX.md` for model routing and `references/PLATFORM_ORCHESTRATION_FEATURES_2026-05-01.md` for feature surfaces.
 
-Default routing pattern:
+Key rule:
 
-- `plan`: strongest available planning model with higher reasoning
-- `execute`: cheaper stable implementation model
-- `review`: stronger review model if the result is ambiguous, otherwise stable bounded review model
+- do not claim a hook, heartbeat, or scheduler path exists on a platform unless it is verified there
+- prefer platform-native enforcement when it exists
+- otherwise fall back to skill, file, and handoff enforcement
 
 ## Platform Worker Routing
 
@@ -197,51 +346,32 @@ When the task fans out into several workers, keep these roles distinct:
 Cheap workers are preferred first.
 Escalate only failed or ambiguous slices.
 
-## Phase Escalation Rule
-
-If review says the output is weak:
-
-1. raise reasoning first
-2. split mixed work into cleaner phases
-3. rerun review on a stronger model
-4. rerun execution on a stronger model only if needed
-
-Do not keep looping on the same weak route without explaining why.
-
-## Heartbeat Rule
+## Heartbeat And Automation Rule
 
 If the objective is larger than one pass and the platform supports recurring continuation:
 
-- start or update a heartbeat or recurring automation
+- start or update the native continuation path
 - keep it running until review says `complete` or `blocked`
-- make the heartbeat continue safe approved work only
-- make the heartbeat update continuity, task, and action truth after meaningful progress
+- make it continue safe approved work only
+- make it cheap first
+- stop after repeated no-progress wakes
 
-### Codex Thread Heartbeat Rule
+If the platform does not support native recurring continuation:
+
+- keep the same logic in files and closeout
+- leave behind a durable next-step handoff
+- say plainly that the continuation path is manual or platform-limited
+
+## Codex Thread Heartbeat Rule
 
 When the platform is the Codex desktop app and the objective needs continuation in the current thread:
 
 - create or update a thread heartbeat named `Thread Objective Completion Guard`
-- use a moderate cadence such as every 30 minutes unless the task clearly needs faster follow-up
-- keep the heartbeat concise and cheap first
-- prefer the lowest-cost route that can still do the next bounded step well
-- escalate reasoning or model only if review says the result is weak or ambiguous
+- choose cadence from the expected length of one meaningful pass
+- do not create a heartbeat for a `direct task` that should finish in one pass
 - stop the heartbeat when review says `complete`
 - stop the heartbeat when review says `blocked`
-- stop the heartbeat after `3` consecutive wakes with no meaningful visible progress
-- after that stop, require fresh manual user input before any further attempts
-
-Important:
-
-- a Codex thread heartbeat is attached to one thread, not all future threads
-- therefore the enforcement rule is: any Codex thread that begins a real multi-pass orchestration should create or update its own guarded heartbeat when continuation is needed
-- do not leave a Codex heartbeat running forever
-
-If the platform does not support native recurring continuation:
-
-- still use the same plan/execute/review logic
-- leave behind a durable next-step handoff
-- say plainly that the continuation path is manual or platform-limited
+- stop after `3` consecutive wakes with no meaningful visible progress
 
 ## Always-On Pipeline Rule
 
@@ -257,26 +387,6 @@ The lean pipeline loop should be:
 6. manage the position or state
 7. review and update state
 
-Use `deep-research-swarm` only when the job is materially larger than a normal cycle, such as:
-
-- weekly BTC or market thesis
-- major event-driven setup
-- deep ambiguity needing cross-verification
-- post-trade failure analysis
-
-## Platform Optimization Rule
-
-Keep the same logic across platforms, but adapt to the real local home:
-
-- Windows Codex: `C:\Users\becke\.codex\`
-- Windows Claude Code: `C:\Users\becke\.claude\`
-- OpenCode: `C:\Users\becke\.config\opencode\`
-- Kimi VPS: `/root/.kimi/`
-- OpenClaw workspace: `/root/openclawtrading/` and legacy `.openclaw/workspace` surfaces when still relevant
-- Hermes VPS: `/root/.hermes/`
-
-Do not blindly copy Windows-only paths, CLI assumptions, or automation claims into Linux platforms.
-
 ## Required Closeout
 
 Every meaningful pass should capture:
@@ -285,27 +395,10 @@ Every meaningful pass should capture:
 - platform used
 - model used
 - reasoning used
+- orchestration decision used
 - orchestration class used
 - result quality: `strong`, `acceptable`, or `weak`
 - review outcome: `complete`, `iterate`, or `blocked`
 - next better route if the result was weak
 
-## Good Orchestration Example
-
-`plan: objective = sync Kimi runtime standard`
-
-`execute: install shared skills, bootstrap, continuity files`
-
-`review: Kimi files exist, but fresh startup proof still missing`
-
-`iterate: next pass should run fresh Kimi startup proof`
-
-## Deep Research Example
-
-`plan: objective = build a weekly BTC thesis`
-
-`orchestration_class: deep research swarm`
-
-`gate: do not start synthesis until dimension outputs and cross-verification exist`
-
-`review: only rerun failed or contradictory dimensions`
+If the direct route was chosen, say why the full loop was not worth invoking.

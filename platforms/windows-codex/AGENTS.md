@@ -65,6 +65,13 @@ For every non-trivial objective, use:
 
 `plan -> execute -> review -> repeat`
 
+Before each meaningful reply, also run the orchestration precheck and say:
+
+- whether the full loop is needed
+- which orchestration class fits
+- why that route fits
+- what the done contract is
+
 Rules:
 
 - plan defines objective, done criteria, platform, and route
@@ -72,23 +79,115 @@ Rules:
 - review decides `complete`, `iterate`, or `blocked`
 - do not stop at partial progress unless review says blocked or approval is needed
 
+## KNOWLEDGE WIKI RULE
+
+Use the shared Chimera knowledge wiki at:
+
+- `C:\Users\becke\claudecowork\research\chimera-knowledge-wiki`
+
+Read it early when the task involves:
+
+- prior research
+- building or implementation patterns
+- skills or workflow design
+- architecture decisions
+- contradictions across docs or notes
+
+Update it before closeout when the task creates durable knowledge in those areas.
+
+Do not use it as primary truth for live runtime state.
+
+## DEFAULT STARTER STACK FOR SOFTWARE WORK
+
+For meaningful build, fix, refactor, test, finish, shipping, workflow, or project-organization work, start with:
+
+1. `prompt-upgrade-engineer`
+2. `vibe-coding-operator`
+3. `objective-orchestration-loop`
+
+If friction, weak explanation, missed skill activation, or orchestration drift appears, also use:
+
+4. `vibe-coding-monitor`
+
+If architecture or system-wide tradeoffs exist, also use:
+
+5. `major-build-council-orchestrator`
+
+Treat this as the normal path unless the request is truly tiny.
+
 ## CODEX THREAD HEARTBEAT ENFORCEMENT
 
 When a non-trivial objective in Codex will need more than one pass:
 
 1. create or update a thread heartbeat named `Thread Objective Completion Guard`
 2. use the heartbeat only for the current thread
-3. keep it cheap first and concise
-4. stop it when the objective is `complete`
-5. stop it when the objective is `blocked`
-6. stop it after `3` consecutive wakes with no meaningful visible progress
-7. after that stop, require fresh manual input from Sal before any further attempts
+3. choose the cadence from the expected duration of one meaningful pass instead of using one fixed default
+4. for passes around `1` to `3` minutes, prefer a `5` minute wake
+5. for passes around `3` to `8` minutes, prefer a `10` minute wake
+6. for passes around `8` to `15` minutes, prefer a `15` minute wake
+7. use `30` minutes only when the next pass is truly long-running or mostly waiting on something external
+8. keep it cheap first and concise
+9. stop it when the objective is `complete`
+10. stop it when the objective is `blocked`
+11. stop it after `3` consecutive wakes with no meaningful visible progress
+12. after that stop, require fresh manual input from Sal before any further attempts
 
 Important:
 
 - a Codex heartbeat is thread-attached, so one heartbeat cannot automatically cover all future threads
 - the enforced rule is therefore: if orchestration starts in a new Codex thread and continuation is needed, create or update the guarded heartbeat for that thread too
 - do not let a Codex thread heartbeat run forever
+- if the estimated pass length changes, update the heartbeat instead of keeping a stale cadence
+
+## ORCHESTRATION AUTO-TRIGGER RULE
+
+Treat the following kinds of user wording as an explicit instruction to use `objective-orchestration-loop` without waiting for the user to name the skill:
+
+- `continue until complete`
+- `continue until done`
+- `keep going`
+- `until the objective is achieved`
+- `until the contract is achieved`
+- `do not stop`
+- `stay on this`
+- `use orchestration`
+- `keep checking`
+- `follow through`
+
+When these cues appear:
+
+1. classify the work into the orchestration classes in `objective-orchestration-loop`
+2. if more than one pass is likely, create or update the current-thread heartbeat
+3. choose cadence from expected pass duration, not habit
+4. keep using `plan -> execute -> review -> repeat` until review says `complete` or `blocked`
+
+Cadence guardrails:
+
+- for a `direct task`, do not create a heartbeat just to follow habit
+- for a `deep research swarm`, prefer `15` to `30` minutes based on real synthesis and verification pass length
+- for an `always-on pipeline`, prefer the platform-native scheduler or loop instead of a Codex thread heartbeat when possible
+
+## ORCHESTRATION IMPROVEMENT RULE
+
+If orchestration itself fails, drifts, or misses an obvious continuation cue:
+
+1. capture the issue durably with `issue`, `symptom`, `root_cause`, `missed_trigger_or_wrong_rule`, `impact`, `proof`, `owner`, `next_fix`, and `prevention_change`
+2. fix safe bounded instruction or skill gaps in the same pass when possible
+3. route larger fixes to the right owner:
+   - `architect` for delivery, continuity, heartbeat policy, or automation shape
+   - `architect-codex` for Codex instruction drift, orchestration mechanics, or skill gaps
+   - `orchestrator` for current-task decomposition or review failure
+   - `worker` for a bounded implementation slice that failed inside an otherwise-correct route
+4. store the issue in `C:\Users\becke\claudecowork\chimera-vps-deploy\handoffs\ORCHESTRATION_ISSUES.md` when that shared surface is available, and also mention it in the active `CHECKPOINT_*.md` when it matters to the current run
+5. leave proof that the prevention rule was added so the same miss is less likely next time
+
+Quick proof chain:
+
+- trigger observed
+- class chosen
+- heartbeat created or updated when needed
+- review outcome recorded
+- heartbeat stopped or issue filed
 
 Platforms in this ecosystem:
 - Windows Claude (this session) — C:/Users/becke/claudecowork/
