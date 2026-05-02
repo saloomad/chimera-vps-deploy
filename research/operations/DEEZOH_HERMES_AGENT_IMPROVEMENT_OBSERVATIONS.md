@@ -1035,3 +1035,207 @@ Each hourly run must include:
 - `Q-2026-05-02-34` Repair or replace the chart payload producer because `CHART_ANALYSIS.json` is fresh but still reports `data_quality = MISSING`. Status: queued.
 - `Q-2026-05-02-35` Repair derivatives payload quality because `DERIVATIVES.json` is timestamp-fresh but structurally empty. Status: queued.
 - `Q-2026-05-02-36` Deprecate or rewrite older helper docs that still show old Linux paths or outdated spawn examples after the live behavior is stable. Status: queued.
+
+## 2026-05-02 Chart Analysis Producer Repair
+
+### What Actually Ran
+
+- Traced the active writer of `CHART_ANALYSIS.json` and confirmed it is `scripts/desk_contract_bridge.py`, not the child-agent prose itself.
+- Found that the bridge expects `/root/openclawtrading/reports/auto/CHART_ANALYSIS_latest.json`, but the live chart runner still pointed at retired `/home/open-claw/openclawtrading` paths and the expected generator was missing from the new VPS runtime.
+- Restored a deterministic chart generator under `/root/openclawtrading/scripts/generate_chart_analysis.py`.
+- Rewired `/root/.openclaw/workspace/agents/chart-analyzer/run_chart_analyzer.sh` to current `/root/openclawtrading` paths, current OpenClaw workspace agent path, and the real `mcporter` location when available.
+- Tightened `desk_contract_bridge.py` so fallback OHLCV analysis is labeled `PARTIAL` and cannot mark `zone_confirmed = true` unless a real entry signal or verified/full chart specialist result exists.
+- Rebuilt Deezoh and operator surfaces after the chart repair.
+
+### New Evidence From This Run
+
+- Issue `DHI-045`
+  Raw event: `CHART_ANALYSIS.json` was fresh but had `data_quality = MISSING`, reason `No structured CHART_ANALYSIS_latest payload was available to bridge.`
+  What happened: the bridge was refreshing the final report, but the upstream latest-payload producer was not running on the new VPS path. The chart runner still used `/home/open-claw/openclawtrading`, looked for a nonexistent generator under the old report root, and therefore never created the structured latest payload.
+  Why it matters: Deezoh saw a fresh chart file and could count it as current-cycle evidence, but the file contained no usable chart structure. This made monitoring noisy and forced Deezoh to treat the chart lane as unavailable.
+  Recurrence: reproduced on 2026-05-02 from live `/root/openclawtrading/reports/auto/CHART_ANALYSIS.json`.
+  Affected agent/workflow/data source/timeframe: chart-analyzer, TradingView MCP, desk-contract bridge, Deezoh chart-side workflow, 15 minute observation loop.
+  Proposed fix: keep the chart runner on `/root/...`, restore the deterministic fallback generator, and keep fallback output explicitly partial unless TradingView/visual specialist proof succeeds.
+  Owner: `codex-main-thread`
+  Risk: `medium`
+  Approval needed: `no for bounded runtime path/generator repair`
+  Proof test: live chart run now writes `CHART_ANALYSIS_latest.json`, `HOT_ZONES.json`, `CHART_ANALYZER_EXECUTION.json`, and a bridged `CHART_ANALYSIS.json` with `data_quality = PARTIAL`, `source_mode = binance_ohlcv_fallback`, `specialist_verified = false`, and `zone_confirmed = false`.
+
+### Proved
+
+- `CHART_ANALYSIS_latest.json` now exists and contains 16 structured deterministic analyses for the supported Binance symbols in the current universe.
+- `HOT_ZONES.json` now exists and carries generated support/resistance levels from the fallback lane.
+- `CHART_ANALYSIS.json` no longer says the latest payload is missing. Current BTC chart state is fallback/partial, bearish-biased on the mechanical 4H read, but not zone-confirmed.
+- Deezoh read the corrected files and correctly said the chart lane should not justify a trade by itself because it is deterministic OHLCV fallback, not visual TradingView confirmation.
+
+### Remaining Issues
+
+- TradingView Desktop CDP is reachable on port `9222`, but `/json/list` returns no page targets and `/json/new` returns HTTP 500, so Jackson cannot attach to a live chart page yet.
+- The fallback generator cannot fetch `HYPEUSDT` and `XAUUSDT` from the Binance spot kline endpoint, so those symbols either need a Bitget/futures fallback or should be filtered from this specific generator.
+- Deezoh's proof reply incorrectly described the freshly generated UTC timestamp as about 8 hours stale, which is a timezone interpretation bug in the answer layer rather than the chart file itself.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-02-34` Repair or replace the chart payload producer because `CHART_ANALYSIS.json` is fresh but still reports `data_quality = MISSING`. Status: done.
+- `Q-2026-05-02-37` Repair TradingView Desktop/CDP target exposure so Jackson sees a real `tradingview.com/chart` page target instead of only a browser endpoint with empty `/json/list`. Status: queued.
+- `Q-2026-05-02-38` Add Bitget or futures fallback for chart symbols that Binance spot rejects, including `HYPEUSDT` and `XAUUSDT`. Status: queued.
+- `Q-2026-05-02-39` Add a Deezoh UTC freshness sanity rule so it does not call same-minute UTC artifacts stale just because the runtime prompt is in GMT+8. Status: queued.
+
+## 2026-05-03 Deezoh Reporting Compatibility And Hermes Runtime Retry
+
+### What Actually Ran
+
+- Read the current Codex bootstrap, runtime router, latest shared handoff, and the automation memory before changing anything.
+- Re-verified live OpenClaw truth on `root@100.67.172.114`, including active report mtimes, root cron, Deezoh/Hermes agent homes, and recent desk logs.
+- Patched `scripts/deezoh_question_engine.py` locally so `DEEZOH_THOUGHTS.json` exposes:
+  - `selected_workflow`
+  - `question_plan`
+  - `next_question`
+  - `best_long`
+  - `best_short`
+  - `best_no_trade`
+  - `long_vs_short_vs_no_trade`
+- Added a deterministic local smoke suite `scripts/tests/deezoh_observation_suite_smoke.py` and proved the real question engine chooses the expected workflows for:
+  - breakout watch
+  - consolidation / range mean reversion
+  - live news event
+  - failed breakout / liquidity trap
+  - pre-event control
+  - post-event digest
+  - data-degraded mode
+- Synced the reporting fix live and rebuilt `DEEZOH_THOUGHTS.json` from the live scripts directory to confirm the fields are now present in the active shared report root.
+- Re-tested the Hermes paper lane with one bounded manual `run_hermes_lead.sh` pass after confirming the bridge exists again.
+- Synced the missing paper-lane helpers `build_dual_lane_experiment.py`, `build_trade_judge_cycle.py`, and `hermes_progress_status.py` to the live repo and retried Hermes once more.
+
+### New Evidence From This Run
+
+- Issue `DHI-045`
+  Raw event: the live `DEEZOH_THOUGHTS.json` that Deezoh consumers read had the deeper workflow guidance and comparison payload internally, but it did not expose simple top-level fields for the chosen workflow, next question, or long-vs-short-vs-no-trade ranking.
+  What happened: the core Deezoh logic was already computing the useful evidence, but the report contract was too weak for the observation loop and monitor surfaces that need direct fields instead of deep nested parsing.
+  Why it matters: without those fields, the improvement loop cannot cheaply prove whether Deezoh named the workflow it chose, what question comes next, or whether the ranking changed after evidence shifts.
+  Recurrence: current live proof before the repair on 2026-05-03.
+  Affected agent/workflow/data source/timeframe: Deezoh thought bundle, desk observability reports, workflow analytics, recurring observation loop.
+  Proposed fix: keep the new top-level compatibility fields in `DEEZOH_THOUGHTS.json` and guard them with the scenario suite so future refactors do not silently remove them.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no for bounded reporting/test repair`
+  Proof test: `python scripts/tests/deezoh_observation_suite_smoke.py` passes locally and a fresh live rebuild now shows `selected_workflow`, `question_plan`, `next_question`, and the three-way comparison fields in `/root/openclawtrading/reports/auto/DEEZOH_THOUGHTS.json`.
+
+- Issue `DHI-046`
+  Raw event: the first bounded live Hermes retry no longer failed on a missing bridge, but it still produced no Hermes runtime artifacts because the lead runner first lacked `build_dual_lane_experiment.py`, then after syncing the missing helpers it failed again because `/root/.hermes/hermes-agent/venv/bin/hermes` does not exist on the VPS.
+  What happened: Hermes moved past the older bridge-path failure and is now blocked by an executable-path/install gap in the actual Hermes CLI lane.
+  Why it matters: this proves Hermes is still not an active paper runtime despite the repaired wrapper scripts, so Deezoh/Hermes closeouts must not overclaim live dual-lane behavior yet.
+  Recurrence: reproduced in the bounded live retry on 2026-05-03 after helper sync.
+  Affected agent/workflow/data source/timeframe: Hermes lead runner, Hermes runtime bridge, dual-lane experiment artifacts, paper-only lane activation.
+  Proposed fix: verify the intended Hermes CLI install path or update `CHIMERA_HERMES_BIN` / `hermes_runtime_bridge.py` to the real installed executable only after proving the correct binary and invocation contract.
+  Owner: `hermes-lead + codex-main-thread`
+  Risk: `medium`
+  Approval needed: `review before changing the Hermes executable contract or installing a missing runtime`
+  Proof test: a bounded `run_hermes_lead.sh` pass should write `HERMES_RUNTIME_STATUS.json`, `HERMES_DECISION_TRACE.json`, and `HERMES_PROGRESS_STATUS.json` without `FileNotFoundError` for the Hermes binary.
+
+### Proved
+
+- Local deterministic Deezoh scenario coverage now exists for the exact observation cases this loop needs most often. Current pass results:
+  - `breakout_watch -> range_breakout_watch | wait=WAIT_ACCEPTANCE | winner=short`
+  - `consolidation -> range_mean_reversion | wait=NONE | winner=short`
+  - `news_event -> live_event | wait=WAIT_ACCEPTANCE | winner=no_trade`
+  - `failed_breakout -> liquidity_trap_or_squeeze | wait=WAIT_SWEEP | winner=no_trade`
+  - `pre_event_control -> pre_event | wait=WAIT_EVENT | winner=no_trade`
+  - `post_event_digest -> post_event_digest | wait=WAIT_ACCEPTANCE | winner=no_trade`
+  - `data_degraded -> data_degraded | wait=WAIT_REFRESH | winner=no_trade`
+- The active live `DEEZOH_THOUGHTS.json` now exposes a direct workflow/ranking/question contract again. After the rebuild from `/root/openclawtrading/scripts/`, the live file shows:
+  - `selected_workflow = range_or_mixed`
+  - `next_question.agent = macro-bias`
+  - `winner = no_trade`
+- The current live three-way ranking still prefers caution:
+  - `best_long.score = 23.0`
+  - `best_short.score = 55.0`
+  - `best_no_trade.score = 63.0`
+- Hermes helper-script drift was partially repaired live:
+  - `DUAL_LANE_EVIDENCE_PACK.json` now writes again
+  - `HERMES_LANE_THESIS.json` now writes again
+  - the remaining failure is the missing Hermes CLI executable, not the older missing bridge or missing builder scripts
+
+### Safe Changes Applied This Run
+
+- Local + live `scripts/deezoh_question_engine.py`
+- Local `scripts/tests/deezoh_observation_suite_smoke.py`
+- Live `scripts/build_dual_lane_experiment.py`
+- Live `scripts/build_trade_judge_cycle.py`
+- Live `scripts/hermes_progress_status.py`
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-04` Keep the Deezoh top-level workflow/ranking/question compatibility contract under smoke-test coverage. Status: done.
+- `Q-2026-05-03-05` Prove the real Hermes executable path or install state before any further live dual-lane claims. Status: queued.
+
+## 2026-05-03 Hermes Runtime Activation Proof
+
+### What Actually Ran
+
+- Proved the live Hermes CLI install state on `root@100.67.172.114` instead of guessing:
+  - `command -v hermes` returned `/usr/local/bin/hermes`
+  - the package venv entrypoint exists at `/usr/local/lib/hermes-agent/venv/bin/hermes`
+  - the old bridge default `/root/.hermes/hermes-agent/venv/bin/hermes` does not exist
+- Patched `scripts/hermes_runtime_bridge.py` locally and live so it:
+  - resolves the real Hermes binary automatically
+  - reads the current Hermes config for provider/model
+  - injects the configured provider API key into the subprocess env when needed
+- Proved the provider fix with a bounded direct Hermes CLI test before changing the bridge:
+  - forcing `provider=minimax` plus the stored MiniMax key returns a valid one-shot response
+- Re-ran one bounded live `run_hermes_lead.sh` cycle after the bridge fix.
+
+### New Evidence From This Run
+
+- Issue `DHI-046`
+  Raw event: Hermes initially failed because the bridge pointed to `/root/.hermes/hermes-agent/venv/bin/hermes`, but the actual installed CLI lives at `/usr/local/bin/hermes` and `/usr/local/lib/hermes-agent/venv/bin/hermes`.
+  What happened: the runtime bridge was carrying an outdated executable-path assumption from an older install shape.
+  Why it matters: the paper lane could not even start, so prior Hermes closeouts were blocked on infrastructure rather than reasoning quality.
+  Recurrence: reproduced on the live retry and fixed in this pass.
+  Affected agent/workflow/data source/timeframe: Hermes runtime bridge, Hermes lead runner, dual-lane paper experiment.
+  Proposed fix: keep the new binary auto-resolution logic and preserve `CHIMERA_HERMES_BIN` as an explicit override when needed.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no for bounded runtime-path repair`
+  Proof test: bounded `run_hermes_lead.sh` now writes `HERMES_RUNTIME_STATUS.json` with `status = ready` and `hermes_bin = /usr/local/bin/hermes`.
+  Status: `fixed and verified`
+
+- Issue `DHI-047`
+  Raw event: once Hermes actually ran, it independently agreed with Deezoh on `no_trade` and then flagged a concrete pipeline contradiction: `ENTRY_SIGNALS` was effectively marking the setup as ready while macro/catalyst still said `STAY OUT`.
+  What happened: the system is still letting directional score/readiness surfaces overstate execution readiness when macro gates are closed.
+  Why it matters: this is the kind of contradiction that can erode trust or produce false positives if a later lane consumes the signal blindly.
+  Recurrence: observed in the first clean live Hermes cycle on 2026-05-03.
+  Affected agent/workflow/data source/timeframe: entry-signals, macro gate, setup confidence classification, Deezoh/Hermes dual-lane comparison, paper decision loop.
+  Proposed fix: add a pipeline-integrity check that blocks `READY_TO_TRADE` or similar entry-ready states whenever macro gate is `STAY OUT`, and flag zone-alignment/confidence contradictions in the same pass.
+  Owner: `pipeline-watchdog + entry-watch + catalyst + codex-main-thread`
+  Risk: `medium`
+  Approval needed: `no for bounded audit/test/reporting hardening; review before live execution-gate policy changes`
+  Proof test: on the next bounded cycle, no entry-ready state should survive when macro verdict is `STAY OUT`, and the contradiction should either be suppressed upstream or emitted as an explicit defect instead of a trade-ready suggestion.
+
+### Proved
+
+- Hermes runtime is now live enough for the paper lane contract:
+  - `HERMES_RUNTIME_STATUS.json` => `status = ready`
+  - `HERMES_RUNTIME_INPUT.json` exists
+  - `HERMES_DECISION_TRACE.json` exists
+  - `HERMES_PROGRESS_STATUS.json` exists
+  - `HERMES_LANE_THESIS.json` exists
+  - `HERMES_ADVISOR_REVIEW.json` exists
+  - `JUDGE_DECISION.json` exists
+  - `TRADE_DECISION_SCORECARD.json` exists
+  - `LEARNING_FEEDBACK.json` exists
+- The first clean live Hermes lane agreed with Deezoh on caution, not bravado:
+  - Hermes decision: `no_trade`
+  - Hermes direction: `SHORT`
+  - Hermes summary: directional short bias exists, but macro gate blocked by named critical events and timing trigger still missing
+  - Judge decision: `selected_lane = merge`, `selected_action = no_trade`, `send_to_execution = false`
+- The new live Hermes cycle created useful reviewed learning candidates instead of only a success banner. The strongest one is the macro-gate vs ready-to-trade contradiction.
+
+### Safe Changes Applied This Run
+
+- Local + live `scripts/hermes_runtime_bridge.py`
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-05` Prove the real Hermes executable path or install state before any further live dual-lane claims. Status: done.
+- `Q-2026-05-03-06` Add a pipeline-integrity guard for macro-gate vs entry-ready contradictions before any later execution-facing lane trusts those signals. Status: queued.
