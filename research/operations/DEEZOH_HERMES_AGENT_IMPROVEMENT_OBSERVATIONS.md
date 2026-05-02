@@ -1081,6 +1081,32 @@ Each hourly run must include:
 - `Q-2026-05-02-38` Add Bitget or futures fallback for chart symbols that Binance spot rejects, including `HYPEUSDT` and `XAUUSDT`. Status: queued.
 - `Q-2026-05-02-39` Add a Deezoh UTC freshness sanity rule so it does not call same-minute UTC artifacts stale just because the runtime prompt is in GMT+8. Status: queued.
 
+## 2026-05-02 Heartbeat Observation After Chart Repair
+
+### What Actually Ran
+
+- Ran live Deezoh replay `deezoh-observe-after-chart-fix-v1` as if Sal was looking at BTCUSDT after the chart-analysis producer repair.
+- Prompt required Deezoh to read the current chart, thoughts, screener, macro, and derivatives reports and to answer with workflow, winner, pushback, next question, monitor issue, and unsafe-learning guard.
+
+### Proved
+
+- Deezoh selected `range_or_mixed` and kept `winner = no_trade`.
+- Deezoh pushed back clearly instead of yes-manning the short setup.
+- Deezoh treated `PARTIAL` Binance OHLCV chart output as context only, not TradingView visual confirmation.
+- Deezoh named the unsafe lesson to avoid: do not learn that a mechanical 4H bearish fallback label plus bullish EMA/MACD is a valid short pattern.
+- Deezoh updated the next question based on evidence: reframe BTCUSDT through macro-bias first, then require a fresh visual chart-analyzer run.
+
+### New Issues Confirmed
+
+- `TradingView CDP port 9222` remains reachable at `/json/version`, but `/json/list` has no chart page targets and `/json/new` returns HTTP 500.
+- `DERIVATIVES.json` is still structurally empty, so Deezoh has no OI/funding/liquidation context.
+- `INDICATOR_REPORT.json` and `STRATEGY_REPORT.json` are still missing.
+- The council remains incomplete because the critic lane is missing from the current round.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-02-40` Add a replay assertion that Deezoh must reject activating trades from `CHART_ANALYSIS.data_quality = PARTIAL` unless independent trigger evidence exists. Status: queued.
+
 ## 2026-05-03 Deezoh Reporting Compatibility And Hermes Runtime Retry
 
 ### What Actually Ran
