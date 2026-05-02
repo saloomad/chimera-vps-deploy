@@ -18,7 +18,7 @@ Use this skill when the workflow must survive restarts, keep durable state, or m
 - `openclaw-feature-router`
 - `objective-orchestration-loop`
 - `openclaw-orchestration-proof-router`
-- `../../docs/PLATFORM_ORCHESTRATION_AND_HOOKS_MATRIX_2026-05-01.md`
+- `../../docs/PLATFORM_ORCHESTRATION_AND_HOOKS_MATRIX_2026-05-02.md`
 
 ## What Task Flow Is
 

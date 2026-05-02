@@ -17,7 +17,7 @@ Use this skill when the right answer is to react to an event rather than poll or
 
 - `openclaw-feature-router`
 - `objective-orchestration-loop`
-- `../../docs/PLATFORM_ORCHESTRATION_AND_HOOKS_MATRIX_2026-05-01.md`
+- `../../docs/PLATFORM_ORCHESTRATION_AND_HOOKS_MATRIX_2026-05-02.md`
 
 ## What Hooks Are
 
@@ -30,12 +30,14 @@ Use this skill when the right answer is to react to an event rather than poll or
 - message feature suggestion
 - post-step validation
 - continuity capture around compaction or session boundaries
+- lightweight "what else must be updated" enforcement after a meaningful action
 
 ## Bad Hook Jobs
 
 - heavy long-running orchestration
 - exact-time scheduling
 - durable multi-step flow ownership
+- pretending a hook is the whole workflow engine
 
 ## Current Chimera Truth
 
@@ -53,3 +55,4 @@ Leave behind:
 - why a hook fits better than Task Flow or cron
 - enablement steps
 - rollback path
+- what workflow and proof layer still own the broader objective

@@ -28,6 +28,11 @@ If architecture or system-wide tradeoffs exist:
 
 For meaningful replies, use `sal-communication-contract` so OpenCode answers stay understandable without making Sal decode jargon or raw artifacts.
 
+For any meaningful create, build, fix, refactor, workflow change, skill change, or automation change, also run:
+
+- `meaningful-change-lifecycle-and-enforcement-loop.md`
+- `docs/PLATFORM_ORCHESTRATION_AND_HOOKS_MATRIX_2026-05-02.md`
+
 Be honest that this platform currently uses config + docs, not a verified local skill trigger path.
 
 Also be honest that this platform does not yet have a separately verified native hook or automation enforcement surface in this repo.

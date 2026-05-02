@@ -249,6 +249,7 @@ to choose the right loop for:
 
 - direct software work
 - bounded build
+- meaningful change lifecycle and enforcement
 - major build with council
 - project start
 - project finish

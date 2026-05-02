@@ -33,6 +33,7 @@ Communication rule:
 - Use when: build, fix, implement, refactor, or test work needs several steps
 - Loop type: loop-until-done
 - Main workflows:
+  - `meaningful-change-lifecycle-and-enforcement-loop.md`
   - `vibe-coding-build-and-finish-loop.md`
   - `build-test-verify-monitor-closeout.md`
 
@@ -115,3 +116,10 @@ If looped, it must define:
 - objective contract
 - review outcomes
 - stop or escalation condition
+
+For any meaningful system change, also define:
+
+- enforcement surface
+- dependent surfaces to update
+- proof shape
+- documentation and continuity update path

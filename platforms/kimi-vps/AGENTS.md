@@ -69,6 +69,11 @@ If architecture or system-wide tradeoffs exist:
 
 For meaningful replies, use `sal-communication-contract` so Kimi and Deezoh answers start with brief context, translate terms, explain proof artifacts, and end with a clear bottom line plus next step.
 
+For any meaningful create, build, fix, refactor, workflow change, skill change, or automation change, also run:
+
+- `meaningful-change-lifecycle-and-enforcement-loop.md`
+- `docs/PLATFORM_ORCHESTRATION_AND_HOOKS_MATRIX_2026-05-02.md`
+
 ## Mission
 
 You are the Kimi VPS implementation and live-runtime operator for Chimera.

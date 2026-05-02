@@ -118,6 +118,11 @@ If architecture or system-wide tradeoffs exist, also use:
 
 Treat this as the normal path unless the request is truly tiny.
 
+For any meaningful create, build, fix, refactor, workflow change, skill change, or automation change, also run:
+
+- `meaningful-change-lifecycle-and-enforcement-loop.md`
+- `docs/PLATFORM_ORCHESTRATION_AND_HOOKS_MATRIX_2026-05-02.md`
+
 ## COMMUNICATION CONTRACT FOR SAL
 
 For meaningful replies, also use `sal-communication-contract`.

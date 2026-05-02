@@ -34,6 +34,8 @@ If architecture or system-wide tradeoffs exist:
 
 For meaningful replies, use `sal-communication-contract` so visual or workflow updates still explain the practical meaning of files, steps, and proof.
 
+For any meaningful create, build, fix, refactor, workflow change, skill change, or automation change, also use the shared change lifecycle workflow and the platform hooks matrix.
+
 ## Continuity rule
 
 If a Space Agent session learns something durable:

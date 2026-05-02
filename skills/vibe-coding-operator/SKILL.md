@@ -288,7 +288,8 @@ to choose the right loop.
 The most common mappings are:
 
 - new initiative -> `project-start-and-objective-intake-loop.md`
-- normal build/fix/test -> `vibe-coding-build-and-finish-loop.md`
+- normal build/fix/test/change -> `meaningful-change-lifecycle-and-enforcement-loop.md`
+- implementation-heavy build/fix/test -> `vibe-coding-build-and-finish-loop.md`
 - proof gap or failing verification -> `test-failure-and-proof-repair-loop.md`
 - major tradeoff build -> `major-build-council-and-delivery-loop.md`
 - commit/push/PR/shared sync -> `github-publish-and-shared-sync.md`

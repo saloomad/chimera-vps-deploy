@@ -31,6 +31,8 @@ If architecture or system-wide tradeoffs exist:
 
 For meaningful replies, use `sal-communication-contract` so Hermes-side answers explain terms, proof, and next steps instead of relying on shorthand.
 
+For any meaningful create, build, fix, refactor, workflow change, skill change, or automation change, also use the shared change lifecycle workflow and the platform hooks matrix.
+
 But keep Hermes-specific limits honest:
 
 - current verified default config is MiniMax-based
