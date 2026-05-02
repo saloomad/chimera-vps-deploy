@@ -2,7 +2,14 @@
 
 Read `CHIMERA_BOOTSTRAP.md` first.
 
-OpenCode currently has a verified provider config, but not a verified skill auto-load system in this repo.
+OpenCode has a verified provider config and verified native project surfaces for:
+
+- `AGENTS.md`
+- `opencode.json`
+- custom agents
+- custom commands
+- native skill discovery
+- permission rules
 
 Use the shared Chimera standard as a guide and run the orchestration precheck on every meaningful request.
 
@@ -33,17 +40,19 @@ For any meaningful create, build, fix, refactor, workflow change, skill change, 
 - `meaningful-change-lifecycle-and-enforcement-loop.md`
 - `docs/PLATFORM_ORCHESTRATION_AND_HOOKS_MATRIX_2026-05-02.md`
 
-Be honest that this platform currently uses config + docs, not a verified local skill trigger path.
-
-Also be honest that this platform does not yet have a separately verified native hook or automation enforcement surface in this repo.
+Be honest that this platform does not currently have a separately verified native hook API in this project.
 
 Use:
 
+- native agents
+- native commands
+- native skills
+- permission rules
 - file-backed plan and review contracts
 - wrapper scripts
 - explicit handoffs
 
-Do not pretend OpenCode currently has the same hook and continuation surface as OpenClaw or Claude Code.
+Do not pretend OpenCode currently has the same hook and continuation surface as OpenClaw or Claude Code, but do use its real native agents, commands, rules, skills, and permissions.
 
 Use the shared Chimera knowledge wiki at:
 

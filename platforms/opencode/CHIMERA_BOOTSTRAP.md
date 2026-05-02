@@ -15,5 +15,6 @@ Use the shared orchestration rule:
 
 Current honest limit:
 
-- this repo has not yet verified an OpenCode native skill home or auto-trigger mechanism
-- use this bootstrap and the shared docs as the durable routing layer until that is proven
+- this project now has verified native rules, project config, commands, agents, skills, and permissions
+- this project still does not have a separately verified native hook API like Claude Code or OpenClaw
+- use the committed `opencode.json` plus `.opencode/` bundle as the durable routing layer here

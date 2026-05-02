@@ -42,6 +42,8 @@ Before using this adapter, also read:
 - let Codex own durable local file implementation when real repo edits are needed
 - let OpenClaw/Kimi own live runtime truth when operational claims matter
 - prefer Claude Code hooks and slash commands for enforcement when the local Cowork surface supports them
+- if the surface is OpenCode, use its native rules, agents, commands, skills, and permission gates
+- if no verified native hook surface exists in the current Cowork setup, fall back to workflow, wrapper, plan file, and handoff enforcement instead of pretending hooks exist
 
 ## Output Contract
 

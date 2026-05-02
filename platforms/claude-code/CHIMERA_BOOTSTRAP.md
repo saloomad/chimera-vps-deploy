@@ -18,3 +18,4 @@ Rule:
 
 - use the same plan execute review loop as the other platforms
 - do not pretend Claude Code has durable background continuation if it does not
+- use the shared hook bundle mirror under `platforms/claude-code/project-bundle/` when you need to recreate the local `.claude/` enforcement setup
