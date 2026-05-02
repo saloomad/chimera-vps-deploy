@@ -864,6 +864,46 @@ Each hourly run must include:
 
 - `Q-2026-05-02-31` Prove the repaired observability bundle lands from natural root cron rather than only a bounded manual run. Status: queued.
 
+## 2026-05-02 Natural Cron Proof And Manager Contract Repair
+
+### What Actually Ran
+
+- Re-checked live root cron, `desk_observability.log`, and active report mtimes after the repaired chain had time to run naturally.
+- Confirmed the scheduled `19:35` local root-cron cycle refreshed the active `/root/openclawtrading/reports/auto/` desk bundle without a manual trigger.
+- Traced the remaining fake warning in the rebuilt operator surface and found that the live scheduled runner never invoked `manager_agent.py`, so `MANAGER_STATUS.json` could not exist.
+- Synced the current path-aware manager implementation into `/root/openclawtrading/scripts/manager_agent.py`.
+- Added `python3 manager_agent.py || true` back into `run_desk_observability_chain.sh`, then ran one bounded live verification cycle.
+
+### New Evidence From This Run
+
+- Issue `DHI-041`
+  Raw event: after natural cron proof showed the desk observability bundle landing correctly, `PAPER_LOOP_AUDIT.json` still warned `Manager status is missing or stale.` and the live repo had no `/root/openclawtrading/scripts/manager_agent.py`.
+  What happened: the restored observability chain had recovered the desk trace bundle, but it had not recovered the manager-health producer that the watchdog and operator snapshot still depend on.
+  Why it matters: this was a fake infrastructure warning layered on top of real upstream warnings. Without `MANAGER_STATUS.json`, the operator brief could not distinguish “manager contract missing” from genuine unhealthy lanes.
+  Recurrence: reproduced in the natural `19:35` root-cron cycle on 2026-05-02 and fixed in the same follow-up pass.
+  Affected agent/workflow/data source/timeframe: manager health, paper watchdog, operator snapshot, scheduled desk observability chain.
+  Proposed fix: keep the current manager implementation in `/root/openclawtrading/scripts/`, keep it wired into the scheduled chain, and treat any future missing `MANAGER_STATUS.json` as a real broken-contract regression.
+  Owner: `codex-main-thread`
+  Risk: `medium`
+  Approval needed: `no for bounded contract restoration`
+  Proof test: a fresh live chain should write `MANAGER_STATUS.json`, let the watchdog read real manager alerts, and stop reporting a fake missing-manager condition.
+
+- Proved
+  Natural root cron proof now exists for the repaired desk chain. The live `desk_observability.log` shows a scheduled `2026-05-02T16:35Z` cycle writing `DEEZOH_THOUGHTS.json`, `ORCHESTRATOR_ACTIVITY.json`, `PAPER_DESK_OPERATOR_SNAPSHOT.json`, `CRITIC_REPORTS.json`, and `REASONING_AUDIT_LATEST.md`, and the matching report mtimes line up with that natural cycle instead of a manual trigger.
+
+- Proved
+  After the manager contract repair, a fresh bounded live rerun now writes `MANAGER_STATUS.json`, `PAPER_LOOP_AUDIT.json`, and `PAPER_DESK_OPERATOR_SNAPSHOT.json` in the same minute, and the rebuilt operator snapshot now reports `same_cycle_confirmed = true` with reason `Critical reports are within 4.95 minutes of each other.`
+
+- Proved
+  The stale-review problem from the original audit is no longer the current truth on the restored chain. Current live `CRITIC_REPORTS.json` and `REASONING_AUDIT_LATEST.md` are fresh same-cycle outputs under the active report root.
+
+- Proved
+  Hermes is still not visible as a current-cycle runtime lane under `/root/openclawtrading/reports/auto/`. The repair improved Deezoh/operator visibility but did not produce any fresh Hermes-named report artifacts in the active root.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-02-32` Repair or intentionally retire the upstream context/report lanes that still keep the now-working desk chain in `WARN`: `MARKET_CONTEXT.json`, `NEWS.json`, `ALTFINS.json`, `DIVERGENCES.json`, and `CATALYST_REPORT.json`. Status: queued.
+
 ## 2026-05-03 Deezoh Workflow-Label Retry Pass
 
 ### What Actually Ran
@@ -920,3 +960,78 @@ Each hourly run must include:
 - `Q-2026-05-03-01` Force canonical workflow ids in all direct observation outputs and validate them in replay tests. Status: done.
 - `Q-2026-05-03-02` Add one explicit freshness-first branch so Deezoh asks for a refresh before deep thesis ranking when the core desk reports are 8+ hours stale. Status: queued.
 - `Q-2026-05-03-03` Prove one real delegated specialist round or explicitly downgrade the desk contract to report-consumption mode until delegation is honest. Status: queued.
+
+## 2026-05-02 Deezoh Root-Cause Council And Delegation/Freshness Repair
+
+### What Actually Ran
+
+- Spawned a three-agent council to isolate the root cause instead of guessing:
+  - Delegation root cause: why Deezoh did not honestly spawn specialists.
+  - Data freshness root cause: why Deezoh still saw degraded or stale report state.
+  - Instruction/workflow root cause: why old path and precedence guidance still polluted behavior.
+- Patched the live OpenClaw agent policy so Deezoh can spawn approved trading specialists instead of only itself.
+- Split Deezoh freshness into a critical-report contract and optional-lane health, so missing optional lanes no longer falsely break same-cycle proof.
+- Replaced stale Deezoh workspace-local thought copies with symlinks to the active shared report root.
+- Added Deezoh front-door guards so old Linux paths and older helper docs are treated as background unless translated to current `/root/...` runtime truth.
+
+### New Evidence From This Run
+
+- Issue `DHI-042`
+  Raw event: Deezoh direct replay sessions kept returning no honest delegated specialist round, even when the behavior contract expected chart, indicator, macro, screener, or risk specialists.
+  What happened: OpenClaw's `sessions_spawn` policy defaulted to only the requesting agent unless `subagents.allowAgents` was explicitly configured. Deezoh therefore could only spawn `deezoh`, not `chart-analyzer` or the trading specialist council.
+  Why it matters: Deezoh looked like it was doing a multi-agent desk process, but it was actually operating as a single-session report consumer. That makes “agent-to-agent reasoning” claims unsafe unless spawn proof exists.
+  Recurrence: reproduced in live session `deezoh-spawn-proof-v1` with `status = forbidden` and error `agentId is not allowed for sessions_spawn (allowed: deezoh)`.
+  Affected agent/workflow/data source/timeframe: Deezoh, chart-analyzer, indicator-analyst, macro-bias, catalyst, screener, strategy, entry-watch, risk-engine, trade-judge, bitget-analyst.
+  Proposed fix: add an explicit Deezoh specialist allowlist in `/root/.openclaw/openclaw.json` and keep future delegation tests proof-based.
+  Owner: `codex-main-thread`
+  Risk: `medium`
+  Approval needed: `no for bounded runtime policy repair`
+  Proof test: `deezoh-spawn-proof-v2` returned `sessions_spawn.status = accepted`, produced a `childSessionKey`, and wrote a real child `chart-analyzer` session that read active chart/candle reports.
+
+- Issue `DHI-043`
+  Raw event: live `DEEZOH_THOUGHTS.json` reported `same_cycle_confirmed = false` because nonexistent `INDICATOR_REPORT.json` and `STRATEGY_REPORT.json` were treated as required core reports.
+  What happened: the builder mixed critical report freshness with optional specialist lane completeness.
+  Why it matters: Deezoh was being told the core desk cycle was invalid even when the actual core reports were fresh, which pushed it toward noisy stale-data warnings and weaker next-question behavior.
+  Recurrence: reproduced in the live shared report root before the builder patch.
+  Affected agent/workflow/data source/timeframe: Deezoh thought bundle, question engine, same-cycle proof, 15 minute observation loop.
+  Proposed fix: define a smaller critical contract and emit optional-lane health separately.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no for bounded report-contract repair`
+  Proof test: a fresh live rebuild returned `same_cycle_confirmed = true`, reason `Critical reports are within 5.41 minutes of each other.`, plus `optional_lane_health.status = degraded` for missing/thin optional lanes.
+
+- Issue `DHI-044`
+  Raw event: Deezoh had workspace-local `DEEZOH_THOUGHTS.json` files that could lag behind `/root/openclawtrading/reports/auto/DEEZOH_THOUGHTS.json`, and some older helper docs still contained old Linux paths or ambiguous precedence.
+  What happened: runtime truth, workspace-local convenience files, and older docs were not clearly separated.
+  Why it matters: Deezoh and agents can accidentally read stale local context or treat old `/home/open-claw` examples as current, causing wrong diagnosis and repeated path drift.
+  Recurrence: seen during the live council pass while comparing workspace-local thought files against the active shared report root.
+  Affected agent/workflow/data source/timeframe: Deezoh startup, Deezoh bootstrap, workspace-local context, shared report reads.
+  Proposed fix: point workspace-local thought files to the active report-root file and add front-door instruction guards for current path and precedence truth.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no for bounded stale-context repair`
+  Proof test: `/root/.openclaw/workspace/agents/deezoh/DEEZOH_THOUGHTS.json` and `DEEZOH_THOUGHTS_LIVE.json` now resolve to `/root/openclawtrading/reports/auto/DEEZOH_THOUGHTS.json`.
+
+### Proved
+
+- Live specialist delegation is now allowed and executable. The fixed Deezoh spawn proof accepted `chart-analyzer`, created a child session, and the child actually read `/root/openclawtrading/reports/auto/CHART_ANALYSIS.json` plus `/root/openclawtrading/reports/auto/CANDLES.json`.
+- Deezoh can consume the completed child result in a follow-up answer. The `deezoh-spawn-proof-v2` continuation used the chart-analyzer finding, selected `data_unreliable`, kept the best no-trade case as the winner, named what Sal may be overlooking, and recorded the missing chart payload as a monitor issue instead of inventing usable chart structure.
+- Core same-cycle freshness is now separated from optional-lane degradation. Deezoh can say “core reports are fresh” while still warning that chart, derivatives, indicator, strategy, or catalyst lanes are thin/missing/stale.
+- Deezoh's local thought surface no longer has to be manually refreshed separately because it now resolves to the active shared report file.
+
+### Safe Changes Applied This Run
+
+- Local + live `agents/deezoh/AGENTS.md`
+- Local + live `agents/deezoh/BOOTSTRAP.md`
+- Local + live `scripts/build_deezoh_thoughts.py`
+- Local + live `scripts/deezoh_question_engine.py`
+- Local + live `openclawtrading/scripts/build_deezoh_thoughts.py`
+- Live `/root/.openclaw/openclaw.json` Deezoh `subagents.allowAgents` policy
+- Live Deezoh workspace thought symlinks
+
+### Optimization Queue Updates
+
+- `Q-2026-05-02-33` Add a natural follow-up test proving Deezoh resumes after a child specialist completes and incorporates the child finding into its final trade-coach answer. Status: done.
+- `Q-2026-05-02-34` Repair or replace the chart payload producer because `CHART_ANALYSIS.json` is fresh but still reports `data_quality = MISSING`. Status: queued.
+- `Q-2026-05-02-35` Repair derivatives payload quality because `DERIVATIVES.json` is timestamp-fresh but structurally empty. Status: queued.
+- `Q-2026-05-02-36` Deprecate or rewrite older helper docs that still show old Linux paths or outdated spawn examples after the live behavior is stable. Status: queued.
