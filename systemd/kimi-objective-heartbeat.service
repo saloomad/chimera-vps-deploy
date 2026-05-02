@@ -9,7 +9,9 @@ User=root
 WorkingDirectory=/root/.kimi
 Environment="HOME=/root"
 Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Environment="HEARTBEAT_TIMEOUT_SEC=420"
 ExecStart=/usr/local/bin/run_objective_orchestration_heartbeat.sh /root/chimera-deploy
+TimeoutStartSec=8min
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=kimi-objective-heartbeat

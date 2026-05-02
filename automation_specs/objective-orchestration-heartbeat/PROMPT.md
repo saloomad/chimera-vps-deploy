@@ -18,9 +18,12 @@ Rules:
 - Start with `Runtime: model=<name> | reasoning=<effort> | quota=<value-or-not-exposed> | phase=<plan|execute|review|mixed> | why=<short reason>`.
 - Respect the heartbeat control file. If its status is not `active`, stop cleanly.
 - Restate the objective and done criteria from the control file.
+- Treat `heartbeat_interval` as guidance that should match the expected duration of one meaningful pass. If the work shape changed and the interval is now wrong, say so clearly in the review closeout.
 - Run a short plan pass.
 - Do the next bounded safe execution step only.
 - Run review and decide `complete`, `iterate`, or `blocked`.
+- Use only those exact review values. Do not invent variants like `first_pass_complete`.
+- If the control file remains `status: active` after the pass, the correct `last_review_outcome` is normally `iterate`.
 - If meaningful progress happened, update:
   - `/root/openclawtrading/harnesses/codex/chimera/OBJECTIVE_HEARTBEAT.md`
   - `/root/openclawtrading/harnesses/codex/chimera/CONTINUATION.md`
