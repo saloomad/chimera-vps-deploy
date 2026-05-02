@@ -184,3 +184,10 @@ Status labels:
   - prove which Task Flow paths are truly running, not only configured
 - scenario tests proving the starter stack and lifecycle are actually followed
 - activation receipts showing which skills/hooks/workflows truly fired
+
+## Reusable Verifier
+
+- `scripts/verify_platform_enforcement_surfaces.ps1`
+  - checks the local Claude hook bundle
+  - checks the committed OpenCode bundle
+  - checks live OpenClaw enabled-hook keys and key Lobster path truth
