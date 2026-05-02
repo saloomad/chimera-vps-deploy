@@ -348,6 +348,118 @@ Each hourly run must include:
 
 - `Q-2026-05-02-11` Update the recurring audit so specialist lanes that wrote fresh outputs but hit late overload are classified as partial success, not simple failure. Status: queued.
 
+## 2026-05-02 Direct-Answer And Hermes Path Audit
+
+### What Actually Ran
+
+- Live OpenClaw re-check on `root@100.67.172.114`:
+  - verified `/root/.openclaw/workspace/agents/`
+  - verified `/root/openclawtrading/reports/auto/`
+  - verified root `crontab -l`
+  - re-tested `openclaw cron list` and `openclaw tasks flow list` under timeout
+- Fresh live Deezoh observation suite:
+  - `deezoh-observe-breakout-v4`
+  - same-session breakout follow-up in `deezoh-observe-breakout-v4`
+  - `deezoh-observe-consolidation-v4`
+  - `deezoh-observe-news-v4`
+  - `deezoh-observe-liquidity-trap-v3`
+- Fresh live workflow audits:
+  - `screener-workflow-audit-v1`
+  - `macro-workflow-audit-v2`
+- Live bounded Hermes inspection:
+  - read `run_hermes_lead.sh`
+  - read `run_hermes_pm_heartbeat.sh`
+  - checked expected Hermes reports and `cron.log`
+
+### New Evidence From This Run
+
+- Proved
+  The Deezoh direct-answer patch worked. `deezoh-observe-breakout-v4` no longer opened with a broad morning briefing. It answered the requested comparison first, then explained the block.
+
+- Proved
+  Same-session breakout follow-up changed Deezoh's state handling: the winner stayed `NO_TRADE`, but the wait moved from `WAIT_COOLDOWN` to `WAIT_ACCEPTANCE`, and the next question narrowed to 1H timing instead of a generic desk recap.
+
+- Proved
+  `screener-workflow-audit-v1` now picks the intended workflow family cleanly across the six requested discovery situations:
+  - quiet builders -> `accumulation_hunt`
+  - accepted trend -> `trend_continuation_hunt`
+  - second-order rotation -> `post_news_rotation_hunt`
+  - failed acceptance -> `failed_breakout_short_hunt`
+  - balanced range -> `range_rotation_hunt`
+  - degraded or distorted tape -> `no_trade_protection`
+
+- Proved
+  `macro-workflow-audit-v2` now picks the intended workflow family cleanly across the requested macro situations:
+  - pre-release control -> `pre_event_risk_control`
+  - post-release reaction -> `post_event_digest`
+  - cross-market divergence -> `cross_asset_divergence`
+  - broken-playbook capture -> `unusual_behavior_precedent`
+  - thin or stale inputs -> `data_degraded_macro`
+
+- Issue `DHI-029`
+  Raw event: `deezoh-observe-breakout-v4` answered in the improved direct format, but still labeled the dominant workflow `news_event_control` instead of a structure-first breakout workflow.
+  What happened: the answer contract improved, but the workflow selector still lets stale macro vetoes overwrite the setup-family label itself.
+  Why it matters: Deezoh can now speak more clearly while still classifying the setup incorrectly, which weakens replay truth and makes it harder to compare breakout behavior across runs.
+  Recurrence: observed in `deezoh-observe-breakout-v4` on 2026-05-02 after the direct-answer patch.
+  Affected agent/workflow/data source/timeframe: Deezoh, breakout observation workflow, workflow selector, 4H/15M breakout review.
+  Proposed fix: keep `selected_workflow` structure-first (`breakout_acceptance` here), and let macro/event pressure decide `winner`, `typed_wait`, or veto status separately.
+  Owner: `Codex`
+  Risk: `medium`
+  Approval needed: `no for instruction or replay-contract fixes`
+  Proof test: rerun the breakout scenario and confirm `selected_workflow = breakout_acceptance` while `winner` may still remain `NO_TRADE`.
+
+- Issue `DHI-030`
+  Raw event: `deezoh-observe-consolidation-v4` still attempted `kimi_finance` with `BTCUSDT`, hit stock-style ticker errors, then fell back to search/report reading.
+  What happened: the crypto price-routing bug is still active in direct observation mode.
+  Why it matters: even when Deezoh answers eventually, it wastes time on the wrong finance lane and pollutes the replay with irrelevant tool failures.
+  Recurrence: reproduced in `deezoh-observe-consolidation-v4` on 2026-05-02.
+  Affected agent/workflow/data source/timeframe: Deezoh, consolidation observation workflow, crypto quote routing.
+  Proposed fix: explicitly forbid stock-style generic finance routing for crypto symbols and prefer fresh report, Bitget, or TradingView-derived lanes first.
+  Owner: `Codex + data-source router`
+  Risk: `medium`
+  Approval needed: `no for routing preference and prompt-surface fixes`
+  Proof test: the next BTC or ETH observation replay should not call `kimi_finance` with `BTCUSDT`, `ETHUSDT`, or stock-shaped fallback symbols.
+
+- Issue `DHI-031`
+  Raw event: `deezoh-observe-news-v4` answered honestly from stale files only, spawned no specialists, and explicitly depended on 8-9 hour old reports with empty derivatives.
+  What happened: the news-event lane is still better at admitting degraded truth than at recovering from it.
+  Why it matters: this is safer than hallucinating freshness, but it still means live event-mode guidance remains too weak for real chart-side use unless a fresh headline or fresher inputs are provided.
+  Recurrence: observed in `deezoh-observe-news-v4` on 2026-05-02.
+  Affected agent/workflow/data source/timeframe: Deezoh, news-event control, live event digest, freshness handling.
+  Proposed fix: for direct news-event prompts, require the current headline or symbol in the first question and prefer a fresh price/report refresh before ranking long vs short.
+  Owner: `Codex`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: future news-event replays should either fetch a fresh lane or explicitly ask for the missing live headline before ranking setups.
+
+- Issue `DHI-032`
+  Raw event: live Hermes runner files under `/root/.openclaw/workspace/agents/hermes-lead/` still hardcode `/home/open-claw/openclawtrading`, while `/root/openclawtrading/reports/auto/HERMES_LANE_THESIS.json`, `HERMES_ADVISOR_REVIEW.json`, `HERMES_RUNTIME_INPUT.json`, and `cron.log` were all missing on the current VPS truth path.
+  What happened: Hermes artifacts are not currently wired to the active `/root/...` runtime, and Hermes is absent from the current root cron proof.
+  Why it matters: Hermes exists as files, but on this VPS it is not proven active, current, or path-correct. This is exactly the `exists` versus `wired` versus `used` gap the loop is supposed to catch.
+  Recurrence: observed in the live bounded Hermes inspection on 2026-05-02.
+  Affected agent/workflow/data source/timeframe: Hermes lead, PM heartbeat, runtime bridge outputs, VPS path truth.
+  Proposed fix: audit Hermes end-to-end on the `/root/...` runtime before any re-enable attempt: update path constants, run `bash -n`, then do one bounded manual Hermes refresh and confirm fresh reports under `/root/openclawtrading/reports/auto/`.
+  Owner: `architect-codex + Hermes Lead`
+  Risk: `medium`
+  Approval needed: `review before any live Hermes cron re-enable or policy change`
+  Proof test: Hermes scripts should point at `/root/openclawtrading`, a bounded manual run should finish, and fresh Hermes reports should appear under the current `/root/...` report root.
+
+### Safe Changes Applied This Run
+
+- Local and live Deezoh direct-answer contract tightened in:
+  - `agents/deezoh/QUESTION_ENGINE.md`
+- Local and live macro bundle-grace behavior tightened in:
+  - `agents/macro-bias/AGENTS.md`
+- Local and live screener workflow-grace and selector guidance tightened in:
+  - `agents/screener/WORKFLOW.md`
+
+### Optimization Queue Updates
+
+- `Q-2026-05-02-16` Keep the direct-answer contract, but separate workflow labeling from macro veto logic in Deezoh. Status: queued.
+- `Q-2026-05-02-17` Remove stock-style generic finance calls from crypto observation workflows. Status: queued.
+- `Q-2026-05-02-18` Require fresh headline or symbol capture before Deezoh ranks live news-event scenarios. Status: queued.
+- `Q-2026-05-02-19` Audit Hermes against `/root/...` truth and prove whether it is active, inactive, or only staged. Status: queued.
+
 - Issue `DHI-028`
   Raw event: live Deezoh consolidation replay selected `consolidation_resolution`, kept `best no-trade` as the winner, and explicitly waited for acceptance or failed-breakout proof instead of forcing the range.
   What happened: Deezoh handled the boxed market correctly and preserved patience under ambiguity.
@@ -387,3 +499,424 @@ Each hourly run must include:
   Status: `fixed and pending replay confirmation`
 
 - `Q-2026-05-02-12` Re-run a Deezoh live session after the new `BOOTSTRAP.md` sync and confirm the missing-bootstrap warning drops. Status: queued.
+
+## 2026-05-02 SSH-Stalled Continuation Pass
+
+### What Actually Ran
+
+- Re-read the current bootstrap, runtime-router, orchestration loop, automation memory hints, and latest same-day handoff.
+- Re-inspected the local Deezoh instruction surfaces and local Hermes runner mirrors under `C:\Users\becke\claudecowork`.
+- Verified network reachability to the current VPS target with Windows `Test-NetConnection`.
+- Attempted multiple bounded `ssh.exe` probes to `root@100.67.172.114` for scheduler truth, report freshness, session inventory, Hermes runner reads, and log tails.
+
+### New Evidence From This Run
+
+- Issue `DHI-SSH-2026-05-02`
+  Raw event: `Test-NetConnection 100.67.172.114 -Port 22` returned `TcpTestSucceeded = True`, but every bounded `ssh.exe` probe to `root@100.67.172.114` stalled until the local timeout without returning command output.
+  What happened: the host is reachable at the TCP layer, but this pass could not obtain a usable remote shell or remote command output.
+  Why it matters: live OpenClaw truth could not be freshly re-verified, so this pass cannot honestly claim new live Deezoh/Hermes behavior proof or live sync completion.
+  Recurrence: reproduced across multiple command shapes on 2026-05-02, including explicit key-based `BatchMode` probes.
+  Affected agent/workflow/data source/timeframe: live VPS verification, Deezoh observation suite, Hermes path audit, root-cron truth, report freshness.
+  Proposed fix: resolve the current SSH stall or auth/startup-shell hang first, then rerun the blocked live observation suite before judging the local fixes as verified.
+  Owner: `system-access + architect-codex`
+  Risk: `medium`
+  Approval needed: `no for connectivity diagnosis; review before changing live access or shell startup policy`
+  Proof test: a bounded `ssh.exe root@100.67.172.114 "echo ok"` must return output within the timeout, then the normal live probes can resume.
+
+- Proved
+  The local Deezoh contract still needed a stronger separation between workflow naming and macro veto logic, so this pass tightened `QUESTION_ENGINE.md` to keep `selected_workflow` structure-first and to keep crypto quote routing away from stock-style generic finance surfaces.
+
+- Proved
+  The local Hermes runner mirrors were still hardcoded to retired `/home/open-claw/...` paths. This pass updated the local `run_hermes_lead.sh` and `run_hermes_pm_heartbeat.sh` mirrors to `/root/...` truth so the next live sync can use current path defaults.
+
+### Safe Changes Applied This Run
+
+- Local Deezoh instruction update in:
+  - `agents/deezoh/QUESTION_ENGINE.md`
+- Local Hermes path-truth updates in:
+  - `agents/hermes-lead/run_hermes_lead.sh`
+  - `agents/hermes-lead/run_hermes_pm_heartbeat.sh`
+
+### Optimization Queue Updates
+
+- `Q-2026-05-02-20` Restore bounded SSH command execution to `root@100.67.172.114` before the next Deezoh/Hermes live improvement pass. Status: queued.
+- `Q-2026-05-02-21` After SSH is healthy again, live-sync the repaired local Hermes runner mirrors and prove fresh Hermes outputs under `/root/openclawtrading/reports/auto/`. Status: queued.
+
+## 2026-05-02 Local Path-Truth Repair Pass
+
+### What Actually Ran
+
+- Re-read the current bootstrap, runtime router, automation memory, and latest same-day handoff.
+- Re-checked Windows-to-VPS reachability with `Test-NetConnection 100.67.172.114 -Port 22`.
+- Re-attempted bounded `ssh.exe` probes to `root@100.67.172.114`, which still stalled until timeout and returned no remote command output.
+- Inspected active local Deezoh/Hermes runner and orchestrator scripts under `scripts/`.
+- Ran bounded local verification:
+  - `python scripts/simulator/test_deezoh_question_engine.py`
+  - `python scripts/simulator/test_deezoh_council_runtime_visibility.py`
+  - `python scripts/tests/hermes_dual_lane_contract_smoke.py`
+  - `python scripts/tests/hermes_learning_store_smoke.py`
+  - `python -m py_compile` on the touched runner/orchestrator files
+
+### New Evidence From This Run
+
+- Issue `DHI-033`
+  Raw event: active local runner and orchestrator files still defaulted to retired `/home/open-claw/...` roots, including `scripts/runtime_paths.py`, `scripts/hermes_runtime_bridge.py`, `scripts/hermes_progress_status.py`, `scripts/build_dual_lane_experiment.py`, `scripts/build_trade_judge_cycle.py`, `scripts/deezoh_round_orchestrator.py`, `scripts/deezoh_orchestrator.py`, and `scripts/simulator/tradingview_style_replay.py`.
+  What happened: the current local mirrors had drifted behind the already-proven VPS path truth and would have misled the next live sync or bounded manual replay.
+  Why it matters: this is a real `truth surface` regression. Even if the live VPS is correct, stale local defaults create bad handoffs, false negatives, and unnecessary `/home/open-claw` fallbacks in the next pass.
+  Recurrence: observed in the local active script set on 2026-05-02.
+  Affected agent/workflow/data source/timeframe: Deezoh orchestrator, Hermes runtime bridge, Hermes progress/judge lane, strategy replay, runtime path helper.
+  Proposed fix: keep `/root/openclawtrading` and `/root/.openclaw` as the primary defaults in active scripts, leave only explicit legacy compatibility where it is deliberate, and verify with `py_compile` plus local smoke tests before any live sync.
+  Owner: `Codex`
+  Risk: `medium`
+  Approval needed: `no for local runner/path fixes`
+  Proof test: the touched files should compile cleanly, the Deezoh/Hermes smokes should pass, and no active default should still point at `/home/open-claw/...` except an intentional legacy fallback line.
+
+- Proved
+  The local Deezoh and Hermes path-truth repair did not break the current bounded test harnesses. All four local smokes passed after the path-default changes, and the touched files compiled cleanly.
+
+- Proved
+  The live blocker is still access, not market logic. `Test-NetConnection` still shows TCP/22 reachable on the Tailscale path, but bounded `ssh.exe` command probes still hang and return no usable shell output.
+
+### Safe Changes Applied This Run
+
+- Local path-truth repairs in:
+  - `scripts/runtime_paths.py`
+  - `scripts/hermes_runtime_bridge.py`
+  - `scripts/hermes_progress_status.py`
+  - `scripts/build_dual_lane_experiment.py`
+  - `scripts/build_trade_judge_cycle.py`
+  - `scripts/deezoh_round_orchestrator.py`
+  - `scripts/deezoh_orchestrator.py`
+  - `scripts/simulator/tradingview_style_replay.py`
+
+### Optimization Queue Updates
+
+- `Q-2026-05-02-22` Recover usable SSH command execution to the Kimi VPS so the blocked live observation suite and Hermes proof can resume. Status: queued.
+- `Q-2026-05-02-23` After SSH recovery, live-sync the repaired local script defaults and prove Hermes/Deezoh artifacts write under `/root/openclawtrading/reports/auto/`. Status: queued.
+
+## 2026-05-02 Scenario Harness Path-Truth Pass
+
+### What Actually Ran
+
+- Re-checked bounded SSH access with `Test-NetConnection 100.67.172.114 -Port 22` and another timed `ssh.exe` probe; TCP/22 stayed reachable but the remote command still hung until timeout.
+- Inspected the local simulator and replay harnesses under `scripts/simulator/`.
+- Repaired the retired `/home/open-claw/openclawtrading` default in `scripts/simulator/agent_scenario_tester.py`.
+- Ran bounded local verification:
+  - `python -m py_compile scripts/simulator/agent_scenario_tester.py`
+  - `python scripts/simulator/agent_scenario_tester.py --capture-current deezoh-hermes-local-pass-2026-05-02 --description "Local bounded snapshot after scenario harness path-truth fix"`
+  - `python scripts/simulator/agent_scenario_tester.py --snapshot deezoh-hermes-local-pass-2026-05-02`
+  - `python scripts/simulator/test_deezoh_question_engine.py`
+  - `python scripts/simulator/test_deezoh_council_runtime_visibility.py`
+  - `python scripts/tests/hermes_dual_lane_contract_smoke.py`
+  - `python scripts/tests/hermes_learning_store_smoke.py`
+
+### New Evidence From This Run
+
+- Issue `DHI-034`
+  Raw event: `scripts/simulator/agent_scenario_tester.py` still hardcoded `BASE = Path('/home/open-claw/openclawtrading')` even after the rest of the active local Deezoh/Hermes runner layer had been moved to current `/root/...` truth.
+  What happened: the local scenario harness had drifted behind the newer path-truth repairs, so bounded snapshot capture and snapshot replay depended on a retired Linux root by default.
+  Why it matters: this harness is part of the safe replay surface for Deezoh/Hermes quality checks. Leaving it on the old root would keep producing false negatives or force the next agent to rediscover the same path bug before running local scenario audits.
+  Recurrence: observed in the current Windows workspace on 2026-05-02.
+  Affected agent/workflow/data source/timeframe: local Deezoh/Hermes scenario harness, snapshot capture, snapshot replay, simulator path truth.
+  Proposed fix: resolve `CHIMERA_BASE_DIR` first, otherwise prefer the current workspace root, then `/root/openclawtrading`, and only keep `/home/open-claw/openclawtrading` as an explicit legacy fallback.
+  Owner: `Codex`
+  Risk: `low`
+  Approval needed: `no for local harness/path fixes`
+  Proof test: `agent_scenario_tester.py --capture-current ...` and `--snapshot ...` should both run from the current workspace without needing the retired Linux root.
+
+- Proved
+  The repaired scenario harness now captures and replays snapshots from the current workspace successfully. It wrote a new snapshot under `scripts/simulator/snapshots/deezoh-hermes-local-pass-2026-05-02` and produced `reports/auto/SCENARIO_TEST_REPORT.json` plus `SCENARIO_TEST_REPORT.md`.
+
+- Proved
+  The captured local snapshot fail-closed to `PAUSE` instead of pretending the desk was tradable. The report marked core files like `CATALYST_REPORT.json`, `MACRO_BIAS.json`, `SCOUT_REPORT.json`, `CHART_ANALYSIS.json`, `INDICATOR_REPORT.json`, and `STRATEGY_REPORT.json` as missing and kept execution skipped.
+
+- Proved
+  The broader bounded verification set still passed after the harness repair: Deezoh question-engine tests passed `16/16`, runtime council visibility passed, and both Hermes smoke tests passed.
+
+### Safe Changes Applied This Run
+
+- Local simulator path-truth repair in:
+  - `scripts/simulator/agent_scenario_tester.py`
+
+### Optimization Queue Updates
+
+- `Q-2026-05-02-24` Keep the simulator and replay harness set aligned to current `/root/openclawtrading` truth whenever runner-path repairs land elsewhere first. Status: queued.
+
+## 2026-05-02 Tailscale SSH Daily Prompt Fix
+
+### What Actually Ran
+
+- Re-tested live SSH access to `root@100.67.172.114`.
+- Captured the behavior difference between the earlier stalled Tailscale SSH path and the current recovered session.
+- Inspected the live VPS SSH stack:
+  - `systemctl is-active ssh`
+  - `systemctl is-enabled ssh`
+  - `sshd -T`
+  - `/root/.ssh/authorized_keys`
+  - `ss -ltnp`
+- Enabled normal `sshd` permanently with `systemctl enable ssh`.
+- Disabled Tailscale SSH on the VPS with `tailscale set --ssh=false --accept-risk=lose-ssh`.
+- Re-verified non-intercepted SSH command execution from Windows to the VPS after the cutover.
+
+### New Evidence From This Run
+
+- Issue `DHI-035`
+  Raw event: earlier SSH debug showed the remote software version as `Tailscale` and required a browser-based extra check; later debug after the fix authenticated with `publickey` and learned standard OpenSSH host keys instead.
+  What happened: the daily access friction was caused by Tailscale SSH intercepting port `22` on the Tailscale IP and applying check-mode approval, not by broken Tailscale connectivity or a dead VPS.
+  Why it matters: this was the real root cause behind the recurring daily browser approval that blocked non-interactive Codex automation.
+  Recurrence: reproduced and then resolved on 2026-05-02.
+  Affected agent/workflow/data source/timeframe: all live Codex-to-VPS automation, Deezoh/Hermes live verification, remote command execution.
+  Proposed fix: keep standard `sshd` enabled on the VPS and keep Tailscale SSH disabled for this node so SSH runs over the Tailscale network without the extra Tailscale SSH approval layer.
+  Owner: `Codex`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: `ssh root@100.67.172.114 "echo post_disable_ok"` should authenticate with `publickey` and complete without the Tailscale SSH browser check.
+  Status: `fixed and verified`
+
+- Proved
+  Normal `sshd` was already healthy on the VPS, but it was not enabled at boot. This pass enabled it permanently so a reboot should not silently re-break the non-Tailscale SSH fallback.
+
+- Proved
+  The root authorized key for this Windows machine was already present on the VPS, so the cutover away from Tailscale SSH did not need any risky auth rewiring first.
+
+### Safe Changes Applied This Run
+
+- Live VPS:
+  - enabled standard SSH service at boot with `systemctl enable ssh`
+  - disabled Tailscale SSH with `tailscale set --ssh=false --accept-risk=lose-ssh`
+
+### Optimization Queue Updates
+
+- `Q-2026-05-02-25` If SSH approval friction returns, check whether Tailscale SSH was re-enabled on the VPS before touching Deezoh/Hermes again. Status: queued.
+
+## 2026-05-02 Chimera Desk Observability Audit
+
+### What Actually Ran
+
+- Re-verified live SSH command execution to `root@100.67.172.114`.
+- Ran `openclaw cron list`, `openclaw tasks flow list`, and root `crontab -l` in the same pass.
+- Verified that the active root crontab entries point at current `/root/openclawtrading/...` paths and that the referenced paths exist.
+- Audited report freshness under `/root/openclawtrading/reports/auto/`.
+- Audited Deezoh and Hermes trace surfaces under `/root/.openclaw/workspace/agents/`.
+- Audited live log freshness and error signatures under `/root/.openclaw/logs/`.
+- Checked whether review and critic surfaces exist and whether they are current enough to debug today's desk cycle.
+
+### New Evidence From This Run
+
+- Issue `DHI-036`
+  Raw event: collector files like `CANDLES.json`, `MACRO_BIAS.json`, `WATCHLISTS.json`, and `OPPORTUNITIES.json` refreshed within minutes, while `DEEZOH_THOUGHTS.json`, `DEEZOH_THOUGHTS_LIVE.json`, `SCOUT_REPORT.json`, and `CATALYST_REPORT.json` were still about 13 to 15 hours old.
+  What happened: the live desk is collecting fresh inputs faster than it is refreshing its visible reasoning trail.
+  Why it matters: a human or audit loop can falsely read the desk as current because the raw inputs are fresh even when the actual decision narrative is stale.
+  Recurrence: observed in the live audit on 2026-05-02.
+  Affected agent/workflow/data source/timeframe: Deezoh, scout, catalyst, desk operator trust, same-cycle observability.
+  Proposed fix: tie one bounded desk trace bundle to the recurring collector cycle so Deezoh thought, scout, catalyst, and operator surfaces either refresh together or degrade together.
+  Owner: `architect-codex`
+  Risk: `high`
+  Approval needed: `review before broad recurring loop rewiring`
+  Proof test: one bounded live cycle should show collector outputs and the desk trace bundle refreshing in the same cycle window.
+
+- Issue `DHI-037`
+  Raw event: live review and critic surfaces such as `REASONING_AUDIT_LATEST.md`, `critic-findings-*`, `reviewer-findings-*`, `review-log.md`, and the monitor review exports were present but around 145 hours old.
+  What happened: the review layer currently exists mostly as stale archive material instead of a live debug surface for today's desk state.
+  Why it matters: when the desk behaves oddly, there is no current-cycle critic or reviewer trail to explain whether the reasoning actually degraded or only the raw inputs did.
+  Recurrence: observed in the live audit on 2026-05-02.
+  Affected agent/workflow/data source/timeframe: review freshness, critic freshness, human debug path, operator trust.
+  Proposed fix: either wire one current-cycle review artifact into the recurring desk loop or retire the stale review surfaces from any user-facing trust claims.
+  Owner: `architect-codex + cron-manager`
+  Risk: `medium`
+  Approval needed: `review before changing recurring review policy`
+  Proof test: the next bounded desk cycle should either write one fresh review artifact or clearly mark review as unavailable.
+
+- Issue `DHI-038`
+  Raw event: `candle_analyzer.log` still shows repeated fetch and data errors for stock-style symbols like `MSFTUSDT`, `NVDAUSDT`, `TSLAUSDT`, `AMZNUSDT`, and `XAGUSDT`, while `DERIVATIVES.json` refreshed with empty `coins` and `market` payloads.
+  What happened: at least two upstream collector lanes are producing fresh files but degraded analytical value.
+  Why it matters: timestamp freshness alone is currently enough to make weak candle and derivatives lanes look healthy, which can contaminate Deezoh, watchlist, and macro confidence.
+  Recurrence: observed in the live audit on 2026-05-02.
+  Affected agent/workflow/data source/timeframe: candle lane, derivatives lane, watchlist confidence, macro confidence, same-cycle desk observability.
+  Proposed fix: remove unsupported stock-style `*USDT` names from the active candle universe and add an explicit low-confidence downgrade whenever derivatives refresh with empty payloads.
+  Owner: `codex + pipeline-watchdog`
+  Risk: `medium`
+  Approval needed: `no for bounded input-scope and downgrade repairs`
+  Proof test: a fresh candle cycle should stop logging those unsupported symbols, and a fresh derivatives cycle should either produce non-empty payloads or visibly downgrade downstream confidence.
+
+- Proved
+  Active recurrence on the current VPS still comes from Linux root cron, not OpenClaw-native cron or Task Flow. `openclaw cron list` returned `No cron jobs.`, `openclaw tasks flow list` returned `TaskFlows: 0`, and root `crontab -l` carried the current market scripts.
+
+- Proved
+  The active root crontab entries now point at current `/root/openclawtrading/...` paths and the referenced script/log paths exist. This audit did not find active crontab entries still pointing at retired `/home/open-claw/...` roots.
+
+- Proved
+  Hermes is still not visible as a fresh live desk lane under the current report root. The current desk audit found runner files in the Hermes workspace, but no fresh Hermes runtime artifacts under `/root/openclawtrading/reports/auto/`.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-02-26` Build one same-cycle desk trace bundle so collector freshness cannot be mistaken for fresh Deezoh reasoning. Status: queued.
+- `Q-2026-05-02-27` Reintroduce one live current-cycle review artifact or retire stale review surfaces from trust claims. Status: queued.
+- `Q-2026-05-02-28` Remove unsupported stock-style `*USDT` symbols from the active candle universe and make empty derivatives payloads degrade downstream confidence visibly. Status: queued.
+
+## 2026-05-02 Hermes Live Sync And Runtime Gap Pass
+
+### What Actually Ran
+
+- Re-verified bounded SSH command execution to `root@100.67.172.114`.
+- Re-read the latest Deezoh/Hermes handoffs, live report inventory, root cron truth, and current Hermes runner state under `/root/.openclaw/workspace/agents/hermes-lead/`.
+- Re-ran bounded local verification:
+  - `python scripts/simulator/test_deezoh_question_engine.py`
+  - `python scripts/simulator/test_deezoh_council_runtime_visibility.py`
+  - `python scripts/tests/hermes_dual_lane_contract_smoke.py`
+  - `python scripts/tests/hermes_learning_store_smoke.py`
+- Live-synced the already-repaired local Hermes runner scripts into:
+  - `/root/.openclaw/workspace/agents/hermes-lead/run_hermes_lead.sh`
+  - `/root/.openclaw/workspace/agents/hermes-lead/run_hermes_pm_heartbeat.sh`
+- Fixed the first live sync failure by republishing those files with clean Unix `LF` endings.
+- Verified both live Hermes runner scripts with `bash -n`.
+- Ran one bounded live manual Hermes refresh:
+  - `timeout 120s bash /root/.openclaw/workspace/agents/hermes-lead/run_hermes_lead.sh`
+- Re-checked the current derivatives payload at `/root/openclawtrading/reports/auto/DERIVATIVES.json`.
+
+### New Evidence From This Run
+
+- Issue `DHI-039`
+  Raw event: after the live Hermes runner scripts were republished to current `/root/...` path truth and passed `bash -n`, a bounded manual Hermes lead run exited with `2` and logged `python3: can't open file '/root/openclawtrading/scripts/hermes_runtime_bridge.py': [Errno 2] No such file or directory`.
+  What happened: Hermes advanced past the old path bug and immediately exposed the next real live blocker: the current VPS repo does not contain the runtime bridge script the runner depends on.
+  Why it matters: Hermes is still not honestly `wired` on the current VPS. The problem is no longer just stale `/home/open-claw/...` paths; at least one required runtime script is absent from `/root/openclawtrading/scripts`, so a one-off manual refresh cannot complete.
+  Recurrence: reproduced in the bounded live manual run on 2026-05-02 after the path-truth sync.
+  Affected agent/workflow/data source/timeframe: Hermes lead, dual-lane bridge, runtime refresh, manual proof path, `/root/openclawtrading/reports/auto/`.
+  Proposed fix: audit the full Hermes script dependency set from the repaired local mirror, compare it to the live `/root/openclawtrading/scripts` inventory, and route a bounded live script sync plan for review before attempting another Hermes refresh.
+  Owner: `architect-codex + Hermes Lead`
+  Risk: `medium`
+  Approval needed: `review before mirroring missing Hermes runtime scripts into the live repo`
+  Proof test: the next bounded Hermes manual run should find `hermes_runtime_bridge.py`, complete without `Errno 2`, and write fresh Hermes artifacts under `/root/openclawtrading/reports/auto/`.
+
+- Proved
+  The live Hermes runner scripts under `/root/.openclaw/workspace/agents/hermes-lead/` were still stale before this pass. They now point at `/root/openclawtrading`, source `/root/.chimera.env` and `/root/.hermes/.env`, and pass `bash -n` after a binary-safe republish with Unix line endings.
+
+- Proved
+  `DERIVATIVES.json` is still refreshing with an empty structure rather than a useful market payload. Current live proof shows:
+  - `"coins": {}`
+  - `"market": {}`
+  - `_brief.signals = []`
+  This keeps the derivatives lane in a fresh-but-thin state even when the timestamp is current.
+
+- Proved
+  The bounded local Deezoh/Hermes regression suite still passes after the Hermes path-truth work:
+  - Deezoh question-engine tests passed `16/16`
+  - Deezoh runtime council visibility passed
+  - Hermes dual-lane contract smoke passed
+  - Hermes learning-store smoke passed
+
+### Safe Changes Applied This Run
+
+- Live Hermes runner path-truth sync in:
+  - `/root/.openclaw/workspace/agents/hermes-lead/run_hermes_lead.sh`
+  - `/root/.openclaw/workspace/agents/hermes-lead/run_hermes_pm_heartbeat.sh`
+
+### Optimization Queue Updates
+
+- `Q-2026-05-02-29` Compare the live `/root/openclawtrading/scripts` Hermes dependency inventory against the repaired local mirror and produce the smallest safe live sync set before retrying Hermes. Status: queued.
+- `Q-2026-05-02-30` Treat empty-object `DERIVATIVES.json` payloads as an explicit degraded-confidence signal, not just a fresh timestamp. Status: queued.
+
+## 2026-05-02 Desk Observability Repair Verification Pass
+
+### What Actually Ran
+
+- Added a shared local/live helper `refresh_desk_observability_bundle.py` under the current `/root/openclawtrading/scripts/` path.
+- Wired that helper into the maintained macro and watchlist builders so one bounded collector cycle can also refresh the human-facing desk trace bundle.
+- Removed unsupported stock-style `MSFTUSDT`, `NVDAUSDT`, `TSLAUSDT`, `AMZNUSDT`, and `XAGUSDT` names from the active candle default universe while keeping current crypto symbols plus `XAUUSDT`.
+- Added a visible derivatives downgrade contract to `WATCHLISTS.json` whenever `DERIVATIVES.json` refreshes with empty `coins` and `market` objects.
+- Synced the changed scripts to the live VPS and ran bounded live verification against the current `/root/openclawtrading` runtime.
+
+### New Evidence From This Run
+
+- Issue `DHI-040`
+  Raw event: the first bounded live `watchlist_generator.py` run after the observability-helper wiring wrote `WATCHLISTS.json` to `/root/reports/auto/` instead of the active `/root/openclawtrading/reports/auto/` root.
+  What happened: the maintained watchlist builder still had a wrong default base path that climbed too far up the repo tree, so a repair intended to improve observability initially refreshed the wrong report root.
+  Why it matters: wrong-root writes can create false confidence because a manual test appears successful while the live consumers keep reading the stale current root.
+  Recurrence: reproduced once during the bounded live repair pass on 2026-05-02 and fixed in the same pass by switching the default base path to `runtime_paths.ROOT`.
+  Affected agent/workflow/data source/timeframe: watchlist builder, observability bundle, active report-root truth, same-cycle operator trust.
+  Proposed fix: keep the root-aware default and verify every rebuilt artifact against `/root/openclawtrading/reports/auto/` rather than only checking for file creation.
+  Owner: `codex-main-thread`
+  Risk: `medium`
+  Approval needed: `no for bounded path-truth repair`
+  Proof test: a fresh live watchlist run should update `/root/openclawtrading/reports/auto/WATCHLISTS.json` and trigger same-cycle refreshes for the connected observability bundle in that same root.
+
+- Proved
+  After the root-aware watchlist fix, one bounded live cycle refreshed `WATCHLISTS.json`, `DEEZOH_THOUGHTS.json`, `ORCHESTRATOR_ACTIVITY.json`, `PAPER_DESK_OPERATOR_SNAPSHOT.json`, `PAPER_DESK_PIPELINE_BRIEF.md`, and `PAPER_DESK_INTERACTION_TRACE.md` within the same minute under `/root/openclawtrading/reports/auto/`.
+
+- Proved
+  The active saved `WATCHLISTS.json` now carries a visible derivatives downgrade object when the derivatives lane is structurally thin: `status = degraded`, `coins_count = 0`, `market_fields = 0`, and a warning that leverage context should be treated as low confidence.
+
+- Proved
+  The active candle default universe no longer includes the unsupported stock-style `*USDT` names seen in the earlier live log pollution. Final bounded live verification returned `False` for `MSFTUSDT`, `NVDAUSDT`, `TSLAUSDT`, `AMZNUSDT`, and `XAGUSDT`, while keeping `XAUUSDT = True`.
+
+### Safe Changes Applied This Run
+
+- Local + live `openclawtrading/scripts/refresh_desk_observability_bundle.py`
+- Local + live `openclawtrading/scripts/watchlist_generator.py`
+- Local + live `openclawtrading/scripts/macro_bias_builder.py`
+- Local + live `openclawtrading/scripts/candle_analyzer.py`
+- Local + live copies of:
+  - `build_deezoh_thoughts.py`
+  - `build_orchestrator_activity.py`
+  - `build_paper_desk_operator_report.py`
+
+### Optimization Queue Updates
+
+- `Q-2026-05-02-31` Prove the repaired observability bundle lands from natural root cron rather than only a bounded manual run. Status: queued.
+
+## 2026-05-03 Deezoh Workflow-Label Retry Pass
+
+### What Actually Ran
+
+- Re-verified bounded SSH access to `root@100.67.172.114` after the earlier blocked pass.
+- Restored the thread heartbeat `deezoh-15-minute-observation-loop` at a 15 minute cadence.
+- Inspected the latest live Deezoh, screener, and macro session traces plus the current shared report root.
+- Verified that the prior screener and macro direct runs had written useful output even when later provider behavior made the task look worse than the written artifact.
+- Ran a fresh live Deezoh chart-side replay with explicit session id `deezoh-observe-breakout-v5`.
+- Patched the Deezoh instruction layer locally and then live in:
+  - `agents/deezoh/QUESTION_ENGINE.md`
+  - `agents/deezoh/WORKFLOW.md`
+  - `agents/deezoh/HEARTBEAT.md`
+- Re-ran the same live Deezoh chart-side replay with explicit session id `deezoh-observe-breakout-v6`.
+
+### New Evidence From This Run
+
+- Issue `DHI-041`
+  Raw event: the first fresh retry replay `deezoh-observe-breakout-v5` pushed back correctly and kept `no_trade` alive, but returned `selected_workflow = deezoh-trading-coach three-case comparison workflow` instead of a canonical market workflow id.
+  What happened: the reasoning quality was materially good, but the workflow label contract was still too weak, so Deezoh answered with a meta coaching label instead of the actual structural workflow.
+  Why it matters: this breaks downstream monitoring and makes workflow analytics noisy, because the system cannot reliably tell whether the desk thought the market was a breakout, consolidation, trap, or event-control case.
+  Recurrence: reproduced once in the fresh live retry pass on 2026-05-03 and fixed in the same pass by tightening the direct-observation workflow contract.
+  Affected agent/workflow/data source/timeframe: Deezoh direct observation replies, workflow analytics, monitor ledger quality, 15 minute desk loop.
+  Proposed fix: require `selected_workflow` to be a canonical market workflow id, require a direct read of `WORKFLOW.md` when the prompt asks for the workflow label, and forbid skill names or prose labels as the workflow output.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no for bounded instruction repair`
+  Proof test: a fresh replay of the same chart-side prompt should output a canonical workflow id such as `consolidation_resolution` rather than a coaching label.
+
+- Proved
+  After the live instruction repair, the immediate rerun `deezoh-observe-breakout-v6` returned `selected_workflow = consolidation_resolution` and still kept `winner = no_trade`, `typed_wait = WAIT_ACCEPTANCE`, and strong pushback against front-running the breakout.
+
+- Proved
+  The retry pass confirmed the higher-value behavioral contract is now working together:
+  - Deezoh pushed back instead of yes-manning.
+  - Deezoh named what Sal may be overlooking.
+  - Deezoh exposed stale and missing evidence clearly.
+  - Deezoh listed what it actually read.
+
+- Proved
+  Specialist delegation is still not honestly live in this path. Both fresh retry replays returned `actually_spawned = None`, so the desk is still behaving as a single-session report consumer rather than a genuinely delegated specialist round.
+
+- Proved
+  Freshness remains a real blocker on judgment quality even when the answer format improved. The repaired replay still reported roughly 8 to 24 hour report age, empty `DERIVATIVES.json`, and no structured chart-analyzer payload.
+
+### Safe Changes Applied This Run
+
+- Local + live `agents/deezoh/QUESTION_ENGINE.md`
+- Local + live `agents/deezoh/WORKFLOW.md`
+- Local + live `agents/deezoh/HEARTBEAT.md`
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-01` Force canonical workflow ids in all direct observation outputs and validate them in replay tests. Status: done.
+- `Q-2026-05-03-02` Add one explicit freshness-first branch so Deezoh asks for a refresh before deep thesis ranking when the core desk reports are 8+ hours stale. Status: queued.
+- `Q-2026-05-03-03` Prove one real delegated specialist round or explicitly downgrade the desk contract to report-consumption mode until delegation is honest. Status: queued.
