@@ -12,5 +12,6 @@ Return:
 - what is only documented
 - what is wired
 - what is verified live
+- whether an activation receipt exists
 - review outcome: complete, iterate, or blocked
 - next step if not complete

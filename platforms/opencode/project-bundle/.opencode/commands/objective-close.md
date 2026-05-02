@@ -16,4 +16,5 @@ Return:
 
 - close decision
 - why
+- receipt status
 - remaining work if any

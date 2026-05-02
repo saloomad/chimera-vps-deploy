@@ -3,6 +3,8 @@ import re
 import sys
 from pathlib import Path
 
+from receipt_logger import log_receipt
+
 
 PROJECT_DIR = Path(__file__).resolve().parents[2]
 CONTRACT_PATH = PROJECT_DIR / ".claude" / "OBJECTIVE_CONTRACT.md"
@@ -25,6 +27,12 @@ def main() -> int:
         return 0
 
     agent_name = payload.get("agent_name") or payload.get("subagent_name") or "subagent"
+    log_receipt(
+        "SubagentStop",
+        "activated",
+        trigger="subagent_review_gate",
+        notes=f"Subagent review gate ran for {agent_name}.",
+    )
     out = {
         "hookSpecificOutput": {
             "hookEventName": "SubagentStop",

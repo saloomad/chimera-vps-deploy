@@ -29,6 +29,11 @@ If friction or missed activation appears:
 
 5. `vibe-coding-monitor`
 
+If the user wants auto-triggered enforcement or a recurring workflow owner:
+
+6. `hook-opportunity-detector`
+7. `pipeline-enforcement-detector`
+
 If architecture or system-wide tradeoffs exist:
 
 6. `major-build-council-orchestrator`
@@ -51,6 +56,7 @@ Use:
 - file-backed plan and review contracts
 - wrapper scripts
 - explicit handoffs
+- activation receipts in `trace/platform_activation_receipts.jsonl`
 
 Do not pretend OpenCode currently has the same hook and continuation surface as OpenClaw or Claude Code, but do use its real native agents, commands, rules, skills, and permissions.
 

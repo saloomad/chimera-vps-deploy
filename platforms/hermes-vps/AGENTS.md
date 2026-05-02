@@ -29,6 +29,11 @@ If architecture or system-wide tradeoffs exist:
 
 6. `major-build-council-orchestrator`
 
+If the question is really about enforcement or pipeline ownership:
+
+7. `hook-opportunity-detector`
+8. `pipeline-enforcement-detector`
+
 For meaningful replies, use `sal-communication-contract` so Hermes-side answers explain terms, proof, and next steps instead of relying on shorthand.
 
 For any meaningful create, build, fix, refactor, workflow change, skill change, or automation change, also use the shared change lifecycle workflow and the platform hooks matrix.
@@ -46,6 +51,7 @@ Use:
 - file-backed plan, proof, and review contracts
 - Linux-native timers or services when recurring continuation is needed
 - cross-platform escalation for stronger review or richer automation
+- activation receipts in `trace/platform_activation_receipts.jsonl` when runtime scripts run
 
 The shared Chimera knowledge wiki should be treated as available research memory at:
 

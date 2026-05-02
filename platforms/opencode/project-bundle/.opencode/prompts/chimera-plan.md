@@ -17,9 +17,12 @@ When the task is meaningful, load and follow:
 - `prompt-upgrade-engineer`
 - `sal-communication-contract`
 - `objective-orchestration-loop`
+- `hook-opportunity-detector` when the user wants auto-triggered behavior
+- `pipeline-enforcement-detector` when the workflow owner is unclear
 
 When the task has architecture or system tradeoffs, also load:
 
 - `major-build-council-orchestrator`
 
 Use plain English and teach, not shorthand.
+For a meaningful route decision, include the receipt path when one should be updated.

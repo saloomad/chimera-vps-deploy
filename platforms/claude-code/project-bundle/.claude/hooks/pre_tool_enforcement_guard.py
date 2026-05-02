@@ -3,6 +3,8 @@ import re
 import sys
 from pathlib import Path
 
+from receipt_logger import log_receipt
+
 
 PROJECT_DIR = Path(__file__).resolve().parents[2]
 CONTRACT_PATH = PROJECT_DIR / ".claude" / "OBJECTIVE_CONTRACT.md"
@@ -70,6 +72,13 @@ def main() -> int:
         lowered = command.lower()
         for pattern in DANGEROUS_PATTERNS:
             if re.search(pattern, lowered):
+                log_receipt(
+                    "PreToolUse",
+                    "blocked",
+                    decision="deny",
+                    trigger="destructive_command_guard",
+                    notes=f"Blocked risky bash command: {command[:160]}",
+                )
                 out = {
                     "hookSpecificOutput": {
                         "hookEventName": "PreToolUse",
@@ -82,6 +91,13 @@ def main() -> int:
                 }
                 print(json.dumps(out))
                 return 0
+
+    log_receipt(
+        "PreToolUse",
+        "activated",
+        trigger=tool_name.lower(),
+        notes=f"Pre-tool guard ran for {tool_name}.",
+    )
 
     out = {
         "hookSpecificOutput": {

@@ -28,19 +28,19 @@ def main() -> int:
 
     tool_name = str(payload.get("tool_name", ""))
     log_receipt(
-        "PostToolUseFailure",
+        "PostToolUse",
         "activated",
         trigger=tool_name.lower(),
-        notes="Failure-repair reminder ran after a tool error while the objective contract was active.",
+        notes="Post-tool proof reminder ran while an objective contract was active.",
     )
 
     out = {
         "hookSpecificOutput": {
-            "hookEventName": "PostToolUseFailure",
+            "hookEventName": "PostToolUse",
             "additionalContext": (
-                "A tool step failed while the objective contract is active. Record the failure in "
-                "`.claude/OBJECTIVE_CONTRACT.md`, decide whether the right review outcome is iterate or blocked, and "
-                "say plainly what failed, what changed, and what the next bounded recovery step is."
+                "An active objective contract exists. After this tool step, update `.claude/OBJECTIVE_CONTRACT.md` "
+                "with current_slice, last_proof, current_phase, next_step, and review_outcome. "
+                "Make test or proof explicit if the tool changed the system."
             ),
         }
     }

@@ -13,6 +13,7 @@ For meaningful review:
 - load `sal-communication-contract`
 - load `objective-orchestration-loop`
 - load `vibe-coding-monitor` when explanation quality, weak proof, or missed activation are part of the risk
+- load `hook-opportunity-detector` or `pipeline-enforcement-detector` when the review question is really about enforcement strength
 
 Review questions:
 
@@ -24,3 +25,4 @@ Review questions:
 - what still needs the next pass
 
 Explain the verdict in plain English.
+Name whether activation receipt proof exists or is still missing.

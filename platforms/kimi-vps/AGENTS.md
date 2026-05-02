@@ -29,6 +29,11 @@ If friction, weak explanation, or missed activation appears:
 
 5. `vibe-coding-monitor`
 
+If the user wants stronger automatic enforcement or pipeline ownership:
+
+6. `hook-opportunity-detector`
+7. `pipeline-enforcement-detector`
+
 ## Deezoh Coach Suite
 
 When the active identity is Deezoh or the request is clearly a trading-decision request, use this handshake:
@@ -153,6 +158,8 @@ Keep these installed locally:
 - `strategy-backtest-lab`
 - `pipeline-simulation-lab`
 - `chimera-knowledge-wiki`
+- `hook-opportunity-detector`
+- `pipeline-enforcement-detector`
 
 ## KNOWLEDGE WIKI RULE
 

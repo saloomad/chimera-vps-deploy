@@ -37,6 +37,11 @@ If architecture or system-wide tradeoffs exist, also use:
 
 6. `major-build-council-orchestrator`
 
+If the user wants automatic event enforcement or a stronger pipeline owner, also use:
+
+7. `hook-opportunity-detector`
+8. `pipeline-enforcement-detector`
+
 For meaningful replies, use `sal-communication-contract` so the answer starts with brief context, teaches terms, explains proof artifacts, and ends with a short bottom line plus next step.
 
 For any meaningful create, build, fix, refactor, workflow change, skill change, or automation change, also run:
@@ -68,3 +73,4 @@ Best hook uses here:
 - `UserPromptSubmit` for orchestration precheck
 - `PreToolUse` and `PostToolUse` for guardrails and proof capture
 - slash commands for repeatable orchestration entry points
+- activation receipts in `trace/platform_activation_receipts.jsonl` for proof of what fired

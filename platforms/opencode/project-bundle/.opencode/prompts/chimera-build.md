@@ -17,6 +17,11 @@ If the task shows friction, weak proof, weak explanations, or missed activation,
 
 - `vibe-coding-monitor`
 
+If the task needs stronger enforcement or a recurring workflow owner, also load:
+
+- `hook-opportunity-detector`
+- `pipeline-enforcement-detector`
+
 For every meaningful build, fix, refactor, workflow change, skill change, automation change, or monitoring change:
 
 - use `workflows/codex/meaningful-change-lifecycle-and-enforcement-loop.md`
@@ -34,3 +39,4 @@ OpenCode-specific truth:
 - this platform has native agents, commands, rules, skills, and permissions
 - it does not yet have a separately verified native hook API in this project
 - use commands, agents, rules, skills, file-backed plans, and review gates as the enforcement stack here
+- for meaningful starts, review points, and closeouts, write a receipt to `trace/platform_activation_receipts.jsonl`

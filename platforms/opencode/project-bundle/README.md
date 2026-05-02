@@ -1,18 +1,30 @@
-# OpenCode Chimera Project Bundle
+# Chimera OpenCode Bundle
 
-This folder mirrors the committed OpenCode project bundle used in the Chimera workspace.
+This folder is the committed OpenCode project bundle for Chimera.
 
 What it gives us:
 
-- `opencode.json`
-- `.opencode/commands/*`
-- `.opencode/prompts/*`
+- project-local commands in `.opencode/commands/`
+- project-local prompts in `.opencode/prompts/`
+- project-local native skills in `.opencode/skills/`
+- a root `opencode.json` config that wires the Chimera agents and safer permissions
 
-Why it matters:
+What it does not give us:
 
-- OpenCode does have native project surfaces for rules, config, agents, commands, skills, and permissions
-- the shared repo needs a pullable version of that setup
+- a separately verified native hook API like Claude Code
 
-Current honest limit:
+So the OpenCode enforcement model here is:
 
-- this bundle does not prove a native OpenCode hook API in this project
+1. project `AGENTS.md`
+2. project `opencode.json`
+3. project `.opencode/commands/*`
+4. native skill discovery from `.claude/skills`, `.agents/skills`, and OpenCode skill homes
+5. file-backed plans and review contracts when the task is multi-step
+6. activation receipts through command and prompt driven logging when native hooks are not proven
+
+Use this bundle for:
+
+- orchestration precheck
+- starter-stack reminders
+- plan or build agent routing
+- safer closeout behavior
