@@ -245,3 +245,18 @@ Each hourly run must include:
 - `Q-2026-05-02-07` Stop crypto event-mode replays from using stock-style `kimi_finance` routes for `ETHUSDT` and `BTCUSDT`. Status: queued.
 - `Q-2026-05-02-08` Prove real specialist delegation or fresh specialist-report consumption in live Deezoh replays. Status: queued.
 - `Q-2026-05-02-09` Slim screener and macro-bias direct live bootstrap enough that direct replays stop timing out or aborting reads. Status: queued.
+
+- Issue `DHI-025`
+  Raw event: screener direct replay completed its reasoning and wrote a `SCOUT_REPORT.json`, but the write target was still `/home/open-claw/openclawtrading/reports/auto/SCOUT_REPORT.json`.
+  What happened: the screener workflow logic worked, but one stale output-path instruction remained and sent the report to the retired path family.
+  Why it matters: this is exactly the kind of hidden drift that makes a lane look active while downstream consumers still miss the fresh output.
+  Recurrence: observed in `screener-observe-accumulation-v2`.
+  Affected agent/workflow/data source/timeframe: screener, range rotation / cautious dual book, report output path.
+  Proposed fix: update the screener output-path instruction to `/root/openclawtrading/reports/auto/SCOUT_REPORT.json` and keep path-drift checks in the recurring audit.
+  Owner: `Codex`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: the next screener direct replay should write `SCOUT_REPORT.json` under `/root/openclawtrading/reports/auto/`.
+  Status: `fixed and pending replay confirmation`
+
+- `Q-2026-05-02-10` Keep testing screener after the `SCOUT_REPORT.json` output-path fix until it completes without rate-limit collapse. Status: queued.
