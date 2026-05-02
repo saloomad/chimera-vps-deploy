@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tradingview Screener"
+  short_description: "Find trading opportunities using TradingView's screener API. Screens 59,000+ cryptocurrencies by current indicators (..."
+  default_prompt: "Use the Tradingview Screener skill when the task matches this need: Find trading opportunities using TradingView's screener API. Screens 59,000+ cryptocurrencies by current indi..."

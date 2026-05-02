@@ -1,0 +1,4 @@
+interface:
+  display_name: "Indicator Calculator"
+  short_description: "Calculate 24+ technical indicators (RSI, MACD, Bollinger Bands, ADX, Stochastic, CCI, Williams %R, OBV, ATR, moving a..."
+  default_prompt: "Use the Indicator Calculator skill when the task matches this need: Calculate 24+ technical indicators (RSI, MACD, Bollinger Bands, ADX, Stochastic, CCI, Williams %R, OBV, ATR,..."

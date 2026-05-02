@@ -1,0 +1,4 @@
+interface:
+  display_name: "Earnings Calendar"
+  short_description: ">"
+  default_prompt: "Use the Earnings Calendar skill when the task matches this need: >"

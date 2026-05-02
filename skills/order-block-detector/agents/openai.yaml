@@ -1,0 +1,4 @@
+interface:
+  display_name: "Order Block Detector"
+  short_description: ">"
+  default_prompt: "Use the Order Block Detector skill when the task matches this need: >"

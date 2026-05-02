@@ -1,0 +1,4 @@
+interface:
+  display_name: "Candlestick Classifier"
+  short_description: ">"
+  default_prompt: "Use the Candlestick Classifier skill when the task matches this need: >"

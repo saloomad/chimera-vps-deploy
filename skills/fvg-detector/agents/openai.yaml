@@ -1,0 +1,4 @@
+interface:
+  display_name: "Fvg Detector"
+  short_description: ">"
+  default_prompt: "Use the Fvg Detector skill when the task matches this need: >"

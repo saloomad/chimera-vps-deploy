@@ -1,0 +1,4 @@
+interface:
+  display_name: "Chimera Divergence"
+  short_description: ">"
+  default_prompt: "Use the Chimera Divergence skill when the task matches this need: >"

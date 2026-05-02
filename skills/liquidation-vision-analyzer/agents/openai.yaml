@@ -1,0 +1,4 @@
+interface:
+  display_name: "Liquidation Vision Analyzer"
+  short_description: "Analyze CoinGlass liquidation heat map screenshots using Claude Vision to extract trading data including liquidation..."
+  default_prompt: "Use the Liquidation Vision Analyzer skill when the task matches this need: Analyze CoinGlass liquidation heat map screenshots using Claude Vision to extract trading data includi..."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Volume Profile"
+  short_description: ">"
+  default_prompt: "Use the Volume Profile skill when the task matches this need: >"

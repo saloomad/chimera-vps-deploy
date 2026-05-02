@@ -1,0 +1,4 @@
+interface:
+  display_name: "Altfins"
+  short_description: ">"
+  default_prompt: "Use the Altfins skill when the task matches this need: >"
