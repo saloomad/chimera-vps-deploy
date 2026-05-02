@@ -59,6 +59,11 @@ Status labels:
 - Status: `implemented`, `wired`
 - Used for: workflow selection, enforcement selection, dependent-surface updates, testing, review, docs, monitoring
 
+### `critical-config-instruction-and-compaction-guard-loop.md`
+- Role: mandatory governance workflow for risky control-layer edits such as config, instructions, hooks, skills, workflows, detectors, and compaction continuity
+- Status: `implemented`, `wired`
+- Used for: backup, rollback, proof, continuity protection, PM truth, and control-layer review before closeout
+
 ### `build-test-verify-monitor-closeout.md`
 - Role: implementation closeout workflow
 - Status: `implemented`, `wired`

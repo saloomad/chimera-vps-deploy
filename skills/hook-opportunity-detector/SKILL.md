@@ -23,6 +23,8 @@ Create or update a hook-oriented surface when any of these are true:
 4. the agent keeps trying to stop before the objective is truly done
 5. the same user frustration comes from a missed event guard
 6. a platform can react automatically at prompt start, tool use, stop, session start, or runtime events
+7. risky control-layer files keep being edited without the right workflow
+8. compaction keeps causing missing continuation, PM drift, or lost objective state
 
 ## Read First
 
@@ -58,6 +60,11 @@ Best events:
 - `PostToolUseFailure`
 - `Stop`
 - `SubagentStop`
+- `InstructionsLoaded`
+- `ConfigChange`
+- `FileChanged`
+- `PreCompact`
+- `PostCompact`
 
 ### OpenClaw
 
@@ -88,3 +95,4 @@ When this skill triggers, leave behind:
 3. why that surface fits better than the alternatives
 4. the activation receipt path
 5. the follow-up docs or skill updates needed
+6. whether risky control-layer or compaction governance also needs the critical guard workflow

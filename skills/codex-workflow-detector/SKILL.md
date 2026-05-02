@@ -25,6 +25,7 @@ Create or update a workflow when:
 6. the same conversation pattern keeps producing the same friction
 7. a workflow now matters enough to be promoted across platforms
 8. Sal keeps having to remind agents how to explain or close out the same kind of work
+9. the same risky config, instruction, or compaction repair keeps recurring
 
 ## Read First
 

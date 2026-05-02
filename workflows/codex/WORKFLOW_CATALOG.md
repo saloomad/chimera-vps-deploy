@@ -15,6 +15,8 @@ Add:
 
 5. `major-build-council-orchestrator` when real tradeoffs exist
 6. `vibe-coding-monitor` when friction, misses, or weak explanation appear
+7. `hook-opportunity-detector` when a repeated problem should become an automatic event reaction
+8. `pipeline-enforcement-detector` when a recurring or risky pipeline needs a better runtime owner
 
 Communication rule:
 
@@ -88,7 +90,25 @@ Communication rule:
   - `reusable-pattern-capture.md`
   - `skill-workflow-mirror-and-publication.md`
 
-### 10. PM And Front-Door Reconciliation
+### 10. Platform Enforcement And Receipts
+
+- Use when: a platform surface should auto-trigger, guard a risky action, own a pipeline, or prove what fired
+- Loop type: bounded implementation plus review
+- Main workflow:
+  - `platform-enforcement-selection-and-receipt-loop.md`
+
+### 11. Critical Config, Instruction, And Compaction Governance
+
+- Use when: editing control-layer config, startup docs, instructions, skills, workflows, detectors, hook behavior, or compaction governance
+- Loop type: loop-until-done
+- Main workflow:
+  - `critical-config-instruction-and-compaction-guard-loop.md`
+- Main skills:
+  - `critical-change-guard`
+  - `codex-continuity-enforcer`
+  - `hook-opportunity-detector` when the control-layer rule should auto-trigger
+
+### 12. PM And Front-Door Reconciliation
 
 - Use when: tasks, reminders, or delivery/front-door surfaces may be stale or drifted
 - Loop type: bounded reconciliation loop
@@ -96,7 +116,7 @@ Communication rule:
   - `task-and-continuity-closeout.md`
   - project-operations-manager skill
 
-### 11. Trading / Deezoh Lifecycle
+### 13. Trading / Deezoh Lifecycle
 
 - Use when: market classification, trade lifecycle, desk review, or operator brief work is needed
 - Loop type: stateful loop

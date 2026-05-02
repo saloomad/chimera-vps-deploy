@@ -173,6 +173,18 @@ The practical ones we should use most:
 - `SessionStart` and `SessionEnd`
   - best for startup reminders and final capture
 
+- `InstructionsLoaded`
+  - best for confirming that startup rules, shared context pointers, and the starter stack were actually loaded
+
+- `ConfigChange`
+  - best for forcing the risky control-layer workflow when settings, instructions, or routing config change
+
+- `FileChanged`
+  - best for reacting when control-layer files such as `AGENTS.md`, `CLAUDE.md`, `opencode.json`, skills, workflows, or PM continuity files change
+
+- `PreCompact` and `PostCompact`
+  - best for protecting continuation, PM state, objective state, and proof state around compaction
+
 Hook handler types in Claude Code:
 
 - `command`
@@ -192,6 +204,55 @@ Important Claude Code limits:
 - `PostToolUse` cannot undo an action that already happened
 - `Stop` fires when the answer ends, not only when the task is actually complete
 - continuation after close still depends on files or another platform
+
+### Control-Layer Hook Policy
+
+When the changed file is part of the control layer, the system should not treat it like a normal code edit.
+
+Treat these as control-layer files:
+
+- `AGENTS.md`
+- `CLAUDE.md`
+- startup docs
+- `.claude/settings.json`
+- `opencode.json`
+- `.opencode/*`
+- local plugin registry or bundle files
+- skill files
+- workflow files
+- detector files
+- continuation, kanban, work-log, task, or PM front-door files
+
+For these changes, prefer:
+
+- `PreToolUse`
+  - warn or block casual edits
+  - require `critical-change-guard`
+- `PostToolUse`
+  - require proof, dependent-surface review, and continuity update
+- `Stop`
+  - prevent closeout until the risky control-layer workflow is reviewed
+- `FileChanged`
+  - route to `critical-config-instruction-and-compaction-guard-loop.md`
+
+### Compaction Continuity Policy
+
+Use compaction hooks to force state capture before context is compressed away.
+
+Before compaction:
+
+- save objective state
+- save current slice
+- save proof path
+- save PM state if it changed
+- save continuation next step
+
+After compaction:
+
+- restore the objective contract
+- restate the next step
+- verify PM and continuation files are still the truth source
+- decide whether the result is `iterate`, `complete`, or `blocked`
 
 ### OpenCowork / OpenCode
 

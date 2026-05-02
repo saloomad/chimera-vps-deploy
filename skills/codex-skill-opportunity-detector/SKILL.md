@@ -25,6 +25,7 @@ Create or update a reusable artifact when any of these are true:
 4. the same explanation is being repeated
 5. a rule is important enough that forgetting it would create real damage
 6. Sal has to repeatedly correct how the agent explains work, proof, or next steps
+7. control-layer edits or compaction mistakes keep requiring the same reminder
 
 ## Read First
 
