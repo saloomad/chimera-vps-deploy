@@ -26,6 +26,7 @@ Finish the current thread objective of turning the enforcement layer from docume
 ## Partially Done
 - [~] OpenCowork live app proof is stronger now because the registry shows the bundle enabled and the runtime path is correct, but there is still no direct UI-session log proving those hook events fired through the app itself after reload.
 - [~] OpenCode remains command/prompt/agent enforced in this workspace, but there is still no separately proven native hook API here.
+- [~] Restarting `CoworkVMService` and launching `claude.exe` did not append any new OpenCowork receipts, so startup alone is not enough proof.
 
 ## Not Done
 - [ ] Prove a real OpenCowork app-session trigger after reload. Priority: medium.
@@ -69,6 +70,7 @@ Finish the current thread objective of turning the enforcement layer from docume
 
 ## Next Actions (for next agent)
 1. **[PRIORITY]** If OpenCowork is the target, reopen or reload the app and capture a real app-session hook proof after reload.
+   - service restart and app launch alone were already tried and did not create receipts
 2. **[MEDIUM]** For OpenClaw, inspect live Task Flow execution instead of stopping at config presence.
 3. **[MEDIUM]** For OpenCode, continue assuming command/prompt/agent enforcement unless an official native hook surface is found and verified.
 
@@ -90,4 +92,3 @@ Finish the current thread objective of turning the enforcement layer from docume
 - `platforms/opencowork/SHARED_CONTEXT_README.md`
 - `platforms/opencowork/local-bundle/chimera-enforcement-bundle`
 - `workflows/codex/platform-enforcement-selection-and-receipt-loop.md`
-

@@ -63,3 +63,10 @@ Use this when:
 ## Current Limitation
 
 This repo mirror plus the registry check prove the bundle is installed and enabled, but a real app reload is still the stronger proof that OpenCowork picked the bundle up and fired the hooks through a live UI session.
+
+Extra proof from the latest pass:
+
+- restarting `CoworkVMService` did not create new OpenCowork receipts
+- launching `claude.exe` created app processes but still did not create new OpenCowork receipts
+
+That means the remaining proof gap is specifically a real in-app session or prompt trigger, not just app/service startup.

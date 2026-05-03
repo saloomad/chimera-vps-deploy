@@ -185,8 +185,12 @@ Status labels:
   - `componentsEnabled.commands = true`
   - `componentsEnabled.hooks = true`
   - runtime path points at `C:\Users\becke\AppData\Roaming\open-cowork\claude\plugins\runtime\chimera-enforcement-bundle`
+- Negative proof from this pass:
+  - restarting `CoworkVMService` did not append any new OpenCowork receipts
+  - launching `claude.exe` created app processes but still did not append any new OpenCowork receipts
 - Remaining proof gap:
   - no direct app-session log yet showing these hook events firing through the OpenCowork UI runtime itself
+  - current evidence suggests the hook events need a real in-app session or prompt path, not just service/app startup
 - Receipt path:
   - `trace/platform_activation_receipts.jsonl`
 
@@ -225,6 +229,7 @@ Status labels:
 - stronger auto-trigger proof for OpenCode beyond command and prompt driven receipts
 - OpenCowork app-session proof:
   - capture a real UI/runtime-triggered hook event after an app reload, not just registry state plus direct script smoke
+  - likely requires an actual in-app session or prompt interaction, because service restart and app launch alone did not produce receipts
 
 ## Reusable Verifier
 
