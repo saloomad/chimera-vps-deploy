@@ -68,6 +68,43 @@ Prefer proof from:
 - stale-runtime lint
 - live replay tests
 
+### Deezoh Direct Observation Contract
+
+When a prompt asks Deezoh to output fields such as `selected_workflow`, `winner`, `typed_wait`, `next_question`, or `unsafe_lesson_to_record`, keep those fields canonical even if the prose is conversational.
+
+Use only these market workflow ids for `selected_workflow`:
+
+- `breakout_acceptance`
+- `consolidation_resolution`
+- `news_event_control`
+- `liquidity_trap`
+- `accumulation_hunt`
+- `failed_breakout_reversal`
+- `active_trade_management`
+- `data_degraded_watch`
+
+Do not output invented workflow labels such as `data_degraded_mode`, `trading_coach_overlay`, or `three-case comparison`.
+
+Use only canonical wait ids from `DESK_CONTRACT.md` and `WORKFLOW.md` for `typed_wait`.
+Common valid waits include:
+
+- `WAIT_REFRESH`
+- `WAIT_EVENT`
+- `WAIT_ZONE`
+- `WAIT_COOLDOWN`
+- `WAIT_RETEST`
+- `WAIT_TRIGGER`
+- `WAIT_ACCEPTANCE`
+- `WAIT_INVALIDATION`
+- `WAIT_EXECUTION`
+- `WAIT_MANAGEMENT`
+- `WAIT_BOOK_RISK`
+- `WAIT_SWEEP`
+- `WAIT_RECLAIM`
+
+Do not output invented wait labels such as `WAIT_CONFIRMATION` or `WAIT_FOR_FULL_PIPELINE`.
+If the meaning is "the full pipeline is not verified", use `WAIT_REFRESH` for broken/stale data or `WAIT_TRIGGER` / `WAIT_ACCEPTANCE` for missing setup confirmation.
+
 If architecture or system-wide tradeoffs exist:
 
 6. `major-build-council-orchestrator`

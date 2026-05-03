@@ -2617,6 +2617,126 @@ Each hourly run must include:
 - `Q-2026-05-03-43` Reduce or split oversized OpenClaw bootstrap context, starting with workspace `MEMORY.md`, so live observation turns stop losing late instructions to truncation. Status: queued.
 - `Q-2026-05-03-44` Repair the watchlist metrics lane so `WATCHLISTS.json` stops publishing all-zero monitor placeholders. Status: queued.
 
+## 2026-05-03 Follow-On Live Replay And Report-Link Repair Pass
+
+- Heartbeat: `openclaw-deezoh-hermes-agent-improvement-loop`
+- Objective: rerun the required live Deezoh observation suite plus screener and macro workflow audits, verify whether the same-session breakout follow-up bug is actually closed, and land only one bounded low-risk fix if the replay exposed a concrete local path gap.
+
+### What Ran
+
+- Re-read the latest automation memory, newest handoff, and current observation ledger.
+- Re-ran bounded local safety tests:
+  - `python scripts/tests/deezoh_observation_suite_smoke.py`
+  - `python scripts/tests/workflow_contract_surfaces_smoke.py`
+  - `python scripts/simulator/test_desk_contract_bridge_entry_signals.py`
+  - `python scripts/tests/hermes_dual_lane_contract_smoke.py`
+  - `python scripts/simulator/test_deezoh_question_engine.py`
+- Re-ran a bounded live Hermes cycle:
+  - `python3 /root/openclawtrading/scripts/hermes_runtime_bridge.py --timeout-seconds 180 --quiet`
+- Ran fresh live Deezoh scenario sessions:
+  - `deezoh-observe-breakout-v7`
+  - same-session follow-up inside `deezoh-observe-breakout-v7`
+  - `deezoh-observe-consolidation-v6`
+  - `deezoh-observe-news-v6`
+  - `deezoh-observe-liquidity-trap-v5`
+  - post-fix verification rerun `deezoh-observe-news-v7`
+- Ran fresh workflow-family audits:
+  - `screener-workflow-audit-v3`
+  - `macro-workflow-audit-v4`
+- Patched `scripts/ensure_deezoh_report_links.py`, synced it live, and re-ran it with `--replace`.
+
+### Issues Captured
+
+- Issue `DHI-081`
+  Raw event: the new breakout replay `deezoh-observe-breakout-v7` kept `selected_workflow = breakout_acceptance`, and the same-session follow-up upgraded from `winner = no_trade` to `winner = long` while using canonical `typed_wait = WAIT_TRIGGER`.
+  What happened: the earlier `WAIT_CONFIRMATION` drift and bad timezone freshness math did not recur after the always-injected heartbeat patch.
+  Why it matters: this closes the remaining uncertainty from the prior run and proves the live replay path can now change ranking and next question without inventing non-canonical waits or false stale-data claims.
+  Recurrence: verified clean on 2026-05-03 follow-up replay.
+  Affected agent/workflow/data source/timeframe: Deezoh, breakout acceptance, same-session observation follow-up, 4H/1H/15M.
+  Proposed fix: none beyond keeping the heartbeat rules in the always-injected surface and using this replay as the regression check.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: `deezoh-observe-breakout-v7` follow-up must keep canonical waits and sane freshness reasoning.
+  Status: `fixed and verified`
+
+- Issue `DHI-082`
+  Raw event: `deezoh-observe-news-v6` emitted `ENOENT` reads for `/root/.openclaw/workspace/agents/deezoh/OPPORTUNITIES.json` and `/root/.openclaw/workspace/agents/deezoh/CANDLES.json`.
+  What happened: the Deezoh report-link helper only exposed a partial report family inside the agent workspace, so some live replays still missed expected local report paths.
+  Why it matters: this creates avoidable path noise, can hide real evidence quality, and slows Deezoh down even when the shared reports exist and are fresh.
+  Recurrence: reproduced on the May 3 news-event replay before the link-script patch.
+  Affected agent/workflow/data source/timeframe: Deezoh, report consumption, news-event control, any workflow that expects local agent-relative report reads.
+  Proposed fix: extend `ensure_deezoh_report_links.py` to include `OPPORTUNITIES.json`, `ACTIVE_SETUPS.json`, `ACTIVE_TRADES.json`, `CANDLES.json`, and `STRATEGY_REPORT.json`, sync it live, rerun with `--replace`, and replay the news-event case.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: the follow-up replay should stop emitting `ENOENT` for those agent-local report paths.
+  Status: `fixed and verified`
+
+### Proved
+
+- The prior breakout follow-up blocker is now closed live:
+  - initial breakout stayed `selected_workflow = breakout_acceptance`
+  - same-session follow-up changed `winner` from `no_trade` to `long`
+  - follow-up used canonical `typed_wait = WAIT_TRIGGER`
+  - no `WAIT_CONFIRMATION` drift reappeared
+  - no false `8+ hours old` timezone claim reappeared
+- Consolidation replay stayed structurally correct:
+  - `selected_workflow = consolidation_resolution`
+  - `winner = no_trade`
+  - `typed_wait = WAIT_ACCEPTANCE`
+- News-event replay stayed structurally correct after the report-link repair:
+  - `selected_workflow = news_event_control`
+  - `winner = no_trade`
+  - `typed_wait = WAIT_ACCEPTANCE`
+  - `actually_read` no longer required the missing local `OPPORTUNITIES.json` or `CANDLES.json` paths to exist
+- Failed-breakout replay stayed structurally correct:
+  - `selected_workflow = failed_breakout_reversal`
+  - `winner = SHORT`
+  - `typed_wait = WAIT_ACCEPTANCE`
+- Screener workflow-family audit still routes correctly:
+  - accumulation -> `accumulation_hunt`
+  - continuation -> `trend_continuation_hunt`
+  - post-news rotation -> `post_news_rotation_hunt`
+  - failed-breakout short -> `failed_breakout_short_hunt`
+  - range rotation -> `range_rotation_hunt`
+  - stale/contradictory input protection -> `no_trade_protection`
+- Macro workflow-family audit still routes correctly:
+  - pre-event control -> `pre_event_risk_control`
+  - post-event digest -> `post_event_digest`
+  - cross-asset divergence -> `cross_asset_divergence`
+  - unusual behavior capture -> `unusual_behavior_precedent`
+  - degraded inputs -> `data_degraded_macro`
+- Hermes remains paper-safe and current:
+  - `HERMES_LANE_THESIS.json` and `HERMES_DECISION_TRACE.json` refreshed at `2026-05-03T04:14:20Z`
+  - status stayed `ready`
+  - decision stayed `no_trade`
+  - `evidence_pack_id = 2654c8dbc1eb5354`
+
+### Remaining Issues
+
+- Specialist delegation is still mostly rhetorical in the Deezoh replay lane:
+  - all live Deezoh scenarios in this pass reported `actually_spawned = none`
+  - the desk is naming strong next questions, but direct specialist spawning still is not proven in the observation path
+- TradingView/CDP visual confirmation is still blocked:
+  - chart-side specialist verification remains unresolved
+  - Deezoh still has to reason without proven live visual chart confirmation
+- Watchlist quality is still weak:
+  - `WATCHLISTS.json` is fresh
+  - watchlist output still shows `0% MONITOR` placeholders
+- Derivatives are better than the earlier zero-coin state but still degraded:
+  - recent log tails now show `30` to `31` coins instead of all-zero
+  - long/short ratio and liquidation context are still missing
+- OpenClaw bootstrap truncation is still active:
+  - `/root/.openclaw/workspace/agents/deezoh/AGENTS.md` is still truncated above the `12000` char injection limit
+  - larger workspace memory surfaces still risk losing late instructions during live runs
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-45` Keep `deezoh-observe-breakout-v7` as the regression replay for canonical same-session wait/ranking changes. Status: done.
+- `Q-2026-05-03-46` Extend Deezoh live report links to include `OPPORTUNITIES`, `ACTIVE_SETUPS`, `ACTIVE_TRADES`, `CANDLES`, and `STRATEGY_REPORT` inside the agent workspace. Status: done and replay-verified.
+- `Q-2026-05-03-47` Prove at least one real specialist spawn or direct specialist-report dependency inside the live Deezoh observation suite, not only rhetorical `actually_spawned = none`. Status: queued.
+
 ## 2026-05-03 Heartbeat TradingView Jackson Registration And CDP Blocker Pass
 
 - Heartbeat: `deezoh-15-minute-observation-loop`
@@ -2798,3 +2918,101 @@ Each hourly run must include:
 
 - `Q-2026-05-03-48` Keep top-level wait fields canonical and move raw phase labels into `legacy_typed_wait`. Status: done.
 - `Q-2026-05-03-49` Keep the question-engine test harness pointed at canonical `scripts/` before `_remote_edit/` so it tests the file agents actually patch. Status: done.
+
+## 2026-05-03 Heartbeat Watchlist Fallback And Direct Observation Repair
+
+- Heartbeat: `deezoh-15-minute-observation-loop`
+- Objective: repair the actionable watchlist/screener quality gap without pretending scanner output is an entry signal, then replay Deezoh as if Sal is looking at the chart/watchlist and asking whether to trade.
+
+### What Ran
+
+- Rechecked live report state and watchlist logs.
+- Confirmed `WATCHLISTS.json` was fresh but all-zero placeholder output because `reports/metrics/*.csv` was absent.
+- Confirmed richer same-cycle scanner context already existed in `OPPORTUNITIES.json`, `SCOUT_REPORT.json`, `INDICATOR_REPORT.json`, `STRATEGY_REPORT.json`, and `ALTFINS.json`.
+- Patched `openclawtrading/scripts/watchlist_generator.py`:
+  - when metrics CSVs are absent, build a cautious watchlist from `OPPORTUNITIES.json`
+  - set `source_mode = scanner_fallback`
+  - set `data_quality = PARTIAL`
+  - cap language to `CONSIDER`, `WATCH`, or `MONITOR`
+  - add an execution note that chart, indicator, risk/reward, and trigger confirmation are still required
+- Added `scripts/tests/watchlist_generator_fallback_smoke.py`.
+- Patched `scripts/run_desk_observability_chain.sh` to refresh the watchlist during the live desk chain, not only hourly cron.
+- Synced the patched watchlist generator and chain runner to the VPS.
+- Ran a live watchlist refresh and a full live desk chain.
+- Ran Deezoh watchlist replays:
+  - `deezoh-observe-watchlist-fallback-v1`
+  - `deezoh-observe-watchlist-fallback-v2`
+- Patched `chimera-vps-deploy/platforms/kimi-vps/AGENTS.md` and synced it to:
+  - `/root/.openclaw/workspace/AGENTS.md`
+  - `/root/openclawtrading/AGENTS.md`
+
+### Issues Captured
+
+- Issue `DHI-082`
+  Raw event: `WATCHLISTS.json` was fresh but consisted only of `0% MONITOR` placeholder BTC/ETH/SOL/XRP/BNB rows.
+  What happened: the legacy watchlist generator required `reports/metrics/*.csv`, but those metrics files were absent while `OPPORTUNITIES.json` and screener reports were fresh.
+  Why it matters: a fresh placeholder watchlist looks operational but gives Deezoh no useful candidate ranking. It also hides the fact that the scanner already found usable screening candidates.
+  Recurrence: repeated hourly in `watchlist.log`.
+  Affected agent/workflow/data source/timeframe: watchlist generator, screener workflow, Deezoh candidate discovery, multi-timeframe scanner context.
+  Proposed fix: use `OPPORTUNITIES.json` as a cautious fallback when metrics CSVs are absent, label the result `scanner_fallback` and `PARTIAL`, and cap urgency below execution language.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: live `WATCHLISTS.json` should no longer be all-zero placeholder and should clearly state that scanner fallback is not an entry signal.
+  Status: `fixed and verified`
+
+- Issue `DHI-083`
+  Raw event: the first watchlist replay correctly rejected the trade but emitted noncanonical `selected_workflow = data_degraded_mode` and `typed_wait = WAIT_FOR_FULL_PIPELINE`.
+  What happened: the main OpenClaw injected workspace `AGENTS.md` did not include the direct-observation canonical field contract even though Deezoh-specific heartbeat files did.
+  Why it matters: behavior can be directionally right while still breaking machine-readable workflow and wait contracts. That makes replay comparison and monitor logic less reliable.
+  Recurrence: reproduced in `deezoh-observe-watchlist-fallback-v1`.
+  Affected agent/workflow/data source/timeframe: OpenClaw main agent direct observation, Deezoh replay harness, workflow/wait contract.
+  Proposed fix: add the Deezoh direct observation contract to the Kimi VPS platform AGENTS file and sync it to the live OpenClaw workspace.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: rerun watchlist replay should output canonical `selected_workflow = data_degraded_watch` and canonical `typed_wait = WAIT_REFRESH`.
+  Status: `fixed and verified`
+
+### Proved
+
+- Live watchlist fallback now produces actual candidates:
+  - `source_mode = scanner_fallback`
+  - `data_quality = PARTIAL`
+  - top long `PENDLE (90/100)`
+  - top short `BIO (100/100)`
+  - total longs analyzed `9`
+  - total shorts analyzed `19`
+  - note says it is built from `OPPORTUNITIES.json` and is not an entry signal
+- Full live chain consumed the watchlist refresh:
+  - `WATCHLISTS.json` refreshed at `2026-05-03T05:02:41Z`
+  - `DEEZOH_THOUGHTS.json` refreshed at `2026-05-03T05:02:56Z`
+  - Deezoh stayed `winner = no_trade`
+  - `typed_wait = WAIT_TRIGGER`
+  - `EXECUTION_REPORT.json entries_opened = 0`
+  - `PAPER_TRADES.json open_count = 0`
+- Replay `deezoh-observe-watchlist-fallback-v2` behaved correctly:
+  - selected_workflow `data_degraded_watch`
+  - winner `no_trade`
+  - typed_wait `WAIT_REFRESH`
+  - explained that scanner fallback scores are notifications, not entry signals
+  - identified the unsafe lesson: do not treat scanner fallback scores as trade permission
+- Local tests passed:
+  - `watchlist_generator_fallback_smoke`
+  - `deezoh_observation_suite_smoke`
+  - `workflow_contract_surfaces_smoke`
+  - `test_desk_contract_bridge_entry_signals`
+  - `hermes_dual_lane_contract_smoke`
+
+### Remaining Issues
+
+- TradingView visual chart confirmation is still blocked at CDP target exposure.
+- Derivatives remain `degraded_fallback`; OI/funding/liquidation context still needs a better source or repair path.
+- The watchlist is improved but still `PARTIAL` until the metrics CSV producer is restored or intentionally retired.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-50` Replace all-zero watchlist placeholders with a clearly labeled `OPPORTUNITIES.json` scanner fallback when metrics CSVs are absent. Status: done.
+- `Q-2026-05-03-51` Keep watchlist fallback urgency capped below execution language and require chart/indicator/risk-reward/trigger confirmation before promotion. Status: done.
+- `Q-2026-05-03-52` Add Deezoh direct-observation canonical workflow/wait contract to the main OpenClaw injected workspace instructions, not only Deezoh-specific heartbeat files. Status: done.
+- `Q-2026-05-03-53` Decide whether the old metrics CSV producer should be restored or formally replaced by the newer scanner/report stack. Status: queued.
