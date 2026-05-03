@@ -3194,3 +3194,87 @@ Each hourly run must include:
 - `Q-2026-05-03-57` Keep derivatives fallback pressure visible in Deezoh while labeling it as partial/proxy, not entry confirmation. Status: done.
 - `Q-2026-05-03-58` Restore or replace exact liquidity sources for liquidation hotspots, long/short skew, and max-pain context. Status: queued.
 - `Q-2026-05-03-59` Add direct-observation provenance enforcement so claims of reads/spawns match machine-verifiable evidence. Status: queued.
+
+## 2026-05-03 Market-Maker Report Production Repair
+
+- Heartbeat: `deezoh-15-minute-observation-loop`
+- Objective: continue the live Deezoh observation loop, restore missing market-maker/liquidity context where safe, and verify Deezoh still pushes back instead of treating proxy reports as entry proof.
+
+### What Ran
+
+- Re-checked live `/root/openclawtrading/reports/auto`.
+- Confirmed these files were missing before the repair:
+  - `MARKET_CONDITIONS.json`
+  - `LIQUIDATION_SUMMARY.json`
+  - `MAXPAIN_SUMMARY.json`
+  - `MARKET_MAKER_REPORT.json`
+- Found the local market-maker scripts existed but still used retired `/home/open-claw/openclawtrading` and `trading_system/...` paths.
+- Patched the market-maker scripts to use `CHIMERA_ROOT` or the script-derived workspace root.
+- Wired `market_maker_pipeline.py` into `run_desk_observability_chain.sh` immediately after `derivatives_fetcher.py`.
+- Added a path smoke test for the market-maker lane.
+- Synced the repaired `scripts/market-maker/` directory and chain script to `/root/openclawtrading`.
+- Ran `market_maker_pipeline.py` directly on the VPS, then ran the full desk observability chain.
+
+### Issues Captured
+
+- Issue `DHI-088`
+  Raw event: live market-maker reports were missing even though the market-maker scripts existed locally.
+  What happened: the scripts were never present/wired in the live `/root/openclawtrading/scripts/market-maker` path and still referenced the retired `/home/open-claw` runtime plus `trading_system` scraper locations.
+  Why it matters: Deezoh was missing market conditions and liquidation context, so it had to reason from derivatives fallback only.
+  Recurrence: observed repeatedly during the Deezoh heartbeat loop as missing `MARKET_CONDITIONS.json`, `LIQUIDATION_SUMMARY.json`, `MAXPAIN_SUMMARY.json`, and `MARKET_MAKER_REPORT.json`.
+  Affected agent/workflow/data source/timeframe: market-maker pipeline, Deezoh derivatives/liquidity evidence, live 15-minute desk chain.
+  Proposed fix: update paths to current Kimi VPS truth, sync the market-maker lane to live, and wire it into the desk chain.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: `python scripts/tests/market_maker_path_smoke.py`, direct live `market_maker_pipeline.py`, and full live desk chain.
+  Status: `fixed and verified for report production`
+
+- Issue `DHI-089`
+  Raw event: after `MARKET_CONDITIONS.json` existed again, Deezoh's derivatives evidence view could receive market conditions instead of full `DERIVATIVES.json`.
+  What happened: the previous consumer fix still had one edge where market-conditions presence could hide `_brief`, data quality, funding extremes, and coin-level derivatives from the derivatives evidence view.
+  Why it matters: fixing report production could accidentally make Deezoh blind again to the partial derivatives evidence it must explain to Sal.
+  Recurrence: found during the same heartbeat repair before the final full-chain run.
+  Affected agent/workflow/data source/timeframe: `deezoh_question_engine.py`, market-regime review, derivatives/liquidity evidence.
+  Proposed fix: always pass full `DERIVATIVES.json` into `_derivatives_evidence_view`; keep market conditions only for regime explanation.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: updated `deezoh_derivatives_context_smoke` with non-empty `market_conditions_report`.
+  Status: `fixed and verified`
+
+### Proved
+
+- Local tests passed:
+  - `market_maker_path_smoke`
+  - `deezoh_derivatives_context_smoke`
+  - `derivatives_brief_smoke`
+  - `deezoh_observation_suite_smoke`
+  - `workflow_contract_surfaces_smoke`
+- Direct live market-maker run produced:
+  - `MARKET_DATA.json`
+  - `MARKET_CONDITIONS.json`
+  - `LIQUIDATION_SUMMARY.json`
+  - `MAXPAIN_SUMMARY.json`
+  - `MARKET_MAKER_REPORT.json`
+- Full live desk chain produced fresh files:
+  - `MARKET_CONDITIONS.json`: `market_regime = RANGING`, `btc_bias = NEUTRAL`, `altcoin_bias = NEUTRAL`
+  - `LIQUIDATION_SUMMARY.json`: `total_coins = 4`, proxy rows for BTC/ETH/SOL, `signals = 0`
+  - `MAXPAIN_SUMMARY.json`: exists, but `scraper_ran_ok = false`, `top_targets = 0`
+  - `MARKET_MAKER_REPORT.json`: all pipeline steps completed, no liquidation signals
+  - `DEEZOH_THOUGHTS.json`: `selected_workflow = accumulation_hunt`, `winner = no_trade`, `typed_wait = WAIT_TRIGGER`
+  - Deezoh derivatives evidence retained `pressure_only = true`, funding signals, `liquidation_bias = SHORT_SQUEEZE`, and `liquidation_confidence = LOW_PROXY`
+  - `EXECUTION_REPORT.json entries_opened = []`
+
+### Remaining Issues
+
+- `MAXPAIN_SUMMARY.json` is now produced but remains empty because the browser scraper did not extract max-pain targets.
+- `LIQUIDATION_SUMMARY.json` is proxy-only until screenshot/vision extraction produces true heatmap clusters.
+- TradingView visual chart confirmation remains blocked by CDP target exposure.
+- Direct-observation provenance enforcement from `DHI-085` remains queued.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-60` Keep the market-maker lane wired into the main desk observability chain before Deezoh reasoning. Status: done.
+- `Q-2026-05-03-61` Repair or replace the max-pain scraper so `MAXPAIN_SUMMARY.json` has real target rows, not only an empty shell. Status: queued.
+- `Q-2026-05-03-62` Add a vision/extraction step that turns heatmap screenshots into exact liquidation clusters before Deezoh treats them as more than proxy evidence. Status: queued.
