@@ -3278,3 +3278,164 @@ Each hourly run must include:
 - `Q-2026-05-03-60` Keep the market-maker lane wired into the main desk observability chain before Deezoh reasoning. Status: done.
 - `Q-2026-05-03-61` Repair or replace the max-pain scraper so `MAXPAIN_SUMMARY.json` has real target rows, not only an empty shell. Status: queued.
 - `Q-2026-05-03-62` Add a vision/extraction step that turns heatmap screenshots into exact liquidation clusters before Deezoh treats them as more than proxy evidence. Status: queued.
+
+## 2026-05-03 Max-Pain Proxy Fallback And Deezoh Evidence Guard
+
+- Heartbeat: `deezoh-15-minute-observation-loop`
+- Objective: continue live Deezoh observation, repair the empty max-pain report without pretending proxy data is exact, and verify Deezoh still pushes back instead of yes-manning.
+
+### What Ran
+
+- Re-ran live `run_maxpain_scan.py` directly on `/root/openclawtrading`.
+- Confirmed root cause: `coinglass_maxpain_scraper.py` could not run because Playwright is not installed in the live Python environment.
+- Patched `run_maxpain_scan.py` to build fallback max-pain proxy targets from `LIQUIDATION_SUMMARY.json` and `DERIVATIVES.json` when the browser scraper produces no targets.
+- Kept the proxy explicit with `source_mode = proxy_fallback`, `proxy_notice`, and `not_exact_maxpain = true`.
+- Patched Deezoh's derivatives/liquidity evidence view to expose max-pain source mode, proxy notice, and top targets.
+- Updated smoke tests so max-pain proxy data is visible to Deezoh but remains pressure-only.
+- Synced the bounded fixes to `/root/openclawtrading`.
+- Ran the full live desk chain and verified Deezoh stayed conservative.
+
+### Issues Captured
+
+- Issue `DHI-090`
+  Raw event: `MAXPAIN_SUMMARY.json` existed but had `scraper_ran_ok = false`, `top_targets = []`, and the live log said Playwright was not installed.
+  What happened: report production was repaired, but the browser scraper could not extract CoinGlass rows, leaving max-pain context empty.
+  Why it matters: Deezoh could only know that max-pain was unavailable, not where proxy pressure levels might sit.
+  Recurrence: observed during consecutive 2026-05-03 Deezoh observation loop passes after market-maker report production was restored.
+  Affected agent/workflow/data source/timeframe: `run_maxpain_scan.py`, market-maker lane, Deezoh derivatives/liquidity evidence, BTC/ETH/SOL 15-minute desk cycle.
+  Proposed fix: keep the failed browser result visible, but add clearly labeled proxy max-pain targets from liquidation/derivatives fallback so the report is useful without overclaiming exactness.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: `python scripts/tests/market_maker_path_smoke.py`, live `run_maxpain_scan.py`, and full live desk chain.
+  Status: `fixed and verified for proxy fallback`
+
+### Proved
+
+- Local tests passed:
+  - `market_maker_path_smoke`
+  - `deezoh_derivatives_context_smoke`
+  - `deezoh_observation_suite_smoke`
+  - `workflow_contract_surfaces_smoke`
+- Live `MAXPAIN_SUMMARY.json` now shows:
+  - `source_mode = proxy_fallback`
+  - `scraper_ran_ok = false`
+  - `top_targets_count = 6`
+  - `priority_coins = BTC, ETH, SOL`
+  - every target has `not_exact_maxpain = true`
+- Full live chain result:
+  - Deezoh `selected_workflow = accumulation_hunt`
+  - Deezoh `winner = no_trade`
+  - Deezoh `typed_wait = WAIT_TRIGGER`
+  - Deezoh evidence includes `maxpain_source_mode = proxy_fallback`
+  - `EXECUTION_REPORT.json entries_opened = []`
+
+### Remaining Issues
+
+- Playwright is still missing in the live Python environment for the CoinGlass max-pain browser scraper.
+- The max-pain targets are proxy pressure levels, not exact CoinGlass max-pain extraction.
+- True liquidation heatmap cluster extraction still needs screenshot/vision work.
+- TradingView visual chart confirmation remains blocked by CDP target exposure.
+- Direct-observation provenance enforcement from `DHI-085` remains queued.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-61` Repair or replace the max-pain scraper so `MAXPAIN_SUMMARY.json` has real target rows, not only an empty shell. Status: partially done with proxy fallback; exact browser extraction still queued.
+- `Q-2026-05-03-63` Install or vendor the Playwright runtime for the live max-pain scraper, or replace the browser scrape with a supported data-source skill/API. Status: queued.
+- `Q-2026-05-03-64` Keep `MAXPAIN_SUMMARY.json` proxy rows marked `not_exact_maxpain` until real extraction is restored. Status: done.
+
+## 2026-05-03 Direct Observation Provenance Contract Hardening
+
+- Heartbeat: `openclaw-deezoh-hermes-agent-improvement-loop`
+- Objective: harden Deezoh's direct-observation provenance contract, re-verify the live desk and Hermes on the current VPS, and see whether focused chart-side prompts now finish cleanly.
+
+### What Ran
+
+- Re-read the latest Deezoh handoff plus the shared observation ledger.
+- Patched the Deezoh thought-builder path so the generated thought bundle now carries a machine-readable `direct_observation_provenance` block.
+- Tightened `agents/deezoh/QUESTION_ENGINE.md` so focused observation replies must name exact report filenames or exact tool surfaces, not generic phrases like `live exchange data`.
+- Added provenance checks to:
+  - `scripts/tests/deezoh_observation_suite_smoke.py`
+  - `scripts/simulator/test_deezoh_question_engine.py`
+- Ran local proof:
+  - `python scripts/tests/deezoh_observation_suite_smoke.py`
+  - `python scripts/simulator/test_deezoh_question_engine.py`
+  - direct local build of `build_thought_bundle(build_payload())`
+- Synced bounded script and instruction changes to the live VPS:
+  - `/root/openclawtrading/scripts/build_deezoh_thoughts.py`
+  - `/root/openclawtrading/scripts/deezoh_question_engine.py`
+  - `/root/.openclaw/workspace/agents/deezoh/QUESTION_ENGINE.md`
+  - `/root/openclawtrading/scripts/tests_deezoh_observation_suite_smoke.py`
+- Rebuilt live `DEEZOH_THOUGHTS.json`, reran the live Deezoh smoke suite, reran `run_desk_observability_chain.sh`, and reran `python3 scripts/hermes_runtime_bridge.py --quiet`.
+- Attempted fresh live focused observation sessions:
+  - `deezoh-observe-breakout-v9`
+  - `deezoh-observe-consolidation-v8`
+  - `deezoh-observe-news-v9`
+- Re-checked Linux root cron plus recent desk, macro, and market logs.
+
+### Issues Captured
+
+- Issue `DHI-090`
+  Raw event: the first live provenance patch produced `direct_observation_provenance`, but every report was labeled `missing`.
+  What happened: `source_meta` was added in `build_deezoh_thoughts.py` but dropped by `_normalize_live_bundle`, so the provenance block had no report-existence or freshness facts to work with.
+  Why it matters: a provenance contract that falsely marks fresh reports as missing would reduce trust instead of improving it.
+  Recurrence: reproduced immediately after the first live rebuild in this run on 2026-05-03.
+  Affected agent/workflow/data source/timeframe: Deezoh direct observation, report-read provenance, live desk chain output.
+  Proposed fix: preserve `source_meta` through live normalization and rerun the thought build before trusting the provenance block.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: live `DEEZOH_THOUGHTS.json` should show non-zero `direct_observation_provenance.actually_read_reports`.
+  Status: `fixed and verified`
+
+- Issue `DHI-091`
+  Raw event: three fresh live focused observation sessions (`deezoh-observe-breakout-v9`, `deezoh-observe-consolidation-v8`, `deezoh-observe-news-v9`) drifted into extra workspace/tool exploration and stopped on tool results instead of returning the requested bounded JSON answer.
+  What happened: the live main agent partially followed the direct-observation prompt but did not close the reply contract. The sessions remained mid-investigation rather than finishing the observation slice.
+  Why it matters: the recurring Deezoh improvement loop still cannot trust chart-side focused observation prompts to finish cleanly, which weakens Sal-facing audit repeatability.
+  Recurrence: 3 of 3 live focused observation prompts in this run.
+  Affected agent/workflow/data source/timeframe: main OpenClaw agent, Deezoh direct observation, chart-side prompt routing.
+  Proposed fix: tighten the main-agent direct-observation front door so bounded chart-side prompts prefer report-only completion over additional workspace exploration once the required evidence fields are already available.
+  Owner: `architect-codex + main-agent instruction layer`
+  Risk: `medium`
+  Approval needed: `no`
+  Proof test: rerun the same three session ids with new version suffixes and confirm each returns the requested JSON without ending on a tool call.
+  Status: `queued`
+
+### Proved
+
+- Local tests passed:
+  - `deezoh_observation_suite_smoke`
+  - `test_deezoh_question_engine`
+- The live provenance contract is now active and useful:
+  - fresh `DEEZOH_THOUGHTS.json` timestamp `2026-05-03T06:22:58.432623+00:00`
+  - `selected_workflow = accumulation_hunt`
+  - `winner = no_trade`
+  - `typed_wait = WAIT_TRIGGER`
+  - `direct_observation_provenance.actually_read_reports = 26`
+  - `direct_observation_provenance.not_fresh_but_referenced_reports = 5`
+- Fresh live report timings after the desk-chain rerun:
+  - `DEEZOH_REPORT.json` `2026-05-03T06:22:57.948950+00:00`
+  - `WATCHLISTS.json` `2026-05-03T06:22:38.119160+00:00`
+  - `DERIVATIVES.json` `2026-05-03T06:22:12.903939+00:00`
+  - `MACRO_BIAS.json` `2026-05-03 06:22 UTC`
+- Hermes is fresh again in the same cycle:
+  - `HERMES_DECISION_TRACE.json` `generated_at = 2026-05-03T06:23:25Z`
+  - `HERMES_LANE_THESIS.json` `generated_at = 2026-05-03T06:23:25Z`
+  - `HERMES_RUNTIME_STATUS.json` `status = ready`
+  - Hermes stayed `decision = no_trade`
+- Root cron and desk observability are still the active live recurrence surfaces:
+  - collectors every 30 minutes
+  - desk observability at `5,35 * * * *`
+
+### Remaining Issues
+
+- TradingView visual chart confirmation is still blocked at CDP target exposure.
+- `MAXPAIN_SUMMARY.json` and `LIQUIDATION_SUMMARY.json` are produced but still proxy-grade, not exact chart-verified liquidity truth.
+- The focused observation prompt route still drifts instead of finishing the requested bounded JSON contract.
+- A deterministic local workflow-family audit still exists, but the dedicated live prompt-style screener/macro audit should be rerun after `DHI-091` is fixed so the chart-side observation path and the workflow-family path are both proven in the same pass.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-63` Keep `direct_observation_provenance` wired end-to-end from `build_deezoh_thoughts.py` through `_normalize_live_bundle`. Status: done.
+- `Q-2026-05-03-64` Tighten the main-agent focused observation route so direct chart-side prompts finish the requested bounded JSON reply instead of drifting into extra workspace scans. Status: queued.
+- `Q-2026-05-03-65` After `Q-2026-05-03-64`, rerun breakout, consolidation, news-event, and failed-breakout/liquidity-trap observation prompts plus fresh screener and macro workflow-family audits in one pass. Status: queued.
