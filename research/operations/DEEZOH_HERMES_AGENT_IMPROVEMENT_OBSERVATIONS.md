@@ -3344,6 +3344,65 @@ Each hourly run must include:
 - `Q-2026-05-03-63` Install or vendor the Playwright runtime for the live max-pain scraper, or replace the browser scrape with a supported data-source skill/API. Status: queued.
 - `Q-2026-05-03-64` Keep `MAXPAIN_SUMMARY.json` proxy rows marked `not_exact_maxpain` until real extraction is restored. Status: done.
 
+## 2026-05-03 Direct Observation Provenance Contract Verification
+
+- Heartbeat: `deezoh-15-minute-observation-loop`
+- Objective: continue the Deezoh live observation loop, verify that direct observation does not overclaim specialists/tools, and add regression proof for the provenance contract.
+
+### What Ran
+
+- Checked fresh live Deezoh, council, market-maker, derivatives, max-pain, liquidation, watchlist, macro, execution, and paper-trade outputs.
+- Confirmed Deezoh remains:
+  - `selected_workflow = accumulation_hunt`
+  - `winner = no_trade`
+  - `typed_wait = WAIT_TRIGGER`
+  - `maxpain_source_mode = proxy_fallback`
+  - `pressure_only = true`
+  - `entries_opened = []`
+- Verified live `DEEZOH_THOUGHTS.json` now includes `direct_observation_provenance`.
+- Added a local smoke test so future edits cannot silently drop or weaken the provenance contract.
+
+### Issues Captured
+
+- Issue `DHI-091`
+  Raw event: direct-observation provenance existed live, but there was no dedicated smoke test guarding the contract.
+  What happened: Deezoh correctly recorded report-only provenance, but the regression suite did not assert that `actually_read_reports`, `actually_spawned_specialists`, stale/missing references, and guardrails remain present.
+  Why it matters: the prior failure pattern was Deezoh sounding stronger than the visible specialist/report proof. Without a test, that could regress during future question-engine edits.
+  Recurrence: follows from prior `DHI-085`; this pass verified the fix exists and hardened it with a test.
+  Affected agent/workflow/data source/timeframe: Deezoh direct observation, Sal-facing chart questions, specialist provenance, report-only reasoning.
+  Proposed fix: add `deezoh_provenance_contract_smoke.py` and live assertion proof against `DEEZOH_THOUGHTS.json`.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: `python scripts/tests/deezoh_provenance_contract_smoke.py` plus live JSON assertion.
+  Status: `fixed and verified`
+
+### Proved
+
+- Local tests passed:
+  - `deezoh_provenance_contract_smoke`
+  - `deezoh_derivatives_context_smoke`
+  - `deezoh_observation_suite_smoke`
+  - `workflow_contract_surfaces_smoke`
+- Live provenance assertion passed:
+  - `actually_read_reports = 26`
+  - `not_fresh_but_referenced_reports = 5`
+  - `actually_spawned_specialists = []`
+  - `DERIVATIVES.json` and `MAXPAIN_SUMMARY.json` were recorded as fresh reads
+  - missing `RISK_REPORT.json` was recorded as missing, not silently treated as fresh
+
+### Remaining Issues
+
+- Provenance is now structurally present and tested, but Sal-facing free-form direct observation replies should still be sampled periodically to ensure wording follows the machine-readable proof.
+- Playwright is still missing for exact CoinGlass max-pain extraction.
+- Liquidation heatmap and max-pain lanes are still proxy-only until true browser/vision extraction is restored.
+- TradingView visual chart confirmation remains blocked by CDP target exposure.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-65` Keep the direct-observation provenance contract under smoke-test coverage. Status: done.
+- `Q-2026-05-03-66` Periodically sample Sal-facing direct-observation replies and compare wording against `direct_observation_provenance`. Status: queued.
+
 ## 2026-05-03 Direct Observation Provenance Contract Hardening
 
 - Heartbeat: `openclaw-deezoh-hermes-agent-improvement-loop`
@@ -3399,7 +3458,7 @@ Each hourly run must include:
   Risk: `medium`
   Approval needed: `no`
   Proof test: rerun the same three session ids with new version suffixes and confirm each returns the requested JSON without ending on a tool call.
-  Status: `queued`
+  Status: `fixed and verified on 2026-05-03 with v10 reruns`
 
 ### Proved
 
@@ -3431,11 +3490,741 @@ Each hourly run must include:
 
 - TradingView visual chart confirmation is still blocked at CDP target exposure.
 - `MAXPAIN_SUMMARY.json` and `LIQUIDATION_SUMMARY.json` are produced but still proxy-grade, not exact chart-verified liquidity truth.
-- The focused observation prompt route still drifts instead of finishing the requested bounded JSON contract.
 - A deterministic local workflow-family audit still exists, but the dedicated live prompt-style screener/macro audit should be rerun after `DHI-091` is fixed so the chart-side observation path and the workflow-family path are both proven in the same pass.
 
 ### Optimization Queue Updates
 
 - `Q-2026-05-03-63` Keep `direct_observation_provenance` wired end-to-end from `build_deezoh_thoughts.py` through `_normalize_live_bundle`. Status: done.
-- `Q-2026-05-03-64` Tighten the main-agent focused observation route so direct chart-side prompts finish the requested bounded JSON reply instead of drifting into extra workspace scans. Status: queued.
-- `Q-2026-05-03-65` After `Q-2026-05-03-64`, rerun breakout, consolidation, news-event, and failed-breakout/liquidity-trap observation prompts plus fresh screener and macro workflow-family audits in one pass. Status: queued.
+- `Q-2026-05-03-64` Tighten the main-agent focused observation route so direct chart-side prompts finish the requested bounded JSON reply instead of drifting into extra workspace scans. Status: done.
+- `Q-2026-05-03-65` After `Q-2026-05-03-64`, rerun breakout, consolidation, news-event, and failed-breakout/liquidity-trap observation prompts plus fresh screener and macro workflow-family audits in one pass. Status: done.
+
+## 2026-05-03 Direct Observation Fast-Path Repair And Live Rerun
+
+- Heartbeat: `openclaw-deezoh-hermes-agent-improvement-loop`
+- Objective: repair the live direct-observation front door, rerun the required Deezoh scenario suite, and confirm the bounded reply contract now finishes cleanly.
+
+### What Ran
+
+- Re-read the latest handoff, the shared observation ledger, and the live/openclaw instruction surfaces that the main agent actually bootstraps.
+- Confirmed the real drift source was instruction-layer, not market logic:
+  - `/root/.openclaw/workspace/AGENTS.md` still encouraged broad workspace bootstrap for narrow direct-observation prompts.
+  - the failed `v9` sessions showed the agent reading stale orchestration/history surfaces before finishing the requested JSON.
+- Added a focused direct-observation fast path to:
+  - `chimera-vps-deploy/platforms/kimi-vps/AGENTS.md`
+  - `agents/deezoh/AGENTS.md`
+  - live `/root/.openclaw/workspace/AGENTS.md`
+  - live `/root/.openclaw/workspace/agents/deezoh/AGENTS.md`
+- Ran local proof:
+  - `python scripts/tests/deezoh_observation_suite_smoke.py`
+  - `python scripts/tests/workflow_contract_surfaces_smoke.py`
+  - `python scripts/simulator/test_deezoh_question_engine.py`
+- Ran fresh live focused observation sessions through the patched main-agent front door with new session ids:
+  - `deezoh-observe-consolidation-v10`
+  - `deezoh-observe-breakout-v10`
+  - `deezoh-observe-news-v10`
+  - `deezoh-observe-failed-breakout-v10`
+- Re-checked the live report-read shape, spawned-specialist shape, and stop reason for each rerun.
+
+### Issues Captured
+
+- Issue update `DHI-091`
+  Raw event: after the fast-path patch, the fresh `v10` observation sessions returned the requested bounded JSON contract instead of ending on tool results.
+  What happened: the main-agent direct-observation route now prefers the Deezoh contract files plus current live reports over broad workspace archaeology.
+  Why it matters: Sal-facing chart-side observation prompts are now repeatable enough to trust in the recurring improvement loop.
+  Recurrence: fixed across the four fresh scenario reruns in this pass.
+  Affected agent/workflow/data source/timeframe: main OpenClaw agent, Deezoh direct observation, breakout/consolidation/news/liquidity-trap prompt routing.
+  Proposed fix: keep the fast-path rule in the Kimi platform mirror and live workspace instructions, and treat future drift as an instruction regression first.
+  Owner: `architect-codex + main-agent instruction layer`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test:
+  - `deezoh-observe-consolidation-v10` -> `selected_workflow = consolidation_resolution`, `winner = no_trade`, `typed_wait = WAIT_ACCEPTANCE`, `stop_reason = stop`
+  - `deezoh-observe-breakout-v10` -> `selected_workflow = breakout_acceptance`, `winner = no_trade`, `typed_wait = WAIT_ACCEPTANCE`, `stop_reason = stop`
+  - `deezoh-observe-news-v10` -> `selected_workflow = news_event_control`, `winner = no_trade`, `typed_wait = WAIT_TRIGGER`, `stop_reason = stop`
+  - `deezoh-observe-failed-breakout-v10` -> `selected_workflow = liquidity_trap`, `winner = NO_TRADE`, `typed_wait = WAIT_TRIGGER`, `stop_reason = stop`
+  Status: `fixed and verified`
+
+- Issue `DHI-092`
+  Raw event: even after the fast-path fix worked, the live main-agent run still reported bootstrap truncation because `/root/.openclaw/workspace/MEMORY.md` is large enough to hit the per-file injection cap.
+  What happened: the agent still carries unnecessary prompt-weight from global workspace bootstrap, even though the focused direct-observation answer no longer drifts.
+  Why it matters: this is now a speed/cost inefficiency more than a correctness blocker, but it still burns tokens on a recurring loop.
+  Recurrence: observed in the successful `deezoh-observe-consolidation-v10` live run.
+  Affected agent/workflow/data source/timeframe: main OpenClaw bootstrap, bounded direct-observation prompts, recurring improvement-loop runtime cost.
+  Proposed fix: trim or split the live workspace bootstrap/memory surfaces so focused trading prompts inject less irrelevant context before the fast-path reads begin.
+  Owner: `architect-codex`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: rerun a focused direct-observation prompt after bootstrap trimming and confirm lower prompt size plus no loss of required contract fields.
+  Status: `queued`
+
+### Proved
+
+- Local tests passed:
+  - `deezoh_observation_suite_smoke`
+  - `workflow_contract_surfaces_smoke`
+  - `test_deezoh_question_engine` (`16/16`)
+- The required Deezoh scenario suite completed in this run:
+  - breakout -> `breakout_acceptance`
+  - consolidation -> `consolidation_resolution`
+  - news-event -> `news_event_control`
+  - failed-breakout / liquidity-trap -> `liquidity_trap`
+- The live prompt-style reruns all finished the bounded answer contract:
+  - no session ended on a tool result
+  - all four sessions reported `actually_spawned = none` honestly
+  - tool use stayed narrow (`read` and `exec` only, 7-9 tool calls)
+- Fresh live behavior examples:
+  - `deezoh-observe-consolidation-v10` read 11 fresh/stale evidence entries, stayed `winner = no_trade`, and kept `typed_wait = WAIT_ACCEPTANCE`
+  - `deezoh-observe-news-v10` selected `news_event_control` with `typed_wait = WAIT_TRIGGER`
+  - `deezoh-observe-failed-breakout-v10` selected `liquidity_trap` instead of inventing a generic label
+
+### Remaining Issues
+
+- TradingView visual chart confirmation is still blocked at CDP target exposure.
+- `MAXPAIN_SUMMARY.json` and `LIQUIDATION_SUMMARY.json` are produced but still proxy-grade, not exact chart-verified liquidity truth.
+- Workspace bootstrap still injects a truncated large `MEMORY.md`, which is now a token-efficiency issue rather than the main correctness blocker.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-64` Tighten the main-agent focused observation route so direct chart-side prompts finish the requested bounded JSON reply instead of drifting into extra workspace scans. Status: done and live-verified.
+- `Q-2026-05-03-65` After `Q-2026-05-03-64`, rerun breakout, consolidation, news-event, and failed-breakout/liquidity-trap observation prompts plus fresh screener and macro workflow-family audits in one pass. Status: done and verified.
+- `Q-2026-05-03-66` Trim or split live bootstrap memory so focused Deezoh observation prompts spend fewer tokens before they reach the report-first fast path. Status: queued.
+
+## 2026-05-03 Report-First Direct Observation Hardening And Live Rerun
+
+- Heartbeat: `openclaw-deezoh-hermes-agent-improvement-loop`
+- Objective: rerun the direct-observation suite again, prove the remaining live timeout shape, and land the smallest safe instruction hardening that keeps focused prompts report-first.
+
+### What Ran
+
+- Re-read bootstrap truth, the latest Deezoh handoff, the shared observation ledger, and the live report freshness under `/root/openclawtrading/reports/auto`.
+- Re-ran local proof:
+  - `python scripts/tests/deezoh_observation_suite_smoke.py`
+  - `python scripts/tests/workflow_contract_surfaces_smoke.py`
+  - `python scripts/simulator/test_deezoh_question_engine.py`
+- Re-ran fresh live focused observation prompts:
+  - `deezoh-observe-breakout-v11`
+  - `deezoh-observe-consolidation-v11`
+  - `deezoh-observe-news-v11`
+  - `deezoh-observe-failed-breakout-v11`
+- Audited the timeout traces for the incomplete `v11` sessions directly from `/root/.openclaw/agents/main/sessions/*.jsonl` and `/root/.openclaw/logs/openclaw.log`.
+- Hardened the focused direct-observation contract so report-first prompts must not drift into optional live quote / market-data tool calls when fresh report files already answer the question.
+- Synced the bounded instruction updates to:
+  - `agents/deezoh/AGENTS.md`
+  - `agents/deezoh/QUESTION_ENGINE.md`
+  - `chimera-vps-deploy/platforms/kimi-vps/AGENTS.md`
+  - live `/root/.openclaw/workspace/AGENTS.md`
+  - live `/root/.openclaw/workspace/agents/deezoh/AGENTS.md`
+  - live `/root/.openclaw/workspace/agents/deezoh/QUESTION_ENGINE.md`
+- Re-ran the two failing scenarios with new session ids after the hardening:
+  - `deezoh-observe-news-v12`
+  - `deezoh-observe-failed-breakout-v12`
+- Audited live workflow-family routing from current reports:
+  - screener -> `range_rotation`
+  - macro -> `data_degraded_mode`
+
+### Issues Captured
+
+- Issue update `DHI-092`
+  Raw event: `deezoh-observe-news-v11` ignored the focused report-first contract, called extra `market-data` tools, and then ended in an idle timeout instead of closing the bounded JSON answer.
+  What happened: the earlier fast-path wording was strong enough for breakout/consolidation but still left room for optional live tool exploration on the news-event branch.
+  Why it matters: focused chart-side and event-side prompts must finish even when the data is degraded. Optional live tool calls turn a bounded desk answer into a timeout risk.
+  Recurrence: reproduced in `deezoh-observe-news-v11` on 2026-05-03 before the hardening pass.
+  Affected agent/workflow/data source/timeframe: main OpenClaw agent, Deezoh `news_event_control`, focused direct observation, report-first prompt route.
+  Proposed fix: explicitly forbid extra live quote / market-data / web / finance tool calls for focused direct-observation prompts unless a required report is missing or stale enough that the answer cannot be completed honestly.
+  Owner: `architect-codex + main-agent instruction layer`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: `deezoh-observe-news-v12` must finish with `toolSummary.tools = [read]`, no prompt timeout, and a bounded JSON reply.
+  Status: `fixed and verified`
+
+- Issue `DHI-093`
+  Raw event: `deezoh-observe-failed-breakout-v11` timed out after 156 seconds before producing the bounded reply, then the retry chain started after the idle timeout.
+  What happened: the pre-hardening route still spent too much time reading and reasoning before closing the failed-breakout answer.
+  Why it matters: this loop needs deterministic closeout on a structurally important failed-breakout/liquidity-trap scenario, not a long-running partial session.
+  Recurrence: reproduced once in `deezoh-observe-failed-breakout-v11`; cleared in the immediate post-hardening rerun.
+  Affected agent/workflow/data source/timeframe: main OpenClaw agent, Deezoh `failed_breakout_reversal`, focused direct observation, failed-breakout scenario replay.
+  Proposed fix: keep the same report-first hardening and prefer `thinking off` for these deterministic regression prompts.
+  Owner: `architect-codex`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: `deezoh-observe-failed-breakout-v12` must finish with `status = ok`, no fallback, and a bounded JSON reply.
+  Status: `fixed and verified`
+
+### Proved
+
+- Local proof stayed green:
+  - `deezoh_observation_suite_smoke`
+  - `workflow_contract_surfaces_smoke`
+  - `test_deezoh_question_engine` (`16/16`)
+- Fresh live scenario outcomes in this pass:
+  - `deezoh-observe-breakout-v11` -> `selected_workflow = breakout_acceptance`, `winner = no_trade`, `typed_wait = WAIT_ACCEPTANCE`
+  - `deezoh-observe-consolidation-v11` -> `selected_workflow = consolidation_resolution`, `winner = no_trade`, `typed_wait = WAIT_ACCEPTANCE`
+  - `deezoh-observe-news-v12` -> `selected_workflow = news_event_control`, `winner = no_trade`, `typed_wait = WAIT_ACCEPTANCE`
+  - `deezoh-observe-failed-breakout-v12` -> `selected_workflow = failed_breakout_reversal`, `winner = NO_TRADE`, `typed_wait = WAIT_ACCEPTANCE`
+- The post-hardening reruns no longer used optional `market-data` tools for the focused news-event path:
+  - `deezoh-observe-news-v12` finished with `toolSummary.tools = [read]`
+  - `deezoh-observe-failed-breakout-v12` finished with `toolSummary.tools = [read, exec]`
+- Provenance formatting improved:
+  - both `v12` reruns returned `actually_read`, `actually_spawned`, and `not_fresh_but_referenced` as JSON arrays
+- Current workflow-family routing from live reports is:
+  - screener -> `range_rotation`
+  - macro -> `data_degraded_mode`
+
+### Remaining Issues
+
+- TradingView visual chart confirmation is still blocked at CDP target exposure, so chart-side verification remains fallback-grade.
+- `MAXPAIN_SUMMARY.json` and `LIQUIDATION_SUMMARY.json` are still proxy-grade, not exact chart-verified liquidity truth.
+- Macro remains honestly degraded in the current live cycle: `NEWS.json total_articles = null`, `ECONOMIC_CALENDAR.json next_event = null`, and the live audit still selects `data_degraded_mode`.
+- Workspace bootstrap still injects a truncated large `MEMORY.md`, which remains a token-efficiency issue even though the focused observation path is now behaving better.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-66` Trim or split live bootstrap memory so focused Deezoh observation prompts spend fewer tokens before they reach the report-first fast path. Status: queued.
+- `Q-2026-05-03-67` Keep the focused direct-observation route report-first and array-typed for provenance buckets. Status: done and live-verified.
+- `Q-2026-05-03-68` Repair macro upstream freshness so the live workflow-family audit can leave `data_degraded_mode`. Status: queued.
+
+## 2026-05-03 Live Observation V13 And Report-Contract Repair
+
+- Heartbeat: `openclaw-deezoh-hermes-agent-improvement-loop`
+- Objective: rerun the realistic Deezoh observation suite and workflow-family audits on the current live cycle, then fix the smallest safe reporting gap blocking fast operator truth.
+
+### What Ran
+
+- Re-read the latest Deezoh handoff, the shared observations ledger, and the current local/live instruction surfaces.
+- Re-ran local proof:
+  - `python scripts/tests/deezoh_observation_suite_smoke.py`
+  - `python scripts/tests/workflow_contract_surfaces_smoke.py`
+  - inline `build_deezoh_report` contract check for `selected_workflow`, `typed_wait`, `winner`, `next_trigger`, and provenance keys
+- Re-verified live scheduler and report truth on `root@100.67.172.114`:
+  - `openclaw tasks list`
+  - `openclaw cron list`
+  - `crontab -l`
+  - direct report freshness check under `/root/openclawtrading/reports/auto`
+- Ran fresh live prompt-style observation sessions with `--thinking off`:
+  - `deezoh-observe-breakout-v13`
+  - `deezoh-observe-consolidation-v12`
+  - `deezoh-observe-news-v13`
+  - `deezoh-observe-failed-breakout-v13`
+  - `screener-workflow-audit-v6`
+  - `macro-workflow-audit-v7`
+- Patched the Deezoh front-door report bridge in:
+  - `scripts/desk_contract_bridge.py`
+  - `linuxopenclawtrading/scripts/desk_contract_bridge.py`
+- Synced the patched bridge to the live VPS copies:
+  - `/root/openclawtrading/scripts/desk_contract_bridge.py`
+  - `/root/.openclaw/workspace/scripts/desk_contract_bridge.py`
+- Regenerated the live repo-path `DEEZOH_REPORT.json` through the patched bridge function after proving the CLI entrypoint still wrote the older shape.
+
+### Issues Captured
+
+- Issue `DHI-094`
+  Raw event: local deterministic proof still maps the failed-breakout trap-shaped scenario to `liquidity_trap`, but the fresh live prompt-style session `deezoh-observe-failed-breakout-v13` selected `failed_breakout_reversal`.
+  What happened: the live direct-observation answer is still drifting to the reversal label on a scenario the local engine treats as trap-first.
+  Why it matters: Sal can get different workflow labels for the same market story depending on whether the answer came from the deterministic bridge or the live prompt path.
+  Recurrence: reproduced again on 2026-05-03 in the fresh `v13` rerun.
+  Affected agent/workflow/data source/timeframe: Deezoh direct observation, failed-breakout/liquidity-trap routing, live prompt path vs deterministic question engine.
+  Proposed fix: normalize the failed-breakout vs liquidity-trap selection rule so the live prompt path and deterministic engine use the same dominant-condition test.
+  Owner: `architect-codex + Deezoh workflow layer`
+  Risk: `medium`
+  Approval needed: `no`
+  Proof test: rerun the same failed-breakout scenario live after the selector repair and require the same canonical workflow id as the deterministic smoke case.
+  Status: `open`
+
+- Issue `DHI-095`
+  Raw event: the current live repo-path `DEEZOH_REPORT.json` omitted `selected_workflow`, `typed_wait`, `winner`, `next_trigger`, and provenance buckets even though the same-cycle thought bundle already had them.
+  What happened: the front-door report bridge had not been carrying the workflow/provenance contract forward into the operator-facing report, and the normal CLI bridge entrypoint still wrote the older shape even after the function-level patch landed.
+  Why it matters: downstream agents and Sal-facing audits cannot trust the fastest front-door Deezoh report if the key workflow and wait fields are missing.
+  Recurrence: reproduced on the live `2026-05-03T10:06Z` cycle and again after a normal bridge rerun.
+  Affected agent/workflow/data source/timeframe: repo-path `DEEZOH_REPORT.json`, paper desk operator front door, same-cycle direct-observation audits.
+  Proposed fix: keep the new bridge fields, regenerate the live repo-path report with the patched function, and follow up on why `python3 desk_contract_bridge.py --target pipeline` still emits the old shape.
+  Owner: `Codex + architect-codex`
+  Risk: `medium`
+  Approval needed: `no`
+  Proof test:
+  - `/root/openclawtrading/reports/auto/DEEZOH_REPORT.json` must expose `selected_workflow`, `typed_wait`, `winner`, and `next_trigger`
+  - a normal bridge CLI rerun should preserve those same keys without manual inline regeneration
+  Status: `partially fixed`
+
+- Issue `DHI-096`
+  Raw event: `macro-workflow-audit-v7` failed with `API rate limit reached` while the four Deezoh prompts and `screener-workflow-audit-v6` completed in the same live pass.
+  What happened: the macro prompt-proof path is still quota-fragile even when the underlying macro reports are present.
+  Why it matters: the recurring improvement loop still lacks a fresh prompt-style proof for the macro lane on this run, so macro routing truth remains report-derived rather than live-prompt verified.
+  Recurrence: reproduced on 2026-05-03 after earlier macro prompt instability in prior runs.
+  Affected agent/workflow/data source/timeframe: macro workflow-family audit, live prompt-proof lane, current FOMC-minus-72h cycle.
+  Proposed fix: retry macro workflow-family audit serially after the current rate-limit window or add a cheaper deterministic fallback audit path that still proves the same contract.
+  Owner: `architect-codex + macro-bias`
+  Risk: `medium`
+  Approval needed: `no`
+  Proof test: a fresh macro workflow-family prompt run must complete and match the current report-derived lane or explicitly say why it differs.
+  Status: `open`
+
+### Proved
+
+- Local proof stayed green:
+  - `deezoh_observation_suite_smoke`
+  - `workflow_contract_surfaces_smoke`
+  - inline `build_deezoh_report` contract check
+- Fresh live Deezoh scenario outcomes in this run:
+  - `deezoh-observe-breakout-v13` -> `selected_workflow = breakout_acceptance`, `winner = no_trade`, `typed_wait = WAIT_ACCEPTANCE`
+  - `deezoh-observe-consolidation-v12` -> `selected_workflow = consolidation_resolution`, `winner = no_trade`, `typed_wait = WAIT_TRIGGER`
+  - `deezoh-observe-news-v13` -> `selected_workflow = news_event_control`, `winner = no_trade`, `typed_wait = WAIT_EVENT`
+  - `deezoh-observe-failed-breakout-v13` -> `selected_workflow = failed_breakout_reversal`, `winner = no_trade`
+- Fresh live screener workflow-family proof completed:
+  - `screener-workflow-audit-v6` chose `failed_breakout_short = true`
+  - it rejected `accumulation_hunt`, `continuation`, and `post_news_rotation`
+- Current live macro report truth remains:
+  - `MACRO_BIAS.json selected_workflow = data_degraded_mode`
+  - `confidence = 30`
+  - `event_phase = data_degraded_mode`
+- The repo-path Deezoh front door is now repaired through direct regeneration:
+  - `/root/openclawtrading/reports/auto/DEEZOH_REPORT.json`
+  - `selected_workflow = accumulation_hunt`
+  - `typed_wait = WAIT_TRIGGER`
+  - `winner = no_trade`
+  - `next_trigger = Price enters the entry zone 78222.9-79009.1.`
+
+### Remaining Issues
+
+- Failed-breakout workflow routing is still inconsistent between deterministic local proof and live prompt-style proof.
+- The normal live bridge CLI path still appears to emit the older `DEEZOH_REPORT.json` shape without the new workflow/provenance keys.
+- Macro prompt-style audit proof is still blocked by provider rate limiting.
+- TradingView visual chart confirmation is still blocked at CDP target exposure.
+- `MAXPAIN_SUMMARY.json` and `LIQUIDATION_SUMMARY.json` are still proxy-grade rather than exact chart-verified liquidity truth.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-69` Carry Deezoh workflow, wait, and provenance fields into the front-door report contract and keep the repo-path report regenerated with those keys. Status: partially done.
+- `Q-2026-05-03-70` Align failed-breakout vs liquidity-trap workflow selection between deterministic proof and live prompt-style answers. Status: queued.
+- `Q-2026-05-03-71` Add a reliable low-cost macro workflow-family proof path so rate limits do not leave the live improvement loop half-proved. Status: queued.
+
+## 2026-05-03 Live Observation V14, Macro Proof, And Bridge Root Fix
+
+- Heartbeat: `openclaw-deezoh-hermes-agent-improvement-loop`
+- Objective: rerun the required Deezoh observation suite and workflow-family audits again on the live VPS, then close the remaining front-door report gap if the fix is still safely bounded.
+
+### What Ran
+
+- Re-ran local proof:
+  - `python scripts/tests/deezoh_observation_suite_smoke.py`
+  - `python scripts/tests/workflow_contract_surfaces_smoke.py`
+- Re-checked live truth on `root@100.67.172.114`:
+  - `openclaw tasks list`
+  - `openclaw cron list`
+  - `crontab -l`
+  - direct report reads under `/root/openclawtrading/reports/auto`
+- Re-ran fresh live prompt-style sessions with `openclaw agent --agent main --thinking off`:
+  - `macro-workflow-audit-v8`
+  - `deezoh-observe-breakout-v14`
+  - `deezoh-observe-consolidation-v13`
+  - `deezoh-observe-news-v14`
+  - `deezoh-observe-failed-breakout-v14`
+  - `screener-workflow-audit-v7`
+- Patched the Deezoh front-door bridge again in:
+  - `scripts/desk_contract_bridge.py`
+  - `linuxopenclawtrading/scripts/desk_contract_bridge.py`
+- Synced the patched bridge to:
+  - `/root/openclawtrading/scripts/desk_contract_bridge.py`
+  - `/root/.openclaw/workspace/scripts/desk_contract_bridge.py`
+- Re-ran the normal live bridge CLI entrypoint:
+  - `cd /root/openclawtrading/scripts && python3 desk_contract_bridge.py --target pipeline`
+
+### Issues Captured
+
+- Issue update `DHI-094`
+  Raw event: fresh live session `deezoh-observe-failed-breakout-v14` still selected `failed_breakout_reversal`, while the deterministic local smoke case still expects `liquidity_trap`.
+  What happened: the live prompt path remains reversal-first on the same failed-breakout/liquidity-trap story the deterministic engine treats as trap-first.
+  Why it matters: Sal can still get different workflow labels for the same market narrative depending on whether the answer came from the deterministic engine or the live prompt route.
+  Recurrence: reproduced again on 2026-05-03 in `v14`.
+  Affected agent/workflow/data source/timeframe: Deezoh direct observation, failed-breakout/liquidity-trap routing, live prompt path vs deterministic question engine.
+  Proposed fix: normalize the failed-breakout vs liquidity-trap selector so the prompt route uses the same dominant-condition rule as `deezoh_observation_suite_smoke.py`.
+  Owner: `architect-codex + Deezoh workflow layer`
+  Risk: `medium`
+  Approval needed: `no`
+  Proof test: rerun the same failed-breakout scenario live after the selector repair and require `selected_workflow = liquidity_trap`.
+  Status: `open`
+
+- Issue update `DHI-095`
+  Raw event: the normal CLI bridge path looked fixed at the function level but still wrote weak operator truth because the Linux-facing bridge copy was hardcoded to retired `/home/open-claw/openclawtrading`, so it never read the live repo-path `DEEZOH_THOUGHTS.json`.
+  What happened: the real remaining bug was not just missing field wiring. The live mirror itself was still rooted at the retired path, which silently starved the bridge of the fresh thought/provenance bundle.
+  Why it matters: the operator-facing front-door report can only be trusted if the normal CLI bridge path reads the current repo reports, not the retired Linux-era tree.
+  Recurrence: reproduced during this pass when imported function proof succeeded but the normal CLI rerun still emitted empty provenance buckets.
+  Affected agent/workflow/data source/timeframe: repo-path `DEEZOH_REPORT.json`, Linux mirror bridge copy, same-cycle operator front door.
+  Proposed fix: keep `runtime_paths.ROOT` as the only live root for the Linux-facing bridge copy and prefer fresh `DEEZOH_THOUGHTS.json` provenance when present.
+  Owner: `Codex + architect-codex`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test:
+  - `python3 desk_contract_bridge.py --target pipeline` must keep writing `/root/openclawtrading/reports/auto/DEEZOH_REPORT.json`
+  - the resulting report must expose `selected_workflow`, `typed_wait`, `winner`, `next_trigger`, `actually_read`, and `not_fresh_but_referenced`
+  Status: `fixed and verified`
+
+- Issue update `DHI-096`
+  Raw event: the previous macro run `macro-workflow-audit-v7` had failed with a 429, but the fresh serial rerun `macro-workflow-audit-v8` completed with JSON output and still chose `data_degraded_watch`.
+  What happened: macro prompt proof is no longer blocked on this cycle, but it remains quota-fragile if bundled into a heavier live pass.
+  Why it matters: Sal now has fresh prompt-proof for the macro lane again, but the loop still needs a cheaper fallback or serial retry rule so future passes do not fail half-verified.
+  Recurrence: failure in `v7`, success in serial `v8` on the same date.
+  Affected agent/workflow/data source/timeframe: macro workflow-family audit, live prompt-proof lane, current FOMC-minus-72h cycle.
+  Proposed fix: keep macro prompt proof serial and alone when rate-limit pressure is visible, or add a deterministic macro contract fallback.
+  Owner: `architect-codex + macro-bias`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: future macro workflow-family rerun should complete either through the live prompt path or the explicit deterministic fallback without leaving the lane unproved.
+  Status: `mitigated`
+
+### Proved
+
+- Local proof stayed green:
+  - `deezoh_observation_suite_smoke`
+  - `workflow_contract_surfaces_smoke`
+- Fresh live Deezoh scenario outcomes in this pass:
+  - `deezoh-observe-breakout-v14` -> `selected_workflow = breakout_acceptance`, `winner = no_trade`, `typed_wait = WAIT_ACCEPTANCE`
+  - `deezoh-observe-consolidation-v13` -> `selected_workflow = consolidation_resolution`, `winner = no_trade`, `typed_wait = WAIT_TRIGGER`
+  - `deezoh-observe-news-v14` -> `selected_workflow = news_event_control`, `winner = no_trade`, `typed_wait = WAIT_EVENT`
+  - `deezoh-observe-failed-breakout-v14` -> `selected_workflow = failed_breakout_reversal`, `winner = no_trade`, `typed_wait = WAIT_INVALIDATION`
+- Fresh live screener workflow-family proof shifted to the more protective route:
+  - `screener-workflow-audit-v7` -> `routing_verdict = no_trade_protection`
+  - `failed_breakout_short = true` remained only a secondary watch condition, not the primary routing choice
+- Fresh live macro workflow-family proof completed again:
+  - `macro-workflow-audit-v8` -> `routing_verdict = data_degraded_watch`
+  - it rejected `pre_event_control`, `post_event_digest`, `cross_asset_divergence`, and `unusual_behavior_precedent_capture`
+- The normal live bridge CLI path is now fully carrying front-door workflow plus provenance truth:
+  - `/root/openclawtrading/reports/auto/DEEZOH_REPORT.json`
+  - `selected_workflow = accumulation_hunt`
+  - `typed_wait = WAIT_TRIGGER`
+  - `winner = no_trade`
+  - `next_trigger = Price enters the entry zone 79191.1-79986.9.`
+  - `actually_read` now contains the live report list instead of `[]`
+  - `not_fresh_but_referenced` now carries the stale/missing buckets instead of `[]`
+
+### Remaining Issues
+
+- Failed-breakout workflow routing is still inconsistent between deterministic local proof and live prompt-style proof.
+- TradingView visual chart confirmation is still blocked at CDP target exposure.
+- `MAXPAIN_SUMMARY.json` and `LIQUIDATION_SUMMARY.json` are still proxy-grade rather than exact chart-verified liquidity truth.
+- Macro still honestly routes through degraded mode because cross-asset and derivatives inputs remain partial even when the prompt proof itself succeeds.
+- Workspace bootstrap still injects a truncated large `MEMORY.md`, which remains a token-efficiency drag on the recurring live loop.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-69` Carry Deezoh workflow, wait, and provenance fields into the front-door report contract and keep the repo-path report regenerated with those keys. Status: done and live-verified.
+- `Q-2026-05-03-70` Align failed-breakout vs liquidity-trap workflow selection between deterministic proof and live prompt-style answers. Status: queued.
+- `Q-2026-05-03-71` Add a reliable low-cost macro workflow-family proof path so rate limits do not leave the live improvement loop half-proved. Status: queued.
+- `Q-2026-05-03-72` Trim or split live bootstrap memory so focused Deezoh observation prompts stop injecting a truncated `MEMORY.md` before report-first reasoning begins. Status: queued.
+
+## 2026-05-03 Live Observation V15, Failed-Breakout Hardening, And Hermes Freshness Check
+
+- Heartbeat: `openclaw-deezoh-hermes-agent-improvement-loop`
+- Objective: rerun the realistic Deezoh observation suite on the current live bundle, land the smallest safe prompt-layer fix for failed-breakout routing, and verify whether Hermes paper-lane truth is still fresh and honest.
+
+### What Ran
+
+- Re-read the latest automation memory, bootstrap/routing surfaces, the latest Deezoh handoff, and this shared observations ledger.
+- Re-ran local proof:
+  - `python scripts/tests/deezoh_observation_suite_smoke.py`
+  - `python scripts/tests/workflow_contract_surfaces_smoke.py`
+- Re-verified live scheduler and bundle truth on `root@100.67.172.114`:
+  - `openclaw cron list`
+  - `crontab -l`
+  - direct report freshness reads under `/root/openclawtrading/reports/auto`
+- Re-ran fresh live prompt-style sessions with `openclaw agent --agent main --thinking off`:
+  - `deezoh-observe-breakout-v15`
+  - `deezoh-observe-consolidation-v14`
+  - `deezoh-observe-news-v15`
+  - `deezoh-observe-failed-breakout-v15`
+  - `deezoh-observe-failed-breakout-v16`
+  - `screener-workflow-audit-v8`
+  - `macro-workflow-audit-v9`
+- Applied a safe prompt-layer fix in:
+  - `agents/deezoh/QUESTION_ENGINE.md`
+  - `agents/deezoh/WORKFLOW.md`
+  - `linuxopenclawtrading/agents/deezoh/QUESTION_ENGINE.md`
+- Synced the updated Deezoh prompt files to the live OpenClaw workspace:
+  - `/root/.openclaw/workspace/agents/deezoh/QUESTION_ENGINE.md`
+  - `/root/.openclaw/workspace/agents/deezoh/WORKFLOW.md`
+- Checked Hermes runtime freshness, then ran one bounded paper-safe manual refresh:
+  - `/root/.openclaw/workspace/agents/hermes-lead/run_hermes_lead.sh`
+
+### Issues Captured
+
+- Issue update `DHI-094`
+  Raw event: `deezoh-observe-failed-breakout-v15` expanded reads, retried on a fallback model, and never produced a bounded assistant answer before the wrapper timed out.
+  What happened: the old prompt layer still let the live path treat failed-breakout as an open-ended exploration problem instead of a trap-first bounded comparison.
+  Why it matters: Sal could get both the wrong workflow label and an incomplete answer on one of the required baseline scenarios.
+  Recurrence: reproduced once more on 2026-05-03 before the prompt hardening.
+  Affected agent/workflow/data source/timeframe: Deezoh direct observation, failed-breakout/liquidity-trap routing, live prompt path, focused chart-side replay.
+  Proposed fix: make `liquidity_trap` the default workflow for explicit failed-breakout/sweep prompts unless the current reports already prove that the trap has resolved into a confirmed reversal, and force the focused observation path to stop expanding reads once the bounded JSON answer is supportable.
+  Owner: `architect-codex + Deezoh workflow layer`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: rerun the same failed-breakout scenario live after the instruction sync and require `selected_workflow = liquidity_trap` plus a completed bounded JSON reply.
+  Status: `fixed and verified`
+
+- Issue `DHI-097`
+  Raw event: the active root cron schedule refreshed the Deezoh desk bundle at `2026-05-03T12:36Z`, but Hermes runtime artifacts still showed `generated_at = 2026-05-03T06:23:25Z` until a manual paper-safe refresh was run.
+  What happened: Hermes lead output was stale relative to the current Deezoh cycle because the active Linux root cron set does not currently include the Hermes lead runner.
+  Why it matters: Sal can see fresh Deezoh/operator truth while Hermes is silently showing older paper-lane reasoning, which weakens cross-lane trust even when Hermes itself still works.
+  Recurrence: observed in this run before manual refresh.
+  Affected agent/workflow/data source/timeframe: Hermes paper lane, `HERMES_RUNTIME_STATUS.json`, `HERMES_DECISION_TRACE.json`, `HERMES_LANE_THESIS.json`, current root cron schedule.
+  Proposed fix: keep manual refreshes paper-safe when needed, but route any live recurring cron addition or scheduler ownership change for approval before changing the production cadence.
+  Owner: `architect-codex + Hermes Lead + Sal`
+  Risk: `medium`
+  Approval needed: `yes for live recurring cron or scheduler changes`
+  Proof test: after any approved scheduler change, prove same-cycle Hermes freshness by comparing the newest Deezoh desk bundle timestamp against Hermes runtime artifact timestamps in the same audit pass.
+  Status: `open`
+
+### Proved
+
+- Local proof stayed green:
+  - `deezoh_observation_suite_smoke`
+  - `workflow_contract_surfaces_smoke`
+- Fresh live Deezoh scenario outcomes before the failed-breakout fix:
+  - `deezoh-observe-breakout-v15` -> `selected_workflow = breakout_acceptance`, `winner = NO_TRADE`, `typed_wait = WAIT_ACCEPTANCE`
+  - `deezoh-observe-consolidation-v14` -> `selected_workflow = consolidation_resolution`, `winner = NO_TRADE`, `typed_wait = WAIT_TRIGGER`
+  - `deezoh-observe-news-v15` -> `selected_workflow = news_event_control`, `winner = no_trade`, `typed_wait = WAIT_COOLDOWN`
+- Fresh live failed-breakout proof after prompt hardening:
+  - `deezoh-observe-failed-breakout-v16` -> `selected_workflow = liquidity_trap`, `winner = NO_TRADE`, `typed_wait = WAIT_RETEST`
+  - the rerun completed in one pass on `k2.6` with no fallback model retry
+- Fresh live screener workflow-family proof:
+  - `screener-workflow-audit-v8` kept `no_trade_protection` as the winning family
+  - it still showed `selected_workflow = data_degraded_watch` in the routing verdict because the desk remains functionally blocked at `WATCH`
+- Fresh live macro workflow-family proof:
+  - `macro-workflow-audit-v9` kept `routing_verdict = data_degraded_watch`
+  - it explicitly preferred `liquidity_trap` over `failed_breakout_reversal` for unusual trap-like behavior once data is otherwise healthy
+- Fresh Hermes paper-lane proof after bounded manual refresh:
+  - `HERMES_DECISION_TRACE.json` refreshed to `generated_at = 2026-05-03T12:46:19Z`
+  - Hermes still agrees with Deezoh on `decision = no_trade`
+  - Hermes now says the signal-layer contradiction has persisted for `6+ cycles` and should be treated as a pipeline defect, not as something the desk should manually override
+
+### Remaining Issues
+
+- TradingView visual chart confirmation is still blocked at CDP target exposure, so chart-side structure is still fallback-grade.
+- `MAXPAIN_SUMMARY.json` and `LIQUIDATION_SUMMARY.json` are still proxy-grade rather than exact chart-verified liquidity truth.
+- Macro still honestly routes through degraded mode because cross-asset and derivatives inputs remain partial even when the prompt proof itself succeeds.
+- Workspace bootstrap still injects a truncated large `MEMORY.md`, which remains a token-efficiency drag on the recurring live loop.
+- Hermes freshness is currently manual rather than scheduler-proven; changing that recurrence should wait for approval.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-70` Align failed-breakout vs liquidity-trap workflow selection between deterministic proof and live prompt-style answers. Status: done and live-verified via `deezoh-observe-failed-breakout-v16`.
+- `Q-2026-05-03-71` Add a reliable low-cost macro workflow-family proof path so rate limits do not leave the live improvement loop half-proved. Status: queued.
+- `Q-2026-05-03-72` Trim or split live bootstrap memory so focused Deezoh observation prompts stop injecting a truncated `MEMORY.md` before report-first reasoning begins. Status: queued.
+- `Q-2026-05-03-73` Decide whether Hermes paper-lane freshness should be restored by approved root cron, OpenClaw-native scheduling, or explicit manual-on-demand refresh. Status: queued pending approval.
+
+## 2026-05-03 Live Observation V16, Catalyst Source Repair, And Fresh Hermes Recheck
+
+- Heartbeat: `openclaw-deezoh-hermes-agent-improvement-loop`
+- Objective: re-run the direct observation suite against current live reports, prove the latest Deezoh behavior still holds, repair any safe report-source drift in the news workflow, and refresh Hermes to same-cycle truth without touching live trading policy.
+
+### What Ran
+
+- Re-read bootstrap truth, the latest Deezoh/Hermes handoff, this shared observations ledger, and the automation memory before changing anything.
+- Re-ran local proof:
+  - `python scripts/tests/deezoh_observation_suite_smoke.py`
+  - `python scripts/tests/workflow_contract_surfaces_smoke.py`
+- Re-checked live report freshness, scheduler split, and recent logs on `root@100.67.172.114`:
+  - `openclaw cron list`
+  - `crontab -l`
+  - direct mtimes for `DEEZOH_REPORT.json`, `DEEZOH_THOUGHTS.json`, `HERMES_DECISION_TRACE.json`, `MACRO_BIAS.json`, `SCOUT_REPORT.json`, `DERIVATIVES.json`, `NEWS.json`, and `AI_CATALYST.json`
+  - log tails for `candle_analyzer.log`, `market_scanner.log`, `macro_bias.log`, `watchlist.log`, and `derivatives.log`
+- Re-ran fresh live prompt-style sessions with `openclaw agent --agent main --thinking off`:
+  - `deezoh-observe-breakout-v16`
+  - `deezoh-observe-consolidation-v15`
+  - `deezoh-observe-news-v17`
+  - `deezoh-observe-failed-breakout-v18`
+  - `deezoh-observe-news-v18`
+  - `screener-workflow-audit-v9`
+  - `macro-workflow-audit-v10`
+- Ran bounded report refreshes only:
+  - `bash /root/.openclaw/workspace/agents/hermes-lead/run_hermes_lead.sh`
+  - `cd /root/openclawtrading/scripts && python3 catalyst_agent.py`
+- Applied a safe prompt-layer fix in:
+  - `agents/deezoh/QUESTION_ENGINE.md`
+  - `agents/deezoh/WORKFLOW.md`
+  - `linuxopenclawtrading/agents/deezoh/QUESTION_ENGINE.md`
+- Synced the updated Deezoh prompt files to:
+  - `/root/.openclaw/workspace/agents/deezoh/QUESTION_ENGINE.md`
+  - `/root/.openclaw/workspace/agents/deezoh/WORKFLOW.md`
+
+### Issues Captured
+
+- Issue `DHI-098`
+  Raw event: running `python3 catalyst_agent.py` printed a fresh catalyst summary, but `/root/openclawtrading/reports/auto/AI_CATALYST.json` did not move because the live script writes `CATALYST_REPORT.json` instead.
+  What happened: the news-style Deezoh replay was still willing to read stale `AI_CATALYST.json`, so the event workflow could mix a current news bundle with an older catalyst artifact.
+  Why it matters: Sal can get an honest-looking `news_event_control` answer that is grounded on the wrong catalyst file unless the prompt layer prefers the real live writer.
+  Recurrence: reproduced on 2026-05-03 before the prompt repair.
+  Affected agent/workflow/data source/timeframe: Deezoh direct observation, news-event control, catalyst lane, `AI_CATALYST.json`, `CATALYST_REPORT.json`, focused live replay.
+  Proposed fix: explicitly prefer `CATALYST_REPORT.json` for news/event prompts, treat `AI_CATALYST.json` as compatibility-only, and downgrade it into `not_fresh_but_referenced` unless its freshness is proved in the same cycle.
+  Owner: `architect-codex + Deezoh workflow layer`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: rerun the same news-style replay and require `actually_read` to include `CATALYST_REPORT.json` while any `AI_CATALYST.json` use is explicitly downgraded.
+  Status: `fixed and verified`
+
+- Issue update `DHI-097`
+  Raw event: Hermes was still older than the Deezoh desk bundle at the start of this run and only became same-cycle again after a bounded manual refresh.
+  What happened: the scheduler gap is still real even though the paper lane itself remains healthy.
+  Why it matters: same-cycle cross-lane comparisons stay manual until an approved recurring freshness owner is chosen.
+  Recurrence: reproduced again on 2026-05-03 before refresh.
+  Affected agent/workflow/data source/timeframe: Hermes paper lane, `HERMES_DECISION_TRACE.json`, current root cron schedule.
+  Proposed fix: keep manual refreshes paper-safe when needed, but leave any recurring scheduler change approval-gated.
+  Owner: `architect-codex + Hermes Lead + Sal`
+  Risk: `medium`
+  Approval needed: `yes for live recurring cron or scheduler changes`
+  Proof test: compare Deezoh and Hermes artifact timestamps in the same audit after any approved scheduler change.
+  Status: `open`
+
+### Proved
+
+- Local proof stayed green:
+  - `deezoh_observation_suite_smoke`
+  - `workflow_contract_surfaces_smoke`
+- Fresh live Deezoh scenario outcomes in this pass:
+  - `deezoh-observe-breakout-v16` -> `selected_workflow = breakout_acceptance`, `winner = no_trade`, `typed_wait = WAIT_ACCEPTANCE`
+  - `deezoh-observe-consolidation-v15` -> `selected_workflow = consolidation_resolution`, `winner = no_trade`, `typed_wait = WAIT_TRIGGER`
+  - `deezoh-observe-news-v17` -> `selected_workflow = news_event_control`, `winner = no_trade`, `typed_wait = WAIT_COOLDOWN`
+  - `deezoh-observe-failed-breakout-v18` -> `selected_workflow = liquidity_trap`, `winner = no_trade`, `typed_wait = WAIT_TRIGGER`
+- Fresh live news proof after the catalyst-source fix:
+  - `deezoh-observe-news-v18` still chose `news_event_control`
+  - `actually_read` now includes `CATALYST_REPORT.json`
+  - `AI_CATALYST.json` moved into `not_fresh_but_referenced` as a stale compatibility check instead of acting like the primary live source
+- Fresh live screener workflow-family proof:
+  - `screener-workflow-audit-v9` kept the same family mapping:
+    - quiet builders -> `accumulation_hunt`
+    - accepted pullback continuation -> `trend_continuation_hunt`
+    - second-wave sector rotation -> `post_news_rotation_hunt`
+    - failed breakout / trap-prone fade -> `failed_breakout_short_hunt`
+    - balanced range -> `range_rotation_hunt`
+    - degraded or event-distorted inputs -> `no_trade_protection`
+- Fresh live macro workflow-family proof:
+  - `macro-workflow-audit-v10` kept the same family mapping:
+    - pre-release risk -> `pre_event_risk_control`
+    - post-release digestion -> `post_event_digest`
+    - cross-asset regime split -> `cross_asset_divergence`
+    - broken usual playbook -> `unusual_behavior_precedent`
+    - thin or stale macro inputs -> `data_degraded_macro`
+- Fresh Hermes paper-lane proof after bounded manual refresh:
+  - `HERMES_DECISION_TRACE.json` refreshed to `generated_at = 2026-05-03T13:50:18Z`
+  - Hermes still agrees with Deezoh on `decision = no_trade`
+  - Hermes describes the desk as mixed/range-bound with no execution-grade edge
+
+### Remaining Issues
+
+- TradingView visual chart confirmation is still blocked at CDP target exposure, so chart-side structure is still fallback-grade.
+- `MAXPAIN_SUMMARY.json` and `LIQUIDATION_SUMMARY.json` are still proxy-grade rather than exact chart-verified liquidity truth.
+- Macro still honestly routes through degraded mode because cross-asset and derivatives inputs remain partial even when the prompt proof itself succeeds.
+- Hermes freshness is still manual rather than scheduler-proven; changing that recurrence should wait for approval.
+- Catalyst freshness is now sourced honestly, but the live recurring owner for `CATALYST_REPORT.json` is still not scheduler-proven in the active root cron set.
+- Workspace bootstrap still injects a truncated large `MEMORY.md`, which remains a token-efficiency drag on the recurring live loop.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-74` Prefer `CATALYST_REPORT.json` over stale `AI_CATALYST.json` in Deezoh news/event observation prompts and downgrade the old artifact explicitly when referenced. Status: done and live-verified via `deezoh-observe-news-v18`.
+- `Q-2026-05-03-75` Decide whether catalyst freshness should stay manual-on-demand or move into an approved recurring scheduler path alongside the rest of the desk bundle. Status: queued pending approval.
+
+## 2026-05-03 Live Observation V17, Report-Bundle Guard, And Fresh Data Recheck
+
+- Heartbeat: `openclaw-deezoh-hermes-agent-improvement-loop`
+- Objective: re-run the direct observation suite on the current live bundle, verify whether the last catalyst-source fix held, check whether fresher derivatives/watchlist data changed the routing truth, and land only a safe prompt-layer guard if the live answer still drifted into avoidable tool use.
+
+### What Ran
+
+- Re-read bootstrap truth, routing, the latest Deezoh/Hermes handoff, this observations ledger, and the automation memory before changing anything.
+- Re-ran local proof:
+  - `python scripts/tests/deezoh_observation_suite_smoke.py`
+  - `python scripts/tests/workflow_contract_surfaces_smoke.py`
+- Re-checked live truth on `root@100.67.172.114`:
+  - `openclaw cron list`
+  - direct mtimes for `DEEZOH_REPORT.json`, `HERMES_DECISION_TRACE.json`, `MACRO_BIAS.json`, `SCOUT_REPORT.json`, `DERIVATIVES.json`, `NEWS.json`, `AI_CATALYST.json`, and `CATALYST_REPORT.json`
+  - log tails for `candle_analyzer.log`, `market_scanner.log`, `macro_bias.log`, `watchlist.log`, and `derivatives.log`
+- Re-ran fresh live prompt-style sessions with `openclaw agent --agent main --thinking off`:
+  - `deezoh-observe-breakout-v17`
+  - `deezoh-observe-consolidation-v16`
+  - `deezoh-observe-news-v19`
+  - `deezoh-observe-failed-breakout-v19`
+  - `deezoh-observe-news-v20`
+  - `screener-workflow-audit-v10`
+  - `macro-workflow-audit-v11`
+- Applied one additional safe prompt-layer fix in:
+  - `agents/deezoh/QUESTION_ENGINE.md`
+  - `linuxopenclawtrading/agents/deezoh/QUESTION_ENGINE.md`
+- Synced the updated direct-observation guard to:
+  - `/root/.openclaw/workspace/agents/deezoh/QUESTION_ENGINE.md`
+
+### Issues Captured
+
+- Issue `DHI-099`
+  Raw event: `deezoh-observe-news-v19` still used `tool:market-data.crypto_derivatives` and `tool:market-data.derivatives_sentiment` even though the current-cycle report bundle was already fresh and sufficient for the bounded answer.
+  What happened: the catalyst-source repair held, but the focused news replay still escalated into external derivatives tool calls instead of staying report-first.
+  Why it matters: the extra tool calls slow the direct chart-style answer, make provenance noisier, and can hide whether the local desk bundle is already enough to support a paper-safe decision.
+  Recurrence: reproduced once on 2026-05-03 before the prompt hardening.
+  Affected agent/workflow/data source/timeframe: Deezoh direct observation, news-event control, focused live replay, external derivatives tools.
+  Proposed fix: explicitly mark the current-cycle report bundle as the first-class source for focused direct-observation prompts and forbid `tool:market-data.*`, web, live quote, or generic finance calls unless one of those reports is missing, stale, or the prompt explicitly asks for extra live confirmation.
+  Owner: `architect-codex + Deezoh workflow layer`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: rerun the same news-style replay and require `actually_read` to stay report-first with no `tool:market-data.*` entries when `DEEZOH_THOUGHTS.json`, `CATALYST_REPORT.json`, `DERIVATIVES.json`, `ACTIVE_SETUPS.json`, `ENTRY_SIGNALS.json`, and `MACRO_BIAS.json` are fresh.
+  Status: `fixed and verified`
+
+- Issue update `DHI-097`
+  Raw event: the Deezoh/operator bundle was fresh again at `2026-05-03T14:05Z` to `14:30Z`, but `HERMES_DECISION_TRACE.json` was still older at `2026-05-03T13:50:18Z`.
+  What happened: Hermes is still lagging the current desk cycle because the active Linux root cron set still does not include the Hermes lead runner.
+  Why it matters: the current desk bundle can look fresh while cross-lane comparison is still partially manual.
+  Recurrence: reproduced again on 2026-05-03 in this pass.
+  Affected agent/workflow/data source/timeframe: Hermes paper lane, `HERMES_DECISION_TRACE.json`, current root cron schedule.
+  Proposed fix: keep manual refreshes paper-safe when needed, but leave any recurring scheduler change approval-gated.
+  Owner: `architect-codex + Hermes Lead + Sal`
+  Risk: `medium`
+  Approval needed: `yes for live recurring cron or scheduler changes`
+  Proof test: after any approved scheduler change, compare the newest Deezoh desk bundle timestamps against Hermes runtime artifacts in the same audit pass.
+  Status: `open`
+
+### Proved
+
+- Local proof stayed green:
+  - `deezoh_observation_suite_smoke`
+  - `workflow_contract_surfaces_smoke`
+- Live report and log truth improved compared with earlier degraded passes:
+  - `DERIVATIVES.json` refreshed at `2026-05-03T14:30:05Z`
+  - `derivatives.log` now reports `34` to `36` coins instead of `0`
+  - `watchlist.log` is again publishing ranked long and short candidates
+  - `AI_CATALYST.json` is still stale while `CATALYST_REPORT.json` stayed fresh, confirming the catalyst-source split still needs to be handled at the prompt/reporting layer rather than by assuming the old file is current
+- Fresh live Deezoh scenario outcomes in this pass:
+  - `deezoh-observe-breakout-v17` -> `selected_workflow = breakout_acceptance`, `winner = no_trade`, `typed_wait = WAIT_ACCEPTANCE`
+  - `deezoh-observe-consolidation-v16` -> `selected_workflow = consolidation_resolution`, `winner = no_trade`, `typed_wait = WAIT_TRIGGER`
+  - `deezoh-observe-news-v19` -> `selected_workflow = news_event_control`, `winner = no_trade`, `typed_wait = WAIT_COOLDOWN`
+  - `deezoh-observe-failed-breakout-v19` -> `selected_workflow = liquidity_trap`, `winner = no_trade`, `typed_wait = WAIT_TRIGGER`
+- Fresh live news proof after the report-bundle guard:
+  - `deezoh-observe-news-v20` still chose `news_event_control`
+  - `actually_read` stayed report-first and no longer included `tool:market-data.*`
+  - `AI_CATALYST.json` remained compatibility-only while `CATALYST_REPORT.json` stayed primary
+- Fresh live screener workflow-family proof:
+  - `screener-workflow-audit-v10` kept the same six-family mapping:
+    - quiet builders -> `accumulation_hunt`
+    - accepted pullback continuation -> `trend_continuation_hunt`
+    - second-wave sector rotation -> `post_news_rotation_hunt`
+    - failed breakout / trap-prone fade -> `failed_breakout_short_hunt`
+    - balanced range -> `range_rotation_hunt`
+    - degraded or event-distorted inputs -> `no_trade_protection`
+- Fresh live macro workflow-family proof:
+  - `macro-workflow-audit-v11` kept the same five-family mapping:
+    - pre-release risk -> `pre_event_risk_control`
+    - post-release digestion -> `post_event_digest`
+    - cross-asset regime split -> `cross_asset_divergence`
+    - broken usual playbook -> `unusual_behavior_precedent`
+    - thin or stale macro inputs -> `data_degraded_macro`
+
+### Remaining Issues
+
+- TradingView visual chart confirmation is still blocked at CDP target exposure, so chart-side structure is still fallback-grade.
+- `MAXPAIN_SUMMARY.json` and `LIQUIDATION_SUMMARY.json` are still proxy-grade rather than exact chart-verified liquidity truth.
+- Macro still honestly routes through degraded mode because the remaining derivatives/cross-asset context is still incomplete even though the derivatives lane is healthier than before.
+- Hermes freshness is still manual rather than scheduler-proven; changing that recurrence should wait for approval.
+- Catalyst freshness is now sourced honestly, but the live recurring owner for `CATALYST_REPORT.json` is still not scheduler-proven in the active root cron set.
+- Focused direct observation is now cleaner, but Deezoh still names no actually spawned specialists in these replays, so agent-to-agent interaction remains mostly report-driven rather than live delegated.
+- Workspace bootstrap still injects a truncated large `MEMORY.md`, which remains a token-efficiency drag on the recurring live loop.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-76` Keep focused direct-observation prompts report-first when the current-cycle desk bundle is already fresh, and block avoidable `tool:market-data.*` drift. Status: done and live-verified via `deezoh-observe-news-v20`.
+- `Q-2026-05-03-77` Reclassify macro degradation around the healthier derivatives lane so the remaining gap is precise liquidity/cross-asset proof, not a blanket "derivatives empty" story. Status: queued.
+- `Q-2026-05-03-78` Decide whether Hermes paper-lane freshness should stay manual-on-demand or move into an approved recurring scheduler path now that the rest of the desk bundle is proving fresher. Status: queued pending approval.
