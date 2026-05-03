@@ -28,7 +28,9 @@ def main() -> int:
         "hookSpecificOutput": {
             "hookEventName": "SessionStart",
             "additionalContext": read_contract()
-            + "\n\nCarry forward a short visible block in meaningful replies that shows objective status, unapproved items, and remaining work with brief plain-English descriptions.",
+            + "\n\nCarry forward a short visible block in meaningful replies that shows objective status, unapproved items, and remaining work with brief plain-English descriptions. Accumulate still-relevant open items from prior conversations when they belong to the same project objective, organize them by project objective when needed, and do not limit that block to the current thread only."
+            + "\n\nAlso run model routing honestly: planning usually wants gpt-5.5 high, execution usually wants gpt-5.4 medium, and review should pick the stronger judgment lane when needed. If the current session is on the wrong lane, say so plainly instead of pretending it auto-switched."
+            + "\n\nFor meaningful replies, load `sal-communication-contract` and `response-structure-enforcer`. If the session is a continuation of prior work, load `agent-session-resume` before acting.",
         }
     }
     print(json.dumps(out))

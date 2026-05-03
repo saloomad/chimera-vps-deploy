@@ -68,7 +68,7 @@ Best native enforcement surfaces:
 Use them like this:
 
 - `hooks`
-  - for event-driven checks, routing hints, bootstrap injection, and continuity capture
+  - for event-driven checks, routing hints, bootstrap injection, continuity capture, and reply-contract nudges such as objective carry-forward
 - `Task Flow`
   - for restart-safe recurring state across a larger program
 - `Lobster`
@@ -154,13 +154,13 @@ The practical ones we should use most:
 
 - `UserPromptSubmit`
   - before the main answer starts
-  - best for orchestration precheck, starter-stack reminders, and prompt shaping
+  - best for orchestration precheck, starter-stack reminders, prompt shaping, and carry-forward reply reminders
 - `PreToolUse`
   - before a tool runs
   - best for risky-command guardrails, write-scope checks, and "did we choose the workflow yet" checks
 - `PostToolUse`
   - after a tool succeeds
-  - best for proof capture, "what else must be updated" reminders, and closeout enforcement
+  - best for proof capture, "what else must be updated" reminders, closeout enforcement, and open-work carry-forward nudges
 - `PostToolUseFailure`
   - after a tool fails
   - best for debugging guidance, retry routing, and failure capture
@@ -169,7 +169,7 @@ The practical ones we should use most:
   - best for batch review or "run monitor / review now" checks
 - `Stop`
   - when Claude is about to stop
-  - best for blocking premature closeout if review is still missing
+  - best for blocking premature closeout if review is still missing or open carry-forward items were not resolved
 - `SubagentStop`
   - when a subagent finishes
   - best for requiring proof or integration review before accepting the subagent result
@@ -201,8 +201,10 @@ The practical ones we should use most:
 Use it to enforce:
 
 - choose the workflow before mutating the system
+- load communication and response-shape skills when meaningful work begins
 - load the starter stack when meaningful work begins
 - force `critical-change-guard` for control-layer edits
+- force markdown-governance workflow for meaningful `.md` creation or updates
 - check `pipeline-enforcement-detector` when runtime, trading, Task Flow, Lobster, or recurring ownership surfaces are touched
 - check `hook-opportunity-detector` when the same pre-action reminder keeps repeating
 
@@ -213,6 +215,7 @@ Use it to enforce:
 - proof after the change
 - dependent-surface updates
 - continuity and PM follow-through
+- issue and improvement backlog updates when the step exposed a real problem
 - detector loading when the change exposed a reusable pattern or missing automation
 - `codex-lesson-harvester` when the tool step created a durable lesson
 
@@ -222,6 +225,7 @@ Use it to enforce:
 
 - review whether the subagent actually solved the assigned slice
 - review report quality, proof quality, file list, tests, and residual risks
+- check whether the subagent should have used an existing workflow or skill
 - load `codex-workflow-detector`, `codex-skill-opportunity-detector`, or `hook-opportunity-detector` when the subagent exposed a repeated pattern
 - load `pipeline-enforcement-detector` when the subagent exposed a runtime-owner gap
 - load `codex-lesson-harvester` or `cross-project-ai-lessons` when the result should help future projects
@@ -234,6 +238,7 @@ Use it to enforce:
 - proof must be explicit
 - dependent docs, continuity, and PM surfaces must be updated when required
 - detectors and learning capture must run before closeout if the session produced a reusable pattern or lesson
+- unresolved issues should be written to markdown and reviewed later instead of disappearing with the chat
 
 Hook handler types in Claude Code:
 

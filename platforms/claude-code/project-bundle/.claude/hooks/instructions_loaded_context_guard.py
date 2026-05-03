@@ -15,10 +15,12 @@ def main() -> int:
             "hookEventName": "InstructionsLoaded",
             "additionalContext": (
                 "The instruction layer is loaded. For meaningful work, use the starter stack: "
-                "prompt-upgrade-engineer, sal-communication-contract, vibe-coding-operator, and "
-                "objective-orchestration-loop. If the work edits instructions, config, hooks, skills, "
+                "prompt-upgrade-engineer, sal-communication-contract, response-structure-enforcer, "
+                "vibe-coding-operator, and objective-orchestration-loop. If the session is a continuation, "
+                "also use agent-session-resume. If the work edits instructions, config, hooks, skills, "
                 "workflows, detectors, or compaction behavior, also use critical-change-guard and "
-                "critical-config-instruction-and-compaction-guard-loop.md."
+                "critical-config-instruction-and-compaction-guard-loop.md. For non-trivial work, run model "
+                "routing honestly through codex-runtime-router and model-registry."
             ),
         }
     }

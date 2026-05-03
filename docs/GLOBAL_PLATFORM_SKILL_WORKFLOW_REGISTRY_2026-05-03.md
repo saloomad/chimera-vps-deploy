@@ -20,8 +20,9 @@ Use this stack for meaningful software work unless the task is truly tiny:
 
 1. `prompt-upgrade-engineer`
 2. `sal-communication-contract`
-3. `vibe-coding-operator`
-4. `objective-orchestration-loop`
+3. `response-structure-enforcer`
+4. `vibe-coding-operator`
+5. `objective-orchestration-loop`
 
 Add:
 
@@ -29,6 +30,12 @@ Add:
   - when friction, weak proof, confusion, or repeated correction appears
 - `major-build-council-orchestrator`
   - when real system tradeoffs exist
+- `agent-session-resume`
+  - when the prompt is a continuation, transcript follow-up, or handoff follow-up
+- `codex-runtime-router`
+  - when the task is non-trivial and route or model reasoning should be explicit
+- `model-registry`
+  - when making model or routing claims
 - `hook-opportunity-detector`
   - when a repeated reminder should become event-driven
 - `pipeline-enforcement-detector`
@@ -48,8 +55,13 @@ Use for:
 Should load or check:
 
 - `prompt-upgrade-engineer`
+- `sal-communication-contract`
+- `response-structure-enforcer`
 - `vibe-coding-operator`
 - `objective-orchestration-loop`
+- `agent-session-resume` when the ask is clearly a continuation
+- `codex-runtime-router`
+- `model-registry` when route or model claims matter
 - `major-build-council-orchestrator` when tradeoffs are real
 
 ### `PreToolUse`
@@ -66,6 +78,8 @@ Should load or check:
 - starter stack when a mutating action starts meaningful work
 - `critical-change-guard` plus `critical-config-instruction-and-compaction-guard-loop.md`
   - when editing instructions, config, hooks, skills, workflows, detectors, continuity, or PM surfaces
+- `markdown-artifact-governance-and-closeout-loop.md`
+  - when the write target is a meaningful markdown artifact
 - `hook-opportunity-detector`
   - when the same pre-action reminder keeps repeating
 - `pipeline-enforcement-detector`
@@ -84,10 +98,12 @@ Should load or check:
 
 - `system-change-verifier`
 - `project-operations-manager`
+- `markdown-artifact-governance-and-closeout-loop.md` when a meaningful `.md` file was created or changed
 - `codex-workflow-detector`
 - `codex-skill-opportunity-detector`
 - `hook-opportunity-detector`
 - `codex-lesson-harvester`
+- `post-response-failure-feedback-loop.md` when the step exposed a weak answer, failure, drift, or issue that should enter the improvement backlog
 
 ### `SubagentStop`
 
@@ -105,6 +121,7 @@ Should load or check:
 - `pipeline-enforcement-detector` when runtime ownership is involved
 - `codex-lesson-harvester`
 - `cross-project-ai-lessons` when the lesson should help other projects
+- `post-response-failure-feedback-loop.md` when the subagent result exposed a reusable issue
 
 ### `Stop`
 
@@ -122,6 +139,7 @@ Should load or check:
 - `project-operations-manager`
 - `codex-lesson-harvester`
 - `cross-project-ai-lessons`
+- `post-response-failure-feedback-loop.md` when the session created a fixable issue that should be reviewed later
 
 ### `PreCompact` and `PostCompact`
 
@@ -262,6 +280,8 @@ Enforce with:
 
 - workflow catalog:
   - `workflows/codex/WORKFLOW_CATALOG.md`
+- improvement backlog:
+  - `docs/AGENT_IMPROVEMENT_BACKLOG_2026-05-03.md`
 - enforcement catalog:
   - `docs/PLATFORM_WORKFLOW_AND_SKILL_ENFORCEMENT_CATALOG_2026-05-02.md`
 - hook and platform matrix:
@@ -277,6 +297,7 @@ Enforce with:
 - stronger OpenCode auto-trigger proof if a real hook surface exists there
 - stronger Task Flow runtime proof on OpenClaw
 - a more explicit global workflow register mirrored to every platform startup surface
+- a platform parity audit loop for shared skills and startup surfaces
 
 ## What Other Projects Can Reuse
 

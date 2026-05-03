@@ -17,6 +17,9 @@ Add:
 6. `vibe-coding-monitor` when friction, misses, or weak explanation appear
 7. `hook-opportunity-detector` when a repeated problem should become an automatic event reaction
 8. `pipeline-enforcement-detector` when a recurring or risky pipeline needs a better runtime owner
+9. `agent-session-resume` when the request is a continuation, transcript follow-up, or handoff follow-up
+10. `response-structure-enforcer` when the reply risks becoming artifact-heavy or too meta
+11. `codex-runtime-router` and `model-registry` when the task is non-trivial and route/model guidance should be explicit
 
 Communication rule:
 
@@ -141,6 +144,26 @@ Communication rule:
 - Main enforcement skills:
   - `pipeline-enforcement-detector`
   - `openclaw-feature-router`
+
+### 14. Markdown Artifact Governance
+
+- Use when: creating or updating meaningful `.md` files such as instructions, workflows, skills, architecture docs, registries, reports, handoffs, or PM surfaces
+- Loop type: bounded closeout loop
+- Main workflow:
+  - `markdown-artifact-governance-and-closeout-loop.md`
+
+### 15. Feedback, Failure, And Improvement Capture
+
+- Use when: a response was weak, a tool failed, a report was weak, the user corrected the agent, or a reusable issue should enter the backlog
+- Loop type: bounded feedback loop
+- Main workflow:
+  - `post-response-failure-feedback-loop.md`
+- Main skills:
+  - `vibe-coding-monitor`
+  - `codex-lesson-harvester`
+  - `codex-workflow-detector`
+  - `codex-skill-opportunity-detector`
+  - `hook-opportunity-detector`
 
 ## Rule
 
