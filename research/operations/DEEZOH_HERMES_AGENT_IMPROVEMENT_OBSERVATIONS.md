@@ -2716,3 +2716,85 @@ Each hourly run must include:
 - `Q-2026-05-03-45` Keep Jackson MCP registration in both OpenClaw MCP and `mcporter` config; future checks must verify `exists`, `wired`, and `callable` separately. Status: done.
 - `Q-2026-05-03-46` Repair TradingView Desktop CDP page-target exposure with review before restart or launch-service mutation. Status: blocked pending runtime-owner decision.
 - `Q-2026-05-03-47` Add or keep a manual visual-read intake path so Sal can temporarily provide chart proof without letting Deezoh self-upgrade fallback data. Status: queued.
+
+## 2026-05-03 Heartbeat Same-Session Follow-Up And Wait Canonicalization
+
+- Heartbeat: `deezoh-15-minute-observation-loop`
+- Objective: verify the earlier Deezoh same-session breakout follow-up fixes for canonical wait ids and UTC freshness math, then repair any safe wait-label leaks found in the live producer.
+
+### What Ran
+
+- Rechecked live desk state under `/root/openclawtrading/reports/auto`.
+- Ran a real same-session OpenClaw replay:
+  - session id `deezoh-observe-breakout-v6`
+  - command shape: `openclaw agent --agent main --thinking on --json`
+  - captured output at `/tmp/deezoh_breakout_followup_v7.json`
+- Patched the canonical Deezoh producer and control builder:
+  - top-level `typed_wait` now equals canonical `wait_type`
+  - raw labels such as `WAIT_CANDLE` are preserved as `legacy_typed_wait`
+  - `DESK_BRANCH_STATE.json` now also exposes canonical `typed_wait` while keeping `legacy_typed_wait`
+- Fixed the local question-engine test harness so it imports canonical `scripts/` before `_remote_edit/`.
+- Synced the patched producer and control builder to `/root/openclawtrading/scripts/`.
+- Reran the live desk observability chain.
+
+### Issues Captured
+
+- Issue `DHI-077`
+  Raw event: earlier same-session breakout follow-up emitted ad-hoc `WAIT_CONFIRMATION`.
+  What happened in this pass: replay `deezoh-observe-breakout-v6` now returned `typed_wait = WAIT_ACCEPTANCE`.
+  Why it matters: Deezoh can preserve a canonical wait id in a follow-up turn instead of inventing a new wait state.
+  Proof test: `/tmp/deezoh_breakout_followup_v7.json` selected `breakout_acceptance`, winner `no_trade`, typed wait `WAIT_ACCEPTANCE`.
+  Status: `verified fixed`
+
+- Issue `DHI-078`
+  Raw event: earlier same-session breakout follow-up described fresh UTC reports as `8+ hours old` because the prompt displayed GMT+8.
+  What happened in this pass: replay `deezoh-observe-breakout-v6` returned `freshness_call = fresh_23min_same_cycle_unconfirmed`.
+  Why it matters: Deezoh now compared the report time and prompt time in the same UTC frame instead of calling same-hour evidence stale.
+  Proof test: `/tmp/deezoh_breakout_followup_v7.json` used minutes-old freshness language, not hours-stale language.
+  Status: `verified fixed`
+
+- Issue `DHI-081`
+  Raw event: live `DEEZOH_THOUGHTS.json` had canonical `wait_type = WAIT_TRIGGER` but top-level `typed_wait = WAIT_CANDLE`; `DESK_BRANCH_STATE.json` also exposed `typed_wait = WAIT_CANDLE`.
+  What happened: the producer preserved a legacy raw phase label at the same top-level field the operator contract now treats as canonical.
+  Why it matters: downstream monitors and human readers can mistake a legacy trigger description for an allowed desk wait id. This also lets noncanonical labels leak even after the live Deezoh reply itself was fixed.
+  Recurrence: reproduced in fresh live chain output before the patch.
+  Affected agent/workflow/data source/timeframe: Deezoh question engine, desk branch state, operator reports, all Deezoh workflows.
+  Proposed fix: set top-level `typed_wait` to canonical `wait_type`, preserve the raw label as `legacy_typed_wait`, and test both local and live outputs.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: local `test_deezoh_question_engine` passes with a typed-wait canonical assertion; live `DEEZOH_THOUGHTS.json` and `DESK_BRANCH_STATE.json` both show `typed_wait = WAIT_TRIGGER` while preserving `legacy_typed_wait = WAIT_CANDLE`.
+  Status: `fixed and verified`
+
+### Proved
+
+- Same-session replay behavior is now correct:
+  - `selected_workflow = breakout_acceptance`
+  - `winner = no_trade`
+  - `typed_wait = WAIT_ACCEPTANCE`
+  - `freshness_call = fresh_23min_same_cycle_unconfirmed`
+  - unsafe lesson: a fallback-only chart read must not unlock `READY` or `ACTIVATE`
+- Local bounded tests passed:
+  - `test_deezoh_question_engine` passed `16 / 16`
+  - `deezoh_observation_suite_smoke` passed
+  - `workflow_contract_surfaces_smoke` passed
+  - `test_desk_contract_bridge_entry_signals` passed
+  - `hermes_dual_lane_contract_smoke` passed
+- Live chain proof after sync:
+  - `DEEZOH_THOUGHTS.json typed_wait = WAIT_TRIGGER`
+  - `DEEZOH_THOUGHTS.json legacy_typed_wait = WAIT_CANDLE`
+  - `DESK_BRANCH_STATE.json typed_wait = WAIT_TRIGGER`
+  - `DESK_BRANCH_STATE.json legacy_typed_wait = WAIT_CANDLE`
+  - `EXECUTION_REPORT.json entries_opened = 0`
+  - `PAPER_TRADES.json open_count = 0`
+
+### Remaining Issues
+
+- TradingView visual chart confirmation is still blocked at CDP target exposure, not Jackson registration.
+- Derivatives remain `degraded_fallback`; long/short ratio and liquidation context still need a better source or repair path.
+- Watchlist quality remains queued; all-zero monitor placeholders were not addressed in this pass.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-48` Keep top-level wait fields canonical and move raw phase labels into `legacy_typed_wait`. Status: done.
+- `Q-2026-05-03-49` Keep the question-engine test harness pointed at canonical `scripts/` before `_remote_edit/` so it tests the file agents actually patch. Status: done.
