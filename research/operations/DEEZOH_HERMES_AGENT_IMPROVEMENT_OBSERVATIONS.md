@@ -1876,6 +1876,152 @@ Each hourly run must include:
 - `Q-2026-05-03-17` Keep macro runtime logging and `data_sources` aligned with the current nested `NEWS.json` schema. Status: done.
 - `Q-2026-05-03-18` Keep top-level manager status aliases present so desk summaries do not need nested inference. Status: done.
 
+## 2026-05-03 Deezoh Report-Link Repair And Live Recheck
+
+### What Actually Ran
+
+- Re-ran the bounded local safety and contract suite:
+  - `python scripts/tests/deezoh_observation_suite_smoke.py`
+  - `python scripts/tests/workflow_contract_surfaces_smoke.py`
+  - `python scripts/simulator/test_desk_contract_bridge_entry_signals.py`
+  - `python scripts/tests/hermes_dual_lane_contract_smoke.py`
+- Ran a local Deezoh behavior receipt pass directly against `build_thought_bundle` for:
+  - `breakout_acceptance`
+  - `consolidation_resolution`
+  - `news_event_control`
+  - `liquidity_trap`
+- Ran a local workflow-family audit for the required screener families:
+  - `accumulation_hunt`
+  - `continuation`
+  - `post_news_rotation`
+  - `failed_breakout_short`
+  - `range_rotation`
+  - `no_trade_protection`
+- Ran a local workflow-family audit for the required macro families:
+  - `pre_event_control`
+  - `post_event_digest`
+  - `cross_asset_divergence`
+  - `unusual_behavior_precedent_capture`
+  - `data_degraded_mode`
+- Pulled fresh live truth from `root@100.67.172.114` for:
+  - report ages and current report fields
+  - root cron and OpenClaw cron/taskflow surface behavior
+  - `/root/.openclaw/logs/desk_observability.log`
+  - `/root/.openclaw/logs/macro_bias.log`
+  - `/root/.openclaw/logs/derivatives.log`
+  - `/root/.openclaw/logs/openclaw.log`
+- Added and synced a bounded runtime helper:
+  - `scripts/ensure_deezoh_report_links.py`
+  - `openclawtrading/scripts/ensure_deezoh_report_links.py`
+- Ran the helper live:
+  - `python3 /root/openclawtrading/scripts/ensure_deezoh_report_links.py`
+- Re-ran a bounded live paper-only Hermes cycle:
+  - `python3 scripts/hermes_runtime_bridge.py --timeout-seconds 180 --quiet`
+
+### New Evidence From This Run
+
+- Issue `DHI-061`
+  Raw event: `openclaw.log` from the explicit live Deezoh observation session `deezoh-observe-derivatives-fallback-v1` showed repeated ENOENT reads for `/root/.openclaw/workspace/agents/deezoh/CHART_ANALYSIS.json`, `DERIVATIVES.json`, `MACRO_BIAS.json`, and `SCOUT_REPORT.json` even though the shared report files existed under `/root/openclawtrading/reports/auto/`.
+  What happened: the live Deezoh workspace only exposed `DEEZOH_THOUGHTS.json` as a direct link, so the agent was still trying to read core shared reports from its local workspace path without matching symlinks.
+  Why it matters: the observation loop can waste reasoning cycles and degrade specialist follow-up quality even when the underlying reports are healthy.
+  Recurrence: reproduced from fresh live log evidence on May 3, 2026.
+  Affected agent/workflow/data source/timeframe: Deezoh live observation runs, chart/derivatives/macro/screener fallback reads, current desk cycle.
+  Proposed fix: keep a bounded helper that links the shared report set into `/root/.openclaw/workspace/agents/deezoh/` before observation runs.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: after syncing and running `ensure_deezoh_report_links.py`, live `ENTRY_SIGNALS.json`, `CHART_ANALYSIS.json`, `SCOUT_REPORT.json`, `MACRO_BIAS.json`, `DERIVATIVES.json`, `CATALYST_REPORT.json`, and `NEWS.json` all exist in the Deezoh workspace and resolve to `/root/openclawtrading/reports/auto/...`.
+  Status: `fixed and verified`
+
+- Issue `DHI-062`
+  Raw event: `openclaw.log` warns `workspace bootstrap file AGENTS.md is 26535 chars (limit 12000); truncating in injected context`.
+  What happened: the live Deezoh AGENTS surface is now large enough that OpenClaw truncates it before the full instruction set is injected.
+  Why it matters: even when the logic is correct, late-file routing, workflow, and evidence rules can disappear from the live context window and create inconsistent behavior.
+  Recurrence: reproduced live on May 3, 2026.
+  Affected agent/workflow/data source/timeframe: Deezoh runtime bootstrap, all explicit live Deezoh observation sessions.
+  Proposed fix: split `AGENTS.md` into a short runtime front door plus referenced support docs so the injected bootstrap stays below the platform limit without losing the operating contract.
+  Owner: `architect-codex`
+  Risk: `medium`
+  Approval needed: `review before control-layer rewrite`
+  Proof test: a future live run should stop emitting the AGENTS truncation warning while preserving the same workflow and reply-contract behavior.
+  Status: `open`
+
+- Issue `DHI-063`
+  Raw event: the earlier `derivatives.log` tail still showed repeated `DERIVATIVES.json written: 0 coins`, but the current live `DERIVATIVES.json` now contains `30` coins.
+  What happened: the raw log tail was older evidence than the current report file state, so log-only reading overstated the live derivatives failure.
+  Why it matters: this loop is supposed to treat raw logs as evidence, not truth; without file/mtime comparison it can chase stale failures and miss recovered lanes.
+  Recurrence: observed in this run while comparing the old tail against current report contents.
+  Affected agent/workflow/data source/timeframe: derivatives lane, operator audits, Deezoh/Hermes upstream-context grading.
+  Proposed fix: keep pairing log-tail reads with current report content and age checks before declaring the derivatives lane empty.
+  Owner: `pipeline-watchdog`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: the same audit pass should read both `/root/.openclaw/logs/derivatives.log` and `/root/openclawtrading/reports/auto/DERIVATIVES.json`, then compare timestamps or payload counts before logging the state.
+  Status: `verified`
+
+### Proved
+
+- The local Deezoh observation suite still names the correct workflows for the required chart-side scenarios:
+  - breakout -> `breakout_acceptance`
+  - consolidation -> `consolidation_resolution`
+  - live news-event -> `news_event_control`
+  - failed breakout / trap -> `liquidity_trap`
+- The local screener workflow audit still returns the required families:
+  - `accumulation_hunt`
+  - `continuation`
+  - `post_news_rotation`
+  - `failed_breakout_short`
+  - `range_rotation`
+  - `no_trade_protection`
+- The local macro workflow audit still returns the required families:
+  - `pre_event_control`
+  - `post_event_digest`
+  - `cross_asset_divergence`
+  - `unusual_behavior_precedent_capture`
+  - `data_degraded_mode`
+- Live report-link proof after the helper run:
+  - `ENTRY_SIGNALS.json`, `CHART_ANALYSIS.json`, `SCOUT_REPORT.json`, `MACRO_BIAS.json`, `DERIVATIVES.json`, `CATALYST_REPORT.json`, and `NEWS.json` now exist under `/root/.openclaw/workspace/agents/deezoh/` and resolve to the shared `/root/openclawtrading/reports/auto/` root.
+- Live Deezoh-side state at read time still shows the same strategic blocker rather than a file-path blocker:
+  - `DEEZOH_THOUGHTS.json selected_workflow = accumulation_hunt`
+  - `winner = short`
+  - `next_question.agent = macro-bias`
+  - `next_question.dispatch_state = planned`
+  - `wait_state.wait_type = WAIT_TRIGGER`
+- Live screener, macro, entry, and Hermes truth at read time:
+  - `SCOUT_REPORT.json selected_workflow = no_trade_protection`
+  - `MACRO_BIAS.json selected_workflow = data_degraded_mode`
+  - `MACRO_BIAS.json verdict = MIXED`
+  - `MACRO_BIAS.json data_sources.news_articles = 172`
+  - `ENTRY_SIGNALS.json effective_entry_state = READY_TO_TRADE`
+  - `ENTRY_SIGNALS.json macro_gate_workflow = data_degraded_mode`
+  - `HERMES_DECISION_TRACE.json status = ready`
+  - `HERMES_DECISION_TRACE.json decision = no_trade`
+  - `HERMES_LANE_THESIS.json status = ready`
+  - `HERMES_LANE_THESIS.json decision = no_trade`
+  - `HERMES_DECISION_TRACE.json`, `HERMES_LANE_THESIS.json`, and `HERMES_ADVISOR_REVIEW.json` now share `generated_at = 2026-05-03T02:09:53Z` and `evidence_pack_id = 53a5b339d56ac637`
+
+### Safe Changes Applied This Run
+
+- Local canonical `scripts/ensure_deezoh_report_links.py`
+- Local flat mirror `openclawtrading/scripts/ensure_deezoh_report_links.py`
+- Live repo sync:
+  - `/root/openclawtrading/scripts/ensure_deezoh_report_links.py`
+- Live runtime link repair under:
+  - `/root/.openclaw/workspace/agents/deezoh/`
+
+### Remaining Issues
+
+- Deezoh still names the macro follow-up lane but does not yet show same-cycle executed specialist proof; `dispatch_state` remains `planned`.
+- `ENTRY_SIGNALS.json` still promotes `READY_TO_TRADE` while macro stays in `data_degraded_mode` and Hermes still resolves to `no_trade`.
+- The Deezoh runtime bootstrap is still too large for clean injection and needs a deliberate control-layer trim rather than another incremental content add.
+- Hermes is healthy when explicitly run, but this pass did not change scheduler ownership.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-19` Keep a bounded helper that links shared reports into the live Deezoh workspace before observation runs. Status: done.
+- `Q-2026-05-03-20` Shrink the live Deezoh AGENTS bootstrap below the OpenClaw injection limit without losing the workflow contract. Status: queued.
+- `Q-2026-05-03-21` Keep derivatives audits file-aware so stale log tails do not override fresher report contents. Status: queued.
+
 ## 2026-05-03 Heartbeat Derivatives And Chart Freshness Repair
 
 ### Trigger
@@ -1966,3 +2112,136 @@ Each hourly run must include:
 - `Q-2026-05-03-21` Add Deezoh scoring contradiction discount for partial chart evidence, null trigger, and indicator-side conflict. Status: queued.
 - `Q-2026-05-03-22` Repair TradingView CDP chart target discovery or route chart visual inspection through a different verified surface. Status: queued.
 - `Q-2026-05-03-23` Restore same-cycle indicator, strategy, catalyst, divergence, and critic-lane proof for the Deezoh observation bundle. Status: queued.
+
+## 2026-05-03 Heartbeat Indicator/Strategy Lane Activation
+
+### Trigger
+
+- Heartbeat: `deezoh-15-minute-observation-loop`
+- Objective: continue live chart-style replay, close remaining evidence-lane gaps, and verify Deezoh pushes back instead of copying a weak bearish chart label.
+
+### What Ran
+
+- Rechecked the live VPS report set after the previous chart/derivatives repair.
+- Found that `INDICATOR_REPORT.json` and `STRATEGY_REPORT.json` were still missing from `/root/openclawtrading/reports/auto`.
+- Installed the missing live indicator producer from the tracked Windows source into `/root/openclawtrading/scripts/indicator_analyst`.
+- Installed the strategy producer into `/root/openclawtrading/agents/strategy` and repaired its retired `/home/open-claw/openclawtrading` paths to `/root/openclawtrading`.
+- Updated `run_desk_observability_chain.sh` so a direct or cron chain pass refreshes derivatives, macro, indicator, and strategy evidence before Deezoh thoughts are rebuilt.
+- Ran the full live desk chain and then ran an actual OpenClaw Deezoh replay through `openclaw agent --agent main`.
+
+### Issues Captured
+
+- Issue `DHI-064`
+  Raw event: live `/root/openclawtrading/scripts` had `scripts/indicators/` helpers but did not have the actual `scripts/indicator_analyst/indicator_analyst.py` producer.
+  What happened: the desk could reference `INDICATOR_REPORT.json`, but no live producer was installed to write it.
+  Why it matters: Deezoh was judging a chart-side short without the indicator specialist lane that should block weak or contradictory timing.
+  Recurrence: reproduced on the May 3 heartbeat and fixed in the same pass.
+  Affected agent/workflow/data source/timeframe: indicator-analyst, Deezoh chart workflow, 15m/1h/4h/1d timing translation.
+  Proposed fix: install the tracked indicator analyst producer on the live VPS and call it from the desk observability chain before Deezoh thoughts are built.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: direct live run and full chain run must write fresh `INDICATOR_REPORT.json` with focus symbol, focus direction, and entry grade.
+  Status: `fixed and verified`
+
+- Issue `DHI-065`
+  Raw event: the strategy runner existed locally but still used retired `/home/open-claw/openclawtrading` paths, and the live VPS had no `/root/openclawtrading/agents/strategy` producer installed.
+  What happened: the strategy lane was not capable of writing a current `STRATEGY_REPORT.json` for Deezoh.
+  Why it matters: Deezoh could not compare a tempting chart read against whether any strategy actually passes the quality bar.
+  Recurrence: reproduced on the May 3 heartbeat and fixed in the same pass.
+  Affected agent/workflow/data source/timeframe: strategy agent, Deezoh evidence stack, trade-quality gate.
+  Proposed fix: repair the strategy runner paths to `/root/openclawtrading`, install the strategy producer on the VPS, and call it from the desk observability chain.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: fresh live run must write `STRATEGY_REPORT.json` with `regime`, `gate`, `bias`, `matching_strategy`, and `passing_strategies`.
+  Status: `fixed and verified`
+
+- Issue `DHI-066`
+  Raw event: a manual desk-chain run just before the collector cron boundary left `DERIVATIVES.json` old enough for the manager to flag it stale, even though the normal cron cadence would refresh it minutes later.
+  What happened: the desk observability chain was not self-contained for ad-hoc heartbeat testing.
+  Why it matters: the 15-minute observation loop should be able to run a bounded same-cycle proof without waiting for the exact `:00/:30` collector pass.
+  Recurrence: reproduced on the May 3 heartbeat and fixed in the same pass.
+  Affected agent/workflow/data source/timeframe: run_desk_observability_chain, derivatives, macro, manager status, heartbeat replay.
+  Proposed fix: refresh derivatives and macro inside the chain before Deezoh thoughts are rebuilt.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: full live chain run should clear the derivatives stale alert and leave `DERIVATIVES.json` fresh for Deezoh.
+  Status: `fixed and verified`
+
+- Issue `DHI-067`
+  Raw event: `openclaw agent --thinking medium` failed against the live Kimi `k2.6` runner with `Thinking level "medium" is not supported... Use one of: off, on.`
+  What happened: the OpenClaw/Kimi CLI thinking contract differs from Codex/Claude-style `medium` terminology.
+  Why it matters: replay commands or automation prompts copied from Codex conventions can fail before Deezoh is even tested.
+  Recurrence: reproduced once on the May 3 heartbeat; rerun with `--thinking on` succeeded.
+  Affected agent/workflow/data source/timeframe: OpenClaw CLI replay, Deezoh live observation loop, platform command recipes.
+  Proposed fix: use `--thinking on` or omit the flag for Kimi OpenClaw replays; do not use `medium` unless the provider exposes that exact value.
+  Owner: `platform-runtime-router`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: `openclaw agent --agent main --thinking on --json` succeeds for the Deezoh replay.
+  Status: `captured; workaround verified`
+
+- Issue `DHI-068`
+  Raw event: after the strategy producer was restored, `STRATEGY_REPORT.json` described strategy-tracker open advisory signals as `open trades`, while `EXECUTION_REPORT.json` and `PAPER_TRADES.json` both showed no opened trades.
+  What happened: the strategy tracker is monitoring signal outcomes, not real execution exposure, but the report wording made that distinction unclear.
+  Why it matters: Deezoh and operator surfaces must not confuse strategy research alerts with live or paper positions.
+  Recurrence: reproduced on the May 3 heartbeat and fixed in the same pass.
+  Affected agent/workflow/data source/timeframe: strategy report, Deezoh evidence stack, paper execution safety, operator reporting.
+  Proposed fix: set `open_trades` from `PAPER_TRADES.json`, add `open_paper_trades`, add `tracked_strategy_signals`, and explicitly document tracker semantics in `STRATEGY_REPORT.json`.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: fresh live `STRATEGY_REPORT.json` should say `open_trades = 0`, `open_paper_trades = 0`, and `tracked_strategy_signals = 9` while execution still reports no opened entries.
+  Status: `fixed and verified`
+
+### Proved
+
+- The live indicator lane is now present and fresh:
+  - `INDICATOR_REPORT.json source = indicator_analyst.py`
+  - `focus_symbol = BTCUSDT`
+  - `focus_direction = SHORT`
+  - `entry_grade = BLOCK`
+  - `entry_confirmed = false`
+- The live strategy lane is now present and fresh:
+  - `STRATEGY_REPORT.json regime = MIXED`
+  - `gate = CAUTION`
+  - `bias = MIXED`
+  - `matching_strategy = false`
+  - `passing_strategies = 0`
+  - `open_trades = 0`
+  - `open_paper_trades = 0`
+  - `tracked_strategy_signals = 9`
+  - `strategy_tracker_semantics` says tracked signals are advisory outcomes, not live or paper positions.
+- The full live chain is now self-contained for the repaired lanes:
+  - chain exit code `0`
+  - derivatives refreshed in-cycle
+  - manager unhealthy count stayed at `5` and no longer included derivatives stale/empty after the self-contained rerun
+- Deezoh artifact behavior improved after indicator and strategy were restored:
+  - `DEEZOH_THOUGHTS.json selected_workflow = accumulation_hunt`
+  - `winner = no_trade`
+  - `same_cycle_confirmed = true`
+  - optional lane health degraded only for stale catalyst among chart/indicator/strategy/catalyst/derivatives
+- Actual OpenClaw Deezoh replay passed the not-a-yes-man check:
+  - It refused to short just because chart bias said bearish.
+  - It named the best no-trade case as the winner.
+  - It called out the contradiction between bearish chart label, bullish EMA/MACD, oversold lower timeframes, blocked indicator timing, mixed strategy edge, partial chart fallback, macro low confidence, and FOMC timing.
+  - It produced an `unsafe_learning_guard` telling the system not to learn "short" from a degraded contradictory chart label.
+
+### Remaining Issues
+
+- TradingView/CDP visual chart confirmation is still broken, so chart evidence remains deterministic fallback rather than verified visual analysis.
+- `CATALYST_REPORT.json`, `NEWS.json`, `MACRO.json`, and `DIVERGENCES.json` still show stale or missing manager alerts.
+- `ALTFINS.json` is still missing.
+- Council remains `partially_visible`; the critic/auditor lane still needs stronger same-cycle proof.
+- The strategy runner generated strategy alerts and tracker state from the direct repair run; those remain paper/advisory artifacts and should not be treated as live trade automation.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-24` Keep the live indicator producer installed and invoked before Deezoh thoughts so weak short timing is blocked by evidence. Status: done.
+- `Q-2026-05-03-25` Keep the strategy producer installed and path-corrected so Deezoh can compare chart temptation against actual strategy quality. Status: done.
+- `Q-2026-05-03-26` Make heartbeat-triggered desk-chain replays self-contained by refreshing derivatives and macro before thoughts. Status: done.
+- `Q-2026-05-03-27` Update future OpenClaw/Kimi replay recipes to use `--thinking on/off`, not Codex-style `medium`. Status: queued.
+- `Q-2026-05-03-28` Repair catalyst/news/macro-calendar/divergence/altfins/critic proof after the current indicator and strategy gap is closed. Status: queued.
+- `Q-2026-05-03-29` Keep strategy reports from calling advisory tracked signals "open trades" unless `PAPER_TRADES.json` confirms real paper exposure. Status: done.
