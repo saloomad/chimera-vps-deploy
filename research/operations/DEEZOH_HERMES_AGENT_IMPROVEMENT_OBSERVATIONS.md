@@ -2378,3 +2378,101 @@ Each hourly run must include:
 - `Q-2026-05-03-33` Install and path-fix AltFins fetcher for the live VPS chain. Status: done.
 - `Q-2026-05-03-34` Investigate OpenClaw `replayInvalid = true` on successful embedded Deezoh replay. Status: queued.
 - `Q-2026-05-03-35` Repair TradingView/CDP visual chart confirmation and council critic proof after the evidence-lane health reaches green. Status: queued.
+
+## 2026-05-03 Heartbeat Council Critic Activation
+
+### Trigger
+
+- Heartbeat: `deezoh-15-minute-observation-loop`
+- Objective: continue after evidence-lane health reached green, then close the next proof gap: council/critic visibility.
+
+### What Ran
+
+- Rechecked live manager, Deezoh, council, chart, derivatives, divergence, AltFins, execution, and paper-trade artifacts.
+- Confirmed manager remained `ALL HEALTHY`, but `COUNCIL_REVIEW.json` and `COUNCIL_RUNTIME.json` were still only `partially_visible` because the critic lane depended on missing `CHALLENGER_REPORT.json`.
+- Patched the challenger producer to use the active runtime report path instead of retired `/home/open-claw/openclawtrading`.
+- Synced `scripts/challenger_agent/challenger_agent.py` to `/root/openclawtrading/scripts/challenger_agent/challenger_agent.py`.
+- Wired challenger execution into `run_desk_observability_chain.sh` before `build_live_council.py`.
+- Ran the challenger directly, then the full live desk chain, then a live OpenClaw Deezoh replay against the visible council.
+
+### Issues Captured
+
+- Issue `DHI-074`
+  Raw event: `COUNCIL_REVIEW.json` showed `status = partially_visible` and critic status `missing` because `CHALLENGER_REPORT.json` did not exist.
+  What happened: bull, bear, and judge were visible, but the critic lane had no fresh producer in the chain.
+  Why it matters: Sal asked for council-style pressure testing; without a visible critic, Deezoh can still look safer than it is while missing the strongest opposing question.
+  Recurrence: reproduced on the May 3 heartbeat and fixed in the same pass.
+  Affected agent/workflow/data source/timeframe: challenger, council runtime, Deezoh no-yes-man check, chart-style replay.
+  Proposed fix: run the challenger producer before council assembly so `CHALLENGER_REPORT.json` exists and the critic participant becomes visible.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: full live chain must produce `COUNCIL_RUNTIME.json status = ran`, `actually_ran = true`, actual participants `bull/bear/critic/judge`, and no missing participants.
+  Status: `fixed and verified`
+
+- Issue `DHI-075`
+  Raw event: the challenger producer source still used retired `/home/open-claw/openclawtrading` paths.
+  What happened: even if copied to the VPS, it would not write to the current `/root/openclawtrading/reports/auto` surface.
+  Why it matters: this is the same path-drift class that previously broke chart, strategy, divergence, and AltFins producers.
+  Recurrence: found and fixed on the May 3 heartbeat.
+  Affected agent/workflow/data source/timeframe: challenger report, council critic lane, cross-platform live sync.
+  Proposed fix: import `REPORTS_AUTO` from `runtime_paths` and add parent script path resolution for the nested script directory.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: direct live challenger run must write `/root/openclawtrading/reports/auto/CHALLENGER_REPORT.json`.
+  Status: `fixed and verified`
+
+### Proved
+
+- Direct live challenger proof:
+  - `CHALLENGER_REPORT.json verdict = WAIT`
+  - `counter_thesis = Macro is mixed, so the desk may be forcing a directional thesis too early.`
+  - `next_best_question = What exact event, price, or confirmation unlocks the next phase?`
+- Full live chain proof:
+  - `CHAIN_RC:0`
+  - `MANAGER_STATUS.json status = ALL HEALTHY`
+  - `COUNCIL_RUNTIME.json status = ran`
+  - `COUNCIL_RUNTIME.json actually_ran = true`
+  - `COUNCIL_RUNTIME.json actual_participants = bull, bear, critic, judge`
+  - `COUNCIL_RUNTIME.json missing = []`
+  - `COUNCIL_REVIEW.json status = ran`
+  - `winner = no_trade`
+- Deezoh stayed conservative after the critic became visible:
+  - `DEEZOH_THOUGHTS.json selected_workflow = accumulation_hunt`
+  - `winner = no_trade`
+  - `same_cycle_confirmed = true`
+- Execution safety stayed intact:
+  - `EXECUTION_REPORT.json entries_opened = []`
+  - `PAPER_TRADES.json open_count = 0`
+- Live Deezoh replay passed behavior:
+  - It included `council_critic_check`.
+  - It called out confirmation bias from repeated bearish zones.
+  - It said the short case has narrative but no proof.
+  - It warned not to execute on proximity alone.
+  - It kept the bottom line at wait/stand down.
+- Local bounded tests still passed:
+  - `deezoh_observation_suite_smoke`
+  - `workflow_contract_surfaces_smoke`
+  - `test_desk_contract_bridge_entry_signals`
+  - `hermes_dual_lane_contract_smoke`
+
+### Remaining Issues
+
+- TradingView/CDP visual chart confirmation is still broken:
+  - `/json/version` works on port `9222`
+  - `/json/list` is empty
+  - chart output remains `specialist_verified = false`
+  - `CHART_ANALYSIS_latest.json data_quality = PARTIAL`
+- Derivatives remain fresh but degraded:
+  - `DERIVATIVES.json status = degraded_fallback`
+  - `data_quality = PARTIAL`
+- OpenClaw live replay again returned useful behavior with `OPENCLAW_RC 0`, but wrapper payload still showed `replayInvalid = true`.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-36` Run challenger before council assembly so critic is visible in every desk-chain pass. Status: done.
+- `Q-2026-05-03-37` Remove retired `/home/open-claw/openclawtrading` path from challenger producer. Status: done.
+- `Q-2026-05-03-38` Keep council full-visibility proof in the recurring observation contract. Status: done.
+- `Q-2026-05-03-39` Investigate TradingView/CDP empty target list and chart specialist verification. Status: queued.
+- `Q-2026-05-03-40` Improve derivatives beyond Binance fallback if a reliable long/short/liquidation source is available. Status: queued.
