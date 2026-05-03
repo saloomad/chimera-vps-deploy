@@ -46,6 +46,20 @@ Use this when:
 - `PreCompact`
 - `PostCompact`
 
+## Stronger Proof We Have Now
+
+- the local OpenCowork plugin registry contains `chimera-enforcement-bundle`
+- `enabled = true`
+- `componentsEnabled.commands = true`
+- `componentsEnabled.hooks = true`
+- runtime path points at:
+  - `C:\Users\becke\AppData\Roaming\open-cowork\claude\plugins\runtime\chimera-enforcement-bundle`
+- direct local smoke proved these scripts can run and write receipts:
+  - `InstructionsLoaded`
+  - `FileChanged`
+  - `PreCompact`
+  - `PostCompact`
+
 ## Current Limitation
 
-This repo mirror proves the bundle contents, but a real app reload is still the stronger proof that OpenCowork picked the bundle up in a live session.
+This repo mirror plus the registry check prove the bundle is installed and enabled, but a real app reload is still the stronger proof that OpenCowork picked the bundle up and fired the hooks through a live UI session.

@@ -1,6 +1,6 @@
 # Enforcement Implementation Inventory
 
-Updated: 2026-05-02
+Updated: 2026-05-03
 
 ## What This Is
 
@@ -125,6 +125,11 @@ Status labels:
 - Status: local live hook bundle is `implemented`; shared mirrored bundle is `partial` until the new files are pushed and reused elsewhere
 - Verified live now: `UserPromptSubmit`, `SessionStart`, `PostToolUse`, `Stop`
 - Strengthened in this pass: `PreToolUse`, `PostToolUseFailure`, `SubagentStop`
+- Verified by local smoke in this pass:
+  - `InstructionsLoaded` receipt written
+  - `FileChanged` receipt written for `AGENTS.md`
+  - `PreCompact` receipt written
+  - `PostCompact` receipt written
 
 ### OpenClaw / Kimi VPS
 - Best surfaces: hooks, Task Flow, Lobster, standing orders, cron/timers, background tasks
@@ -140,7 +145,10 @@ Status labels:
   - `orchestration/taskflow.json` exists with enabled flow definitions
 - Important live gap:
   - many workspace hooks exist on disk but are not currently enabled
-  - several Lobster workflow files still referenced the retired `/home/open-claw/openclawtrading` path before this repair pass
+- Verified by live dry-run smoke in this pass:
+  - `on_compact_before` writes `COMPACTION_CONTINUITY-<date>.md`
+  - `on_compact_after` restores `RECENT.md`
+  - both compaction hooks wrote pass receipts during VPS smoke execution
 - Note: on-disk files are not the same as verified live use
 
 ### OpenCowork / OpenCode
@@ -171,6 +179,14 @@ Status labels:
   - `FileChanged` receipt written for `AGENTS.md`
   - `PreCompact` receipt written
   - `PostCompact` receipt written
+- Stronger runtime proof in this pass:
+  - OpenCowork plugin registry contains `chimera-enforcement-bundle`
+  - `enabled = true`
+  - `componentsEnabled.commands = true`
+  - `componentsEnabled.hooks = true`
+  - runtime path points at `C:\Users\becke\AppData\Roaming\open-cowork\claude\plugins\runtime\chimera-enforcement-bundle`
+- Remaining proof gap:
+  - no direct app-session log yet showing these hook events firing through the OpenCowork UI runtime itself
 - Receipt path:
   - `trace/platform_activation_receipts.jsonl`
 
@@ -203,11 +219,12 @@ Status labels:
 ## What Still Needs To Be Built
 
 - OpenClaw follow-through repair:
-  - finish syncing repaired `/root/openclawtrading` paths into live Lobster workflows
   - decide which disabled hooks should actually be enabled
   - prove which Task Flow paths are truly running, not only configured
-- scenario tests proving the starter stack and lifecycle are actually followed
-- activation receipts showing which skills/hooks/workflows truly fired
+- scenario tests proving the starter stack and lifecycle are actually followed on each platform
+- stronger auto-trigger proof for OpenCode beyond command and prompt driven receipts
+- OpenCowork app-session proof:
+  - capture a real UI/runtime-triggered hook event after an app reload, not just registry state plus direct script smoke
 
 ## Reusable Verifier
 
