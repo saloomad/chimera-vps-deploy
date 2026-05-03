@@ -153,7 +153,26 @@ Status labels:
   - custom commands
   - native skill discovery from `.opencode`, `.claude`, and `.agents` paths
   - permission gating
-- Note: no separately verified native hook surface has been proven yet
+- Strengthened now:
+  - OpenCode native skills for hook and pipeline detection
+  - command-driven receipt reminders in `.opencode/commands` and `.opencode/prompts`
+  - OpenCowork local plugin bundle plus local detector skills
+  - OpenCowork local control-layer and compaction hooks for:
+    - `InstructionsLoaded`
+    - `ConfigChange`
+    - `FileChanged`
+    - `PreCompact`
+    - `PostCompact`
+- Note: OpenCode still has no separately verified native hook surface here; OpenCowork uses a local plugin hook path instead
+- Important control-layer rule:
+  - editing local plugin bundles, registry, skills, commands, prompts, or project config should use the critical control-layer workflow instead of casual edits
+- Verified live by local smoke in this pass:
+  - `InstructionsLoaded` receipt written
+  - `FileChanged` receipt written for `AGENTS.md`
+  - `PreCompact` receipt written
+  - `PostCompact` receipt written
+- Receipt path:
+  - `trace/platform_activation_receipts.jsonl`
 
 ### Hermes VPS
 - Best surfaces today: shared instructions, schedulers, file contracts
