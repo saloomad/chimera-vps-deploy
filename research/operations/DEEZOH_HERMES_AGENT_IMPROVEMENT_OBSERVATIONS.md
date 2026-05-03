@@ -298,6 +298,92 @@ Each hourly run must include:
   The consolidation replay `deezoh-observe-consolidation-v3` completed and chose the correct family: `selected_workflow = consolidation_resolution`, canonical tuple `range_auction / range_breakout_watch / WATCH / 4H / WAIT_TRIGGER`, and `winner = NO_TRADE`. Deezoh did change the next wake question meaningfully by naming a concrete 4H box-break or sweep-and-fail trigger instead of generic waiting.
 
 - Proved
+
+## 2026-05-03 Audit Additions
+
+### New Evidence From This Run
+
+- Issue `DHI-029`
+  Raw event: live SSH to `root@100.67.172.114` succeeded again, the agent workspace inventory loaded, root cron was readable, and live report/log reads completed in the same pass.
+  What happened: the previous "SSH stalled" blocker is no longer the active issue, so the loop can return to live runtime proof instead of local-only inference.
+  Why it matters: the improvement loop can stop treating SSH reachability as the main blocker and focus on real report-contract and data-quality problems.
+  Recurrence: cleared on 2026-05-03 during this pass.
+  Affected agent/workflow/data source/timeframe: live OpenClaw audit path, Deezoh/Hermes verification loop.
+  Proposed fix: close the old SSH-stall narrative in future handoffs unless the direct `ssh.exe` path fails again.
+  Owner: `architect-codex`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: rerun direct `ssh.exe` checks for reports, logs, and root cron in the same pass.
+  Status: `resolved this run`
+
+- Issue `DHI-030`
+  Raw event: live `MACRO_BIAS.json` now says `verdict=MIXED`, `selected_workflow=data_degraded_mode`, and `action_recommendation=WAIT`, while the fresh live `ENTRY_SIGNALS.json` still says `effective_entry_state=READY_TO_TRADE`, `recommendation=READY`, and `macro_veto_active=false`.
+  What happened: the report contract exposes the macro fields, but data-degraded macro mode still does not downgrade execution readiness unless the verdict is a hard veto like `STAY OUT`.
+  Why it matters: the desk can sound execution-ready while key upstream sources are stale or empty, which is a real trading-policy and risk-boundary issue rather than a cosmetic label problem.
+  Recurrence: reproduced live on 2026-05-03 after the latest desk rebuild.
+  Affected agent/workflow/data source/timeframe: entry-watch, desk contract bridge, macro gate, paper execution lane.
+  Proposed fix: decide whether `data_degraded_mode` should force `WAIT` or a separate degraded gate state before changing live behavior.
+  Owner: `Sal approval + architect-codex + entry-watch`
+  Risk: `high`
+  Approval needed: `yes before live policy/execution change`
+  Proof test: after approval, rebuild `ENTRY_SIGNALS.json` under a degraded macro scenario and confirm `effective_entry_state` no longer stays `READY_TO_TRADE`.
+
+- Issue `DHI-031`
+  Raw event: deterministic screener audits showed `infer_screener_workflow()` labeling broad-hunt and continuation cases as `range_rotation`, and a generic `rotation` phrase in catalyst text could mislabel ordinary range tape as `post_news_rotation`.
+  What happened: the screener workflow classifier was too eager to jump into range/post-news labels even when the contract should stay on `accumulation_hunt` or `continuation`.
+  Why it matters: this weakens workflow audits and makes Deezoh/Hermes consume noisier screener context than the desk actually intends.
+  Recurrence: reproduced locally on 2026-05-03 with deterministic scenario cases.
+  Affected agent/workflow/data source/timeframe: screener workflow selection, accumulation, continuation, range rotation, post-news rotation.
+  Proposed fix: tighten the classifier so continuation wins when the book is clearly imbalanced, range rotation only wins when both sides are genuinely balanced or the mode is explicitly dual-book, and post-news rotation requires stronger event wording.
+  Owner: `Codex`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: `scripts/tests/workflow_contract_surfaces_smoke.py` plus targeted case replays for accumulation, continuation, range rotation, and post-news rotation.
+  Status: `fixed locally, synced live to /root/openclawtrading/scripts/build_scout_report.py, and verified`
+
+- Issue `DHI-032`
+  Raw event: deterministic macro workflow audits showed a high-impact `STAY OUT` scenario with a near-term next event still resolving to `pre_event_control` before `post_event_digest` can ever win.
+  What happened: the current macro workflow order makes `post_event_digest` effectively unreachable in some realistic event-digest cases because near-event checks fire first.
+  Why it matters: macro workflow audits can overstate pre-event control and under-report genuine post-event digestion, which weakens both macro replay coverage and Deezoh's event-context explanation.
+  Recurrence: reproduced locally on 2026-05-03 with deterministic audit inputs.
+  Affected agent/workflow/data source/timeframe: macro workflow selection, pre-event control, post-event digest.
+  Proposed fix: add a clearer event-phase signal or a safer precedence rule before changing live macro labeling.
+  Owner: `architect-codex + macro-bias`
+  Risk: `medium`
+  Approval needed: `review before live heuristic change`
+  Proof test: a deterministic macro case with high-impact post-event digestion should resolve to `post_event_digest` without breaking pre-event control cases.
+
+### This Run's Observation Suite
+
+- Deezoh direct observation smoke re-ran locally across the required chart-style families:
+  - breakout -> `selected_workflow=breakout_acceptance`, `winner=short`, `wait=WAIT_ACCEPTANCE`
+  - consolidation -> `selected_workflow=consolidation_resolution`, `winner=short`, `wait=NONE`
+  - news event -> `selected_workflow=news_event_control`, `winner=no_trade`, `wait=WAIT_ACCEPTANCE`
+  - failed breakout / liquidity trap -> `selected_workflow=liquidity_trap`, `winner=no_trade`, `wait=WAIT_SWEEP`
+- The answer contract still changes the next question and wait state by scenario, which is the right behavior shape.
+- The specialist interaction proof is still mostly planning-grade rather than execution-grade in this deterministic lane: the next-question payload names specialist branches and expected outputs, but not real spawned sub-sessions. Treat that as reaffirmed support for existing issue `DHI-018`, not as fresh delegation proof.
+
+### Live Runtime Proof Snapshot
+
+- Live report freshness on 2026-05-03 showed:
+  - `DEEZOH_THOUGHTS.json`, `SCOUT_REPORT.json`, and `ENTRY_SIGNALS.json` updating within about 16 minutes
+  - `MACRO_BIAS.json` and `DERIVATIVES.json` updating within about 21 minutes
+  - `HERMES_DECISION_TRACE.json` aging to about 92 minutes
+  - `NEWS.json` and `CATALYST_REPORT.json` still stale at roughly 343 minutes
+- Live root cron remains the active scheduler:
+  - `market_scanner.py`, `candle_analyzer.py`, `derivatives_fetcher.py`, and `macro_bias_builder.py` every 30 minutes
+  - `watchlist_generator.py` hourly
+  - desk observability chain at `5,35 * * * *`
+- Live logs still show the same weak-input pattern:
+  - `derivatives.log`: repeated `DERIVATIVES.json written: 0 coins`
+  - `watchlist.log`: monitor-only `0%` candidates
+  - `macro_bias.log`: `MIXED 30%` with placeholder derivatives context
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-01` Tighten screener workflow inference so accumulation and continuation are not relabeled as range/post-news by default. Status: done locally, synced to live repo, and covered by smoke tests.
+- `Q-2026-05-03-02` Decide whether `data_degraded_mode` must downgrade `ENTRY_SIGNALS.json` readiness. Status: queued for approval because it crosses the trading-policy/risk boundary.
+- `Q-2026-05-03-03` Add a cleaner macro event-phase signal so `post_event_digest` can be selected without breaking pre-event control. Status: queued for design review.
   The failed-breakout replay `deezoh-observe-liquidity-trap-v2` completed and selected the correct trap-side workflow. It named `liquidity_trap_or_squeeze` as the dominant workflow, elevated the short case over the long case, and kept the desk at `WATCH` with `WAIT_RETEST` because derivatives proof and macro permission were still incomplete.
 
 - Proved
@@ -1265,3 +1351,618 @@ Each hourly run must include:
 
 - `Q-2026-05-03-05` Prove the real Hermes executable path or install state before any further live dual-lane claims. Status: done.
 - `Q-2026-05-03-06` Add a pipeline-integrity guard for macro-gate vs entry-ready contradictions before any later execution-facing lane trusts those signals. Status: queued.
+
+## 2026-05-03 Live Workflow Contract Repair And Hermes Trace Compatibility
+
+### What Actually Ran
+
+- Re-ran the deterministic local Deezoh observation suite after patching the reporting layer so the four core observation cases now map to canonical workflow ids instead of internal situation labels:
+  - breakout -> `breakout_acceptance`
+  - consolidation -> `consolidation_resolution`
+  - news / event control -> `news_event_control`
+  - failed-breakout / liquidity-trap -> `liquidity_trap`
+- Repaired the Windows-local `scripts/runtime_paths.py` helper so local mirrors stop resolving `REPORTS_AUTO` to the retired `\\home\\open-claw\\...` root when Deezoh reports are rebuilt on Windows.
+- Synced the bounded Deezoh reporting fixes to both live repo and live OpenClaw workspace copies:
+  - `/root/openclawtrading/scripts/deezoh_question_engine.py`
+  - `/root/openclawtrading/scripts/runtime_paths.py`
+  - `/root/.openclaw/workspace/scripts/deezoh_question_engine.py`
+  - `/root/.openclaw/workspace/scripts/runtime_paths.py`
+- Rebuilt the live desk artifacts and proved the active `DEEZOH_THOUGHTS.json` now exposes canonical workflow fields plus the workflow rationale/switch contract.
+- Patched the manager compatibility layer so macro verdict `STAY OUT` is treated as the valid `OUT` alias instead of a fake schema error.
+- Synced the manager fix to:
+  - `/root/openclawtrading/scripts/manager_agent.py`
+  - `/root/.openclaw/workspace/scripts/manager_agent/manager_agent.py`
+  - `/root/.openclaw/workspace/trading_system/scripts/manager_agent.py`
+- Ran the live manager again and confirmed the false macro-bias alert dropped out of `MANAGER_STATUS.json` (7 unhealthy -> 6 unhealthy).
+- Patched `scripts/hermes_runtime_bridge.py` so `HERMES_DECISION_TRACE.json` carries the same top-level `symbol`, `direction`, `decision`, `summary`, and `confidence` that Hermes already computed deeper in the lane thesis.
+- Synced the Hermes trace fix to both the repo and workspace bridge copies, then ran a bounded live paper-only Hermes bridge cycle directly from `/root/openclawtrading/scripts/hermes_runtime_bridge.py --timeout-seconds 180 --quiet`.
+
+### New Evidence From This Run
+
+- Issue `DHI-048`
+  Raw event: the live `DEEZOH_THOUGHTS.json` was still emitting `selected_workflow = range_or_mixed`, which violates the Deezoh contract that requires canonical market workflow ids.
+  What happened: the question engine was already deriving a canonical `situation_pack`, but it still wrote the raw internal situation label into `selected_workflow`.
+  Why it matters: the observation loop could not prove whether Deezoh chose the right workflow family because the report exposed an internal label instead of the operator-facing workflow contract.
+  Recurrence: reproduced on the live VPS before the repair on May 3, 2026.
+  Affected agent/workflow/data source/timeframe: Deezoh reporting layer, observation suite, workflow analytics, all chart-side desk loops.
+  Proposed fix: keep `selected_workflow` bound to the canonical market workflow id, and preserve `situation` / `situation_pack` separately for deeper internal context.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no for bounded reporting-contract repair`
+  Proof test: fresh live `DEEZOH_THOUGHTS.json` now shows `selected_workflow = accumulation_hunt` plus `why_this_workflow`, `why_not_the_next_two_alternatives`, and `what_evidence_would_force_a_workflow_switch`.
+  Status: `fixed and verified`
+
+- Issue `DHI-049`
+  Raw event: `MANAGER_STATUS.json` was flagging `macro_bias_agent: CONTENT INVALID — bias='STAY OUT' — invalid value (expected LONG/SHORT/MIXED/OUT)` even though `STAY OUT` is a real macro contract value in the live desk.
+  What happened: the manager validator only accepted the legacy alias `OUT` and treated `STAY OUT` as a bad payload instead of a compatible macro veto.
+  Why it matters: the operator surface was overstating desk breakage by counting one real policy output as a schema defect.
+  Recurrence: reproduced on the live VPS before the repair on May 3, 2026.
+  Affected agent/workflow/data source/timeframe: manager health monitor, macro-bias compatibility layer, operator brief.
+  Proposed fix: keep `STAY OUT` normalized to the valid `OUT` alias inside the manager validator and preserve the human-facing summary text as `STAY OUT`.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no for bounded compatibility fix`
+  Proof test: after the live rerun, the false macro-bias alert disappeared and the live unhealthy count dropped from `7` to `6`.
+  Status: `fixed and verified`
+
+- Issue `DHI-050`
+  Raw event: `SCOUT_REPORT.json` and `MACRO_BIAS.json` still do not expose explicit workflow ids for accumulation, continuation, post-news rotation, failed-breakout short, range rotation, pre-event control, post-event digest, cross-asset divergence, unusual-behavior precedent capture, or data-degraded mode.
+  What happened: Deezoh now has a stronger workflow contract, but the screener and macro surfaces still expose verdicts/summaries without a first-class workflow-selection field.
+  Why it matters: the improvement loop can only infer those workflow choices indirectly from text and verdicts, so the screener/macro audit is still weaker than the Deezoh observation audit.
+  Recurrence: current live proof on May 3, 2026 after inspecting `SCOUT_REPORT.json` keys and `MACRO_BIAS.json` top-level shape.
+  Affected agent/workflow/data source/timeframe: screener workflow audit, macro workflow audit, recurring improvement loop.
+  Proposed fix: add explicit `selected_workflow`-style fields to the screener and macro report contracts so accumulation/continuation/post-news/data-degraded paths can be tested directly instead of inferred.
+  Owner: `screener + macro-bias + architect-codex`
+  Risk: `medium`
+  Approval needed: `no for bounded reporting-contract additions; review before policy-level routing changes`
+  Proof test: future `SCOUT_REPORT.json` and `MACRO_BIAS.json` should each expose a single workflow id plus the reason it was selected.
+  Status: `open`
+
+- Issue `DHI-051`
+  Raw event: `HERMES_LANE_THESIS.json` held the real Hermes decision, but `HERMES_DECISION_TRACE.json` still left top-level `decision`, `direction`, and `summary` empty.
+  What happened: the runtime bridge was writing the parsed Hermes output under `parsed_output` only, leaving the operator-facing top-level trace fields blank.
+  Why it matters: Hermes could be functioning while the improvement loop still sees a half-empty trace surface, which slows every audit and makes the lane look weaker than it is.
+  Recurrence: reproduced on the live VPS before the repair on May 3, 2026.
+  Affected agent/workflow/data source/timeframe: Hermes runtime bridge, dual-lane trace contract, recurring Hermes audit.
+  Proposed fix: keep the top-level Hermes trace fields populated from the normalized lead thesis on every successful runtime pass.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no for bounded reporting-contract repair`
+  Proof test: bounded direct live bridge run now writes `HERMES_DECISION_TRACE.json` with `symbol = BTCUSDT`, `direction = SHORT`, `decision = no_trade`, the Hermes summary, and `confidence = 0`.
+  Status: `fixed and verified`
+
+### Proved
+
+- The local Deezoh observation suite now proves canonical workflow ids for the core chart-side cases instead of internal situation labels.
+- The Windows-local report builder path helper now resolves to `C:\Users\becke\claudecowork\reports\auto` instead of the retired Linux mirror path.
+- The active live `DEEZOH_THOUGHTS.json` now exposes a clearer operator contract:
+  - `selected_workflow = accumulation_hunt`
+  - `winner = no_trade`
+  - `why_this_workflow` is present
+  - `why_not_the_next_two_alternatives` is present
+  - `what_evidence_would_force_a_workflow_switch` is present
+- The live council truth is now aligned across Deezoh-side reasoning and the derived control artifact:
+  - `COUNCIL_REVIEW.json status = partially_visible`
+  - `COUNCIL_REVIEW.json actually_ran = false`
+  - Deezoh no longer claims a fully-ran council when the critic lane is still missing
+- The manager still reports real upstream degradation, but one false alert is gone:
+  - remaining live blockers are stale `NEWS.json`, stale `MACRO.json`, stale `CATALYST_REPORT.json`, stale/missing divergence coverage, missing `ALTFINS.json`, and empty `DERIVATIVES.json`
+  - the old false `STAY OUT` schema alert is gone
+- Hermes is still paper-safe and cautious after the bounded direct rerun:
+  - `HERMES_LANE_THESIS.json decision = no_trade`
+  - `JUDGE_DECISION.json selected_lane = merge`
+  - `JUDGE_DECISION.json selected_action = no_trade`
+  - `send_to_execution = false`
+- The macro-gate versus ready-to-trade contradiction remains live:
+  - `ENTRY_SIGNALS.json` still promotes `READY_TO_TRADE`
+  - Hermes advisor still explicitly objects that this should be macro-gated before any later execution-facing lane trusts it
+
+### Safe Changes Applied This Run
+
+- Local + live `scripts/deezoh_question_engine.py`
+- Local + live `scripts/runtime_paths.py`
+- Local `scripts/tests/deezoh_observation_suite_smoke.py`
+- Local + live `scripts/manager_agent.py` / local mirror `scripts/manager_agent/manager_agent.py`
+- Live workspace mirrors:
+  - `/root/.openclaw/workspace/scripts/deezoh_question_engine.py`
+  - `/root/.openclaw/workspace/scripts/runtime_paths.py`
+  - `/root/.openclaw/workspace/scripts/manager_agent/manager_agent.py`
+  - `/root/.openclaw/workspace/trading_system/scripts/manager_agent.py`
+- Local + live `scripts/hermes_runtime_bridge.py`
+
+### Remaining Issues
+
+- `NEWS.json`, `CATALYST_REPORT.json`, and `MACRO.json` are still stale in the live root reports on May 3, 2026, so event-sensitive answers remain partly degraded.
+- `DERIVATIVES.json` still writes `0 coins`, so Deezoh, Hermes, screener, and macro remain weak on positioning context.
+- `SCOUT_REPORT.json` and `MACRO_BIAS.json` still lack explicit workflow ids, so screener and macro workflow audits remain inference-based.
+- The execution-facing contradiction still needs a real pipeline guard:
+  - macro says `STAY OUT`
+  - `ENTRY_SIGNALS.json` still says `READY_TO_TRADE`
+  - Hermes explicitly calls this a system design flaw rather than a judgment difference
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-07` Keep Deezoh canonical workflow ids and workflow-rationale fields under deterministic smoke coverage. Status: done.
+- `Q-2026-05-03-08` Add explicit workflow-id fields to `SCOUT_REPORT.json` and `MACRO_BIAS.json` so the improvement loop can audit screener and macro routing directly. Status: queued.
+- `Q-2026-05-03-09` Add a macro-veto gate to suppress `READY_TO_TRADE` when macro remains `STAY OUT`. Status: queued.
+- `Q-2026-05-03-10` Keep Hermes trace top-level fields populated from the normalized lead thesis so audits do not have to parse nested payloads first. Status: done.
+
+## 2026-05-03 Workflow Contract Fields And Macro Builder Root Repair
+
+### What Actually Ran
+
+- Re-ran the deterministic local Deezoh observation suite for the four required chart-side cases plus pre-event, post-event, and data-degraded control cases:
+  - `breakout_watch -> breakout_acceptance`
+  - `consolidation -> consolidation_resolution`
+  - `news_event -> news_event_control`
+  - `failed_breakout -> liquidity_trap`
+- Patched the report-source builders instead of layering more monitor-only logic on top:
+  - local + live `scripts/build_scout_report.py`
+  - local + live `scripts/desk_contract_bridge.py`
+  - local + live `scripts/macro_bias_builder.py`
+- Added bounded local proof for the new contract surfaces:
+  - `python scripts/simulator/test_desk_contract_bridge_entry_signals.py`
+  - `python scripts/tests/workflow_contract_surfaces_smoke.py`
+- Ran a bounded live rebuild on `root@100.67.172.114` for:
+  - `python3 scripts/macro_bias_builder.py`
+  - `python3 scripts/build_scout_report.py`
+  - `python3 scripts/desk_contract_bridge.py --target entry`
+- Read back the live `MACRO_BIAS.json`, `SCOUT_REPORT.json`, `ENTRY_SIGNALS.json`, `DEEZOH_THOUGHTS.json`, and `HERMES_DECISION_TRACE.json` from `/root/openclawtrading/reports/auto/`.
+
+### New Evidence From This Run
+
+- Issue `DHI-050` status update
+  Raw event: fresh live `SCOUT_REPORT.json` now exposes `selected_workflow = no_trade_protection`, and fresh live `MACRO_BIAS.json` now exposes `selected_workflow = data_degraded_mode`.
+  What happened: the screener and macro report contracts now carry first-class workflow ids plus workflow reasons, so the improvement loop no longer has to infer those lanes from summary text alone.
+  Why it matters: this closes the weakest blind spot in the screener/macro audit and makes workflow-selection regressions testable.
+  Recurrence: verified live on May 3, 2026 after the bounded rebuild.
+  Affected agent/workflow/data source/timeframe: screener workflow audit, macro workflow audit, recurring improvement loop.
+  Proposed fix: keep the new workflow fields under smoke coverage and preserve them in future report-builder refactors.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: live `SCOUT_REPORT.json` and `MACRO_BIAS.json` now each expose `selected_workflow` plus `workflow_reason`.
+  Status: `fixed and verified`
+
+- Issue `DHI-052`
+  Raw event: the live VPS copy of `scripts/macro_bias_builder.py` wrote `MACRO_BIAS.json` to `/root/reports/auto` instead of `/root/openclawtrading/reports/auto` because its base-dir math assumed the nested local file layout.
+  What happened: the local nested script layout and the live flat script layout were both using the same `parent.parent.parent` rule, which resolves to the workspace root locally but the wrong `/root` directory live.
+  Why it matters: the macro lane could appear repaired locally while the live active report root stayed stale, which undermines every downstream audit.
+  Recurrence: reproduced live at the start of this run and fixed in the same pass.
+  Affected agent/workflow/data source/timeframe: macro-bias builder, live report-root truth, desk-chain downstream consumers.
+  Proposed fix: keep the new ancestor search that resolves the first directory containing both `reports/auto` and `scripts`.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: fresh live `python3 scripts/macro_bias_builder.py` now writes `/root/openclawtrading/reports/auto/MACRO_BIAS.json`.
+  Status: `fixed and verified`
+
+- Issue `DHI-053`
+  Raw event: after the fresh macro rebuild produced `MACRO_BIAS.json verdict = MIXED` and `selected_workflow = data_degraded_mode`, the rebuilt `ENTRY_SIGNALS.json` still carried `macro_verdict = STAY OUT` and `macro_gate = BLOCKED_BY_MACRO`.
+  What happened: the entry bridge now exposes the contradiction clearly through `effective_entry_state`, `recommendation`, and macro-gate fields, but the upstream entry layer still embeds an older macro verdict than the fresh macro report.
+  Why it matters: the contradiction is now visible instead of hidden, but the system still needs a real source-of-truth decision about whether entry readiness should follow the latest macro report or an embedded upstream lane snapshot.
+  Recurrence: verified live on May 3, 2026 after the bounded rebuild.
+  Affected agent/workflow/data source/timeframe: entry-signals bridge, macro gate contract, execution-facing desk outputs, Hermes/Deezoh contradiction audit.
+  Proposed fix: trace where the stale embedded macro verdict enters the entry pipeline, then choose one canonical source for the gate before suppressing or promoting `READY_TO_TRADE`.
+  Owner: `entry-watch + pipeline-watchdog + codex-main-thread`
+  Risk: `medium`
+  Approval needed: `review before changing the execution-facing gate policy`
+  Proof test: a fresh cycle should either align `ENTRY_SIGNALS.json macro_verdict` with the active `MACRO_BIAS.json` verdict or emit an explicit cross-layer mismatch field instead of silently disagreeing.
+  Status: `open`
+
+### Proved
+
+- The Deezoh observation suite still covers the exact chart-style scenarios this loop requires most often, and all local cases passed after the contract changes.
+- The live screener lane now declares its workflow directly:
+  - `SCOUT_REPORT.json selected_workflow = no_trade_protection`
+  - `SCOUT_REPORT.json workflow_reason` explains the freshness/protection stance
+- The live macro lane now declares its workflow directly and writes to the correct report root:
+  - `MACRO_BIAS.json selected_workflow = data_degraded_mode`
+  - `MACRO_BIAS.json workflow_reason` explains why missing/empty macro inputs force degraded mode
+  - `MACRO_BIAS.json` now writes under `/root/openclawtrading/reports/auto/`
+- The live entry bridge now exposes the contradiction more honestly even though the upstream mismatch remains:
+  - `ENTRY_SIGNALS.json entry_state = READY_TO_TRADE`
+  - `ENTRY_SIGNALS.json effective_entry_state = BLOCKED_BY_MACRO`
+  - `ENTRY_SIGNALS.json recommendation = NO_TRADE`
+  - `ENTRY_SIGNALS.json macro_gate_workflow = data_degraded_mode`
+- Hermes still remains cautious in the latest readable trace:
+  - `HERMES_DECISION_TRACE.json decision = no_trade`
+  - `direction = SHORT`
+  - summary still calls out the macro-gate versus ready-to-trade contradiction
+
+### Safe Changes Applied This Run
+
+- Local + live `scripts/build_scout_report.py`
+- Local + live `scripts/desk_contract_bridge.py`
+- Local + live `scripts/macro_bias_builder.py`
+- Local `scripts/simulator/test_desk_contract_bridge_entry_signals.py`
+- Local `scripts/tests/workflow_contract_surfaces_smoke.py`
+
+### Remaining Issues
+
+- `NEWS.json` and `CATALYST_REPORT.json` are still stale by roughly 4.7 hours in the live root reports, so event-sensitive answers remain degraded.
+- `MACRO_BIAS.json` is now fresh at the correct root, but it is still in `data_degraded_mode` because the macro/news inputs are thin.
+- `ENTRY_SIGNALS.json` still disagrees with the fresh macro report and needs a canonical gate-source decision before a true macro-veto policy change lands.
+- `DERIVATIVES.json` still writes `0 coins`, so positioning context remains weak for Deezoh, Hermes, screener, and macro.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-08` Add explicit workflow-id fields to `SCOUT_REPORT.json` and `MACRO_BIAS.json` so the improvement loop can audit screener and macro routing directly. Status: done.
+- `Q-2026-05-03-09` Add a macro-veto gate to suppress `READY_TO_TRADE` when macro remains `STAY OUT`. Status: narrowed. The bridge now exposes `effective_entry_state`, but the upstream macro-verdict source mismatch must be resolved before a policy-level suppression is safe.
+- `Q-2026-05-03-11` Resolve the entry-layer macro source mismatch so `ENTRY_SIGNALS.json` and the fresh `MACRO_BIAS.json` stop disagreeing silently. Status: queued.
+
+## 2026-05-03 Hermes Publish Order Repair And Macro Workflow Selector Audit
+
+### What Actually Ran
+
+- Re-ran the deterministic local Deezoh observation suite for the required chart-style scenarios:
+  - `breakout_watch -> breakout_acceptance`
+  - `consolidation -> consolidation_resolution`
+  - `news_event -> news_event_control`
+  - `failed_breakout -> liquidity_trap`
+- Re-ran the bounded local contract tests:
+  - `python scripts/tests/workflow_contract_surfaces_smoke.py`
+  - `python scripts/simulator/test_desk_contract_bridge_entry_signals.py`
+- Ran a targeted local workflow audit for the screener families:
+  - `accumulation_hunt`
+  - `continuation`
+  - `post_news_rotation`
+  - `failed_breakout_short`
+  - `range_rotation`
+  - `no_trade_protection`
+- Ran a targeted local workflow audit for the macro families:
+  - `pre_event_control`
+  - `post_event_digest`
+  - `cross_asset_divergence`
+  - `unusual_behavior_precedent_capture`
+  - `data_degraded_mode`
+- Pulled fresh live proof from `root@100.67.172.114` for:
+  - `/root/openclawtrading/reports/auto/DEEZOH_THOUGHTS.json`
+  - `/root/openclawtrading/reports/auto/SCOUT_REPORT.json`
+  - `/root/openclawtrading/reports/auto/MACRO_BIAS.json`
+  - `/root/openclawtrading/reports/auto/ENTRY_SIGNALS.json`
+  - `/root/openclawtrading/reports/auto/HERMES_DECISION_TRACE.json`
+  - `/root/openclawtrading/reports/auto/HERMES_LANE_THESIS.json`
+- Read bounded live evidence from:
+  - root crontab
+  - `/root/.openclaw/logs/desk_observability.log`
+  - `/root/.openclaw/logs/macro_bias.log`
+  - `/root/.openclaw/logs/derivatives.log`
+  - `/root/.openclaw/logs/openclaw.log`
+- Ran a bounded live paper-only Hermes cycle:
+  - `python3 scripts/hermes_runtime_bridge.py --timeout-seconds 180 --quiet`
+- Ran a bounded live macro rebuild after the selector fix:
+  - `python3 scripts/macro_bias_builder.py`
+
+### New Evidence From This Run
+
+- Issue `DHI-054`
+  Raw event: a bounded live Hermes rerun refreshed `HERMES_DECISION_TRACE.json`, but `HERMES_LANE_THESIS.json` still stayed `invalid_runtime_input` with the stale summary `Hermes runtime input is stale ... evidence_pack_id does not match ...`.
+  What happened: `scripts/hermes_runtime_bridge.py` rebuilt the dual-lane experiment before Hermes wrote fresh `HERMES_RUNTIME_INPUT.json`, so the thesis artifact was published from the previous cycle while the trace artifact reflected the new cycle.
+  Why it matters: the Hermes lane could look both fresh and invalid at the same time, which weakens every recurring audit and makes the advisor lane look more broken than it is.
+  Recurrence: reproduced live on May 3, 2026 before the repair.
+  Affected agent/workflow/data source/timeframe: Hermes runtime bridge, dual-lane experiment publish contract, recurring Hermes audit.
+  Proposed fix: republish the dual-lane builder after the bridge writes fresh `HERMES_RUNTIME_INPUT.json` so the thesis and advisor review stay on the same frozen runtime pack as the trace.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: after syncing the patched bridge and rerunning `python3 scripts/hermes_runtime_bridge.py --timeout-seconds 180 --quiet`, live `HERMES_LANE_THESIS.json`, `HERMES_ADVISOR_REVIEW.json`, and `HERMES_DECISION_TRACE.json` all refreshed to the same `generated_at = 2026-05-02T23:57:36Z`, share `evidence_pack_id = 6f935bb142e313be`, and show `status = ready`.
+  Status: `fixed and verified`
+
+- Issue `DHI-055`
+  Raw event: the deterministic macro audit routed both `post_event_digest` and `unusual_behavior_precedent_capture` scenarios to `cross_asset_divergence`.
+  What happened: `scripts/macro_bias_builder/macro_bias_builder.py` let the generic `verdict == MIXED` branch fire before checking post-event or unusual-behavior signals, so two required workflow families were effectively unreachable under mixed conditions.
+  Why it matters: the improvement loop would over-credit cross-asset divergence and under-detect post-event digestion or anomaly capture, which directly weakens macro workflow quality grading.
+  Recurrence: reproduced locally on May 3, 2026 with deterministic selector inputs before the repair.
+  Affected agent/workflow/data source/timeframe: macro workflow selector, workflow-quality audit, recurring Deezoh/Hermes improvement loop.
+  Proposed fix: prioritize explicit `POST_EVENT` / post-event summary signals and unusual-behavior flags before the generic mixed fallback, then pin those cases in smoke coverage.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: local audit now returns `post_event_digest` for a post-event mixed case and `unusual_behavior_precedent_capture` for an anomaly-flagged mixed case; `python scripts/tests/workflow_contract_surfaces_smoke.py` passes with the new assertions.
+  Status: `fixed and verified`
+
+### Proved
+
+- The required Deezoh observation suite still passes locally for breakout, consolidation, news-event, and failed-breakout/liquidity-trap scenarios.
+- The screener selector now returns the expected workflow ids for the audited families:
+  - `accumulation_hunt`
+  - `continuation`
+  - `post_news_rotation`
+  - `failed_breakout_short`
+  - `range_rotation`
+  - `no_trade_protection`
+- The macro selector now returns the expected workflow ids for the audited families:
+  - `pre_event_control`
+  - `post_event_digest`
+  - `cross_asset_divergence`
+  - `unusual_behavior_precedent_capture`
+  - `data_degraded_mode`
+- Current live Deezoh-side truth at read time:
+  - `DEEZOH_THOUGHTS.json selected_workflow = accumulation_hunt`
+  - `winner = no_trade`
+  - `next_question.agent = macro-bias`
+  - `wait_state.wait_type = WAIT_TRIGGER`
+- Current live screener and macro truth at read time:
+  - `SCOUT_REPORT.json selected_workflow = no_trade_protection`
+  - `MACRO_BIAS.json selected_workflow = data_degraded_mode`
+  - `ENTRY_SIGNALS.json macro_verdict = MIXED`
+  - `ENTRY_SIGNALS.json effective_entry_state = READY_TO_TRADE`
+- Current live Hermes truth after the bounded rerun:
+  - `HERMES_LANE_THESIS.json status = ready`
+  - `HERMES_LANE_THESIS.json decision = no_trade`
+  - `HERMES_ADVISOR_REVIEW.json status = ready`
+  - `HERMES_DECISION_TRACE.json status = ready`
+- Current live blockers remain upstream rather than selector-only:
+  - `NEWS.json` stale by about 403 minutes at read time
+  - `CATALYST_REPORT.json` stale by about 403 minutes at read time
+  - `MACRO.json` still stale in manager output
+  - `DERIVATIVES.json` still writes `0 coins`
+  - `DIVERGENCES.json` missing
+  - `ALTFINS.json` missing
+- Current live cron still refreshes collectors and the desk observability chain, but it does not directly schedule Hermes:
+  - collectors every 30 minutes
+  - desk observability chain at minute `5,35`
+  - no separate live Hermes cron entry present in root crontab
+
+### Safe Changes Applied This Run
+
+- Local + live `scripts/hermes_runtime_bridge.py`
+- Local + live `scripts/macro_bias_builder/macro_bias_builder.py`
+- Local `scripts/tests/workflow_contract_surfaces_smoke.py`
+
+### Remaining Issues
+
+- Hermes is now internally consistent when run, but it is still not part of the live root cron schedule, so Hermes can go stale again unless the desk triggers it explicitly or Sal approves scheduler ownership.
+- `NEWS.json`, `CATALYST_REPORT.json`, and `MACRO.json` are still stale, so event-sensitive Deezoh and Hermes judgments remain degraded.
+- `DERIVATIVES.json` still writes `0 coins`, and `DIVERGENCES.json` / `ALTFINS.json` are still missing, so positioning and rotation context are still weak.
+- `ENTRY_SIGNALS.json` still says `effective_entry_state = READY_TO_TRADE` while the desk is otherwise caution-heavy and Hermes still resolves to `no_trade`; this remains an approval-sensitive execution-facing design question, not a safe reporting-only change.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-10` Keep Hermes trace top-level fields populated from the normalized lead thesis so audits do not have to parse nested payloads first. Status: done.
+- `Q-2026-05-03-12` Keep Hermes dual-lane artifacts republished from the same fresh runtime input that produced the trace. Status: done.
+- `Q-2026-05-03-13` Keep post-event and unusual-behavior macro workflows pinned ahead of the generic mixed fallback. Status: done.
+- `Q-2026-05-03-14` Decide whether Hermes should get explicit cron ownership or stay a bounded on-demand audit lane. Status: queued for Sal approval.
+
+## 2026-05-03 Macro News Count Repair And Manager Status Contract Update
+
+### What Actually Ran
+
+- Re-ran the deterministic local Deezoh observation suite:
+  - `python scripts/tests/deezoh_observation_suite_smoke.py`
+- Re-ran the bounded local contract tests:
+  - `python scripts/tests/workflow_contract_surfaces_smoke.py`
+  - `python scripts/simulator/test_desk_contract_bridge_entry_signals.py`
+  - `python scripts/tests/hermes_dual_lane_contract_smoke.py`
+- Pulled fresh live truth from `root@100.67.172.114` for:
+  - root crontab
+  - `/root/.openclaw/logs/desk_observability.log`
+  - `/root/.openclaw/logs/macro_bias.log`
+  - `/root/.openclaw/logs/derivatives.log`
+  - `/root/.openclaw/logs/openclaw.log`
+  - `/root/openclawtrading/reports/auto/DEEZOH_THOUGHTS.json`
+  - `/root/openclawtrading/reports/auto/SCOUT_REPORT.json`
+  - `/root/openclawtrading/reports/auto/MACRO_BIAS.json`
+  - `/root/openclawtrading/reports/auto/ENTRY_SIGNALS.json`
+  - `/root/openclawtrading/reports/auto/HERMES_DECISION_TRACE.json`
+  - `/root/openclawtrading/reports/auto/HERMES_LANE_THESIS.json`
+  - `/root/openclawtrading/reports/auto/NEWS.json`
+  - `/root/openclawtrading/reports/auto/CATALYST_REPORT.json`
+  - `/root/openclawtrading/reports/auto/DERIVATIVES.json`
+  - `/root/openclawtrading/reports/auto/MANAGER_STATUS.json`
+- Ran a bounded live paper-only Hermes cycle:
+  - `python3 scripts/hermes_runtime_bridge.py --timeout-seconds 180 --quiet`
+- Synced safe reporting-contract repairs to the live repo runtime paths and re-ran:
+  - `python3 scripts/macro_bias_builder.py`
+  - `python3 scripts/manager_agent.py`
+
+### New Evidence From This Run
+
+- Issue `DHI-056`
+  Raw event: live `NEWS.json` and `CATALYST_REPORT.json` were no longer multi-hour stale; `NEWS.json` carried `_meta.total_articles = 172` with a fresh `fetched_at`, and `CATALYST_REPORT.json timestamp = 2026-05-03T00:13:39.781768+00:00`.
+  What happened: the earlier stale-news diagnosis is no longer the main blocker for this cycle.
+  Why it matters: the remaining macro degradation is now better explained by empty derivatives plus stale `MACRO.json`, not by a dead news/catalyst fetch lane.
+  Recurrence: verified live on May 3, 2026 in this run.
+  Affected agent/workflow/data source/timeframe: macro, catalyst, Deezoh event-mode, Hermes paper lane, current desk cycle.
+  Proposed fix: reframe the next debugging slice around derivatives coverage and macro-calendar freshness, not generic news freshness.
+  Owner: `pipeline-watchdog + macro-bias`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: re-read `NEWS.json`, `CATALYST_REPORT.json`, and the corresponding log timestamps in the same live pass.
+  Status: `verified`
+
+- Issue `DHI-057`
+  Raw event: live `DEEZOH_THOUGHTS.json` still shows `next_question.dispatch_state = planned`, `selected_agents = ["macro-bias"]`, and a `dispatch_proof` string that says the row is planning only until a specialist run proves execution.
+  What happened: Deezoh still names the next specialist lane and changes its wait/question framing, but the specialist interaction is still mostly declarative rather than visibly executed in the same cycle.
+  Why it matters: Sal asked for real chart-desk behavior, and this is still short of fully visible agent-to-agent execution proof.
+  Recurrence: verified live again on May 3, 2026.
+  Affected agent/workflow/data source/timeframe: Deezoh observation loop, macro follow-up lane, execution-visibility audit.
+  Proposed fix: keep one recurring audit case that requires either a fresh specialist artifact read or an explicit spawned/delegated proof row before Deezoh can claim the interaction happened.
+  Owner: `architect-codex + orchestrator`
+  Risk: `medium`
+  Approval needed: `review before changing live delegation policy`
+  Proof test: future live replay should show either a fresh macro specialist artifact consumed in-cycle or an executed delegation receipt instead of `dispatch_state = planned`.
+  Status: `open`
+
+- Issue `DHI-058`
+  Raw event: the Windows flat mirror under `openclawtrading/scripts/` had older `macro_bias_builder.py` and `manager_agent.py` copies than the canonical tested scripts under `scripts/macro_bias_builder/` and `scripts/manager_agent/`.
+  What happened: syncing the stale flat mirror to the VPS temporarily regressed live workflow/status fields until the tested canonical copies were mirrored back over the flat runtime paths.
+  Why it matters: this is a real cross-platform continuity hazard; a well-intentioned sync can silently undo live improvements if the wrong local source is treated as canonical.
+  Recurrence: reproduced in this run and fixed immediately.
+  Affected agent/workflow/data source/timeframe: Windows mirror sync, live macro report contract, live manager status contract, future Codex repair passes.
+  Proposed fix: treat the tested canonical scripts under `scripts/...` as the source for these lanes, and either remove drift or add an explicit mirror-check before future VPS syncs.
+  Owner: `codex-main-thread`
+  Risk: `medium`
+  Approval needed: `no`
+  Proof test: compare the flat mirror against the tested canonical copy before syncing and confirm the live rerun still exposes workflow/status fields afterward.
+  Status: `fixed and verified`
+
+- Issue `DHI-059`
+  Raw event: live macro builder console output previously printed `News: 0 articles` even when `NEWS.json` contained populated nested article categories, and `MACRO_BIAS.json data_sources.news_articles` followed the same stale assumption.
+  What happened: the runtime output was still reading the old `total_articles` field instead of counting the current nested `articles` schema.
+  Why it matters: the macro lane looked more data-starved than it really was, which can mislead operator audits and future debugging.
+  Recurrence: reproduced and fixed on May 3, 2026.
+  Affected agent/workflow/data source/timeframe: macro-bias builder, operator logs, `MACRO_BIAS.json`, recurring improvement loop.
+  Proposed fix: use the same nested-article counting logic for runtime logging and `data_sources.news_articles` that the workflow selector already uses.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: fresh live `python3 scripts/macro_bias_builder.py` must print `News: 172 articles`, and `MACRO_BIAS.json data_sources.news_articles` must match `172`.
+  Status: `fixed and verified`
+
+- Issue `DHI-060`
+  Raw event: `MANAGER_STATUS.json` required inference from nested summary fields to answer a simple question like "is the manager degraded right now?" because it lacked top-level `status`, `overall_status`, and `generated_at`.
+  What happened: the manager contract was usable but slower to consume in downstream desk summaries and quick audits.
+  Why it matters: this loop repeatedly needs a fast machine-readable manager health line, and contract ambiguity wastes time.
+  Recurrence: verified in this run and fixed in the same pass.
+  Affected agent/workflow/data source/timeframe: manager agent, operator snapshot builders, paper watchdog summaries, recurring Deezoh/Hermes audit loop.
+  Proposed fix: emit top-level `status`, `overall_status`, `health`, and `generated_at` aliases alongside the existing summary payload.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: fresh live `MANAGER_STATUS.json` must expose `status = DEGRADED`, `overall_status = DEGRADED`, and a top-level `generated_at` timestamp.
+  Status: `fixed and verified`
+
+### Proved
+
+- The required local Deezoh/Hermes safety suite still passes:
+  - `deezoh_observation_suite_smoke`
+  - `workflow_contract_surfaces_smoke`
+  - `test_desk_contract_bridge_entry_signals`
+  - `hermes_dual_lane_contract_smoke`
+- Live Deezoh still changes the desk framing, but not via visible same-cycle specialist execution:
+  - `DEEZOH_THOUGHTS.json selected_workflow = accumulation_hunt`
+  - `winner = short`
+  - `next_question.agent = macro-bias`
+  - `next_question.dispatch_state = planned`
+  - `wait_state.wait_type = WAIT_TRIGGER`
+- Live screener and macro remain intentionally cautious for different reasons:
+  - `SCOUT_REPORT.json selected_workflow = range_rotation`
+  - `MACRO_BIAS.json selected_workflow = data_degraded_mode`
+  - `MACRO_BIAS.json verdict = MIXED`
+  - `MACRO_BIAS.json data_sources.news_articles = 172`
+- Live entry and Hermes still disagree on whether "ready" should become action:
+  - `ENTRY_SIGNALS.json effective_entry_state = READY_TO_TRADE`
+  - `ENTRY_SIGNALS.json macro_gate = CLEAR`
+  - `ENTRY_SIGNALS.json macro_gate_workflow = data_degraded_mode`
+  - `HERMES_DECISION_TRACE.json decision = no_trade`
+- The remaining live blockers are narrower than the last stale-news framing suggested:
+  - `MACRO.json` is still stale by about 24 hours
+  - `DERIVATIVES.json` still writes `0 coins`
+  - `DIVERGENCES.json` is still missing/stale
+  - `ALTFINS.json` is still missing
+  - `ACTIVE_TRADES.json` is stale in the manager lane
+
+### Safe Changes Applied This Run
+
+- Local canonical + flat mirror `scripts/macro_bias_builder/macro_bias_builder.py` and `openclawtrading/scripts/macro_bias_builder.py`
+- Local canonical + flat mirror `scripts/manager_agent/manager_agent.py` and `openclawtrading/scripts/manager_agent.py`
+- Live repo sync:
+  - `/root/openclawtrading/scripts/macro_bias_builder.py`
+  - `/root/openclawtrading/scripts/manager_agent.py`
+
+### Remaining Issues
+
+- The biggest live data weakness is still derivatives and macro-calendar freshness, not the raw news fetcher.
+- Deezoh still plans a macro follow-up without clear same-cycle specialist execution proof.
+- Hermes remains paper-safe and cautious, but it still is not directly scheduled by root cron.
+- The local `openclawtrading/scripts/` mirror cannot be trusted blindly for these lanes unless its drift from `scripts/...` is removed or checked first.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-15` Add or enforce a mirror-consistency check before syncing `openclawtrading/scripts/*` runtime copies to the live VPS. Status: queued.
+- `Q-2026-05-03-16` Require at least one visibly executed specialist follow-up proof in the recurring Deezoh observation suite instead of accepting `dispatch_state = planned`. Status: queued.
+- `Q-2026-05-03-17` Keep macro runtime logging and `data_sources` aligned with the current nested `NEWS.json` schema. Status: done.
+- `Q-2026-05-03-18` Keep top-level manager status aliases present so desk summaries do not need nested inference. Status: done.
+
+## 2026-05-03 Heartbeat Derivatives And Chart Freshness Repair
+
+### Trigger
+
+- Heartbeat: `deezoh-15-minute-observation-loop`
+- Objective: retest Deezoh, screener, macro, and related agent interactions as if Sal is looking at charts; verify Deezoh names the right workflow, pushes back instead of yes-manning, updates the next question from evidence, and records unsafe lessons as monitor issues.
+
+### What Ran
+
+- Rechecked live report freshness and quality for chart, derivatives, macro, scout, and Deezoh thought surfaces.
+- Patched the live desk observability chain so chart analysis is regenerated before `desk_contract_bridge.py` publishes the bridge-facing `CHART_ANALYSIS.json`.
+- Patched the derivatives fetcher so an empty Coinglass payload no longer leaves `DERIVATIVES.json` with zero usable coins; it now fills a degraded Binance Futures fallback from market scanner and scan-history data.
+- Rebuilt the live desk observability chain and replayed a Deezoh-style chart question against the fresh outputs.
+
+### Issues Captured
+
+- Issue `DHI-061`
+  Raw event: `run_desk_observability_chain.sh` refreshed `CHART_ANALYSIS.json` through the bridge while the underlying `CHART_ANALYSIS_latest.json` could still be stale.
+  What happened: downstream consumers saw a fresh bridge mtime even though the producer output was from an older cycle.
+  Why it matters: this can make Deezoh think chart evidence is fresher than it really is.
+  Recurrence: reproduced on the May 3 heartbeat and fixed in the same pass.
+  Affected agent/workflow/data source/timeframe: chart analyzer, desk contract bridge, Deezoh chart workflow, 15-minute observation loop.
+  Proposed fix: run the chart analyzer/generator inside the desk observability chain before the bridge step.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: fresh live chain run must update `CHART_ANALYSIS_latest.json`, `CHART_ANALYZER_EXECUTION.json`, and `CHART_ANALYSIS.json` in the same cycle.
+  Status: `fixed and verified`
+
+- Issue `DHI-062`
+  Raw event: `DERIVATIVES.json` reported `source = coinglass` but had empty `coins` and no clear top-level quality/status fields.
+  What happened: the derivatives lane looked present but provided no usable per-coin funding/OI context.
+  Why it matters: Deezoh, screener, and manager can overtrust a lane that exists but is effectively empty.
+  Recurrence: reproduced on the May 3 heartbeat and fixed with degraded fallback behavior.
+  Affected agent/workflow/data source/timeframe: derivatives fetcher, manager agent, Deezoh evidence quality, screener follow-up context.
+  Proposed fix: when Coinglass files are empty, fill partial per-coin funding/OI context from Binance Futures scanner and scan-history outputs, and mark the result degraded.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: fresh live `DERIVATIVES.json` must expose `status`, `data_quality`, `coins_count`, market fallback fields, and non-empty BTC/ETH/SOL records when scanner context exists.
+  Status: `fixed and verified`
+
+- Issue `DHI-063`
+  Raw event: after chart and derivatives fixes, Deezoh still selected `winner = short` from the current thought surface while chart evidence was partial, trend labels conflicted with bullish EMA/MACD, and the entry signal was null.
+  What happened: Deezoh's replay pushed back correctly, but the scoring output still needs a confidence discount for internal contradiction.
+  Why it matters: this is exactly the kind of beginner-trader trap Sal warned about: copying a preferred side from weak or contradictory evidence.
+  Recurrence: observed in this heartbeat; not fixed yet.
+  Affected agent/workflow/data source/timeframe: Deezoh scoring, chart-analysis consumer, trading-coach overlay, 15-minute chart workflow.
+  Proposed fix: add an explicit contradiction discount when side selection conflicts with trigger readiness, EMA/MACD evidence, or partial chart quality.
+  Owner: `architect-codex`
+  Risk: `needs_review`
+  Approval needed: `no for queue capture; review before durable scoring change`
+  Proof test: replay a weak tempting short question and verify Deezoh keeps `WATCH/NO_TRADE` primary unless trigger, invalidation, and fresh confirmation line up.
+  Status: `queued`
+
+### Proved
+
+- Chart freshness is no longer hidden by the bridge:
+  - `CHART_ANALYSIS_latest.json`, `CHART_ANALYZER_EXECUTION.json`, and `CHART_ANALYSIS.json` were all refreshed in the same live chain cycle.
+  - `CHART_ANALYSIS.json data_quality = PARTIAL`
+  - `CHART_ANALYSIS.json zone_confirmed = false`
+  - `CHART_ANALYSIS.json specialist_verified = false`
+- Derivatives are no longer empty:
+  - `DERIVATIVES.json source = coinglass+market_scanner_binance_futures_fallback`
+  - `DERIVATIVES.json status = degraded_fallback`
+  - `DERIVATIVES.json data_quality = PARTIAL`
+  - `DERIVATIVES.json coins_count = 30`
+  - Manager derivatives alert cleared; overall manager unhealthy count dropped from 6 to 5.
+- Deezoh replay passed the not-a-yes-man behavior check:
+  - It kept the practical posture at `WATCH`.
+  - It explicitly vetoed activation from partial chart evidence.
+  - It named the contradiction between the short label, bullish EMA/MACD, null entry signal, low volume, FOMC timing, and weekend Asia liquidity.
+  - It recorded unsafe-learning concerns instead of treating the current `short` winner as a durable lesson.
+
+### Remaining Issues
+
+- TradingView CDP is still not giving a usable chart target: `/json/version` works on port `9222`, but `/json/list` is empty and `/json/new` returns HTTP 500.
+- Indicator and strategy reports are still missing from the same-cycle desk bundle.
+- Catalyst, news, divergence, and macro-calendar freshness still need repair or clearer degraded-mode handling.
+- Council output still needs a visible critic lane.
+- The derivatives fallback is intentionally partial; it does not replace Coinglass long/short ratios, liquidation heatmaps, or full liquidation context.
+- BTC open-interest units from the fallback need a sanity check before being used as high-confidence evidence.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-19` Run chart producer before bridge publishing in the desk observability chain. Status: done.
+- `Q-2026-05-03-20` Fill empty derivatives lane with explicit degraded Binance Futures fallback and quality fields. Status: done.
+- `Q-2026-05-03-21` Add Deezoh scoring contradiction discount for partial chart evidence, null trigger, and indicator-side conflict. Status: queued.
+- `Q-2026-05-03-22` Repair TradingView CDP chart target discovery or route chart visual inspection through a different verified surface. Status: queued.
+- `Q-2026-05-03-23` Restore same-cycle indicator, strategy, catalyst, divergence, and critic-lane proof for the Deezoh observation bundle. Status: queued.
