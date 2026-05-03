@@ -2476,3 +2476,243 @@ Each hourly run must include:
 - `Q-2026-05-03-38` Keep council full-visibility proof in the recurring observation contract. Status: done.
 - `Q-2026-05-03-39` Investigate TradingView/CDP empty target list and chart specialist verification. Status: queued.
 - `Q-2026-05-03-40` Improve derivatives beyond Binance fallback if a reliable long/short/liquidation source is available. Status: queued.
+
+## 2026-05-03 Direct Observation Heartbeat Contract Tightening
+
+### Trigger
+
+- Automation: `openclaw-deezoh-hermes-agent-improvement-loop`
+- Objective: rerun the Deezoh chart-style observation suite, prove whether the live workflow labeling issue still exists, and land only a low-risk instruction fix if the evidence is concrete.
+
+### What Ran
+
+- Re-read the latest automation memory, the newest Deezoh/Hermes handoff, and the shared observation ledger.
+- Re-ran bounded local safety tests:
+  - `python scripts/tests/deezoh_observation_suite_smoke.py`
+  - `python scripts/tests/workflow_contract_surfaces_smoke.py`
+  - `python scripts/simulator/test_desk_contract_bridge_entry_signals.py`
+  - `python scripts/tests/hermes_dual_lane_contract_smoke.py`
+  - `python scripts/simulator/test_deezoh_question_engine.py`
+- Re-verified live VPS truth on `root@100.67.172.114`:
+  - root cron
+  - OpenClaw task and cron surfaces
+  - `openclaw.log`
+  - `derivatives.log`
+  - `macro_bias.log`
+  - `watchlist.log`
+  - current Deezoh/Hermes reports under `/root/openclawtrading/reports/auto`
+- Re-ran a bounded live Hermes cycle:
+  - `python3 /root/openclawtrading/scripts/hermes_runtime_bridge.py --timeout-seconds 180 --quiet`
+- Ran fresh live observation sessions:
+  - `deezoh-observe-breakout-v5`
+  - `deezoh-observe-consolidation-v5`
+  - `deezoh-observe-news-v5`
+  - `deezoh-observe-liquidity-trap-v4`
+- Ran fresh live workflow audits:
+  - `screener-workflow-audit-v2`
+  - `macro-workflow-audit-v3`
+- Tightened `agents/deezoh/HEARTBEAT.md`, synced it to `/root/.openclaw/workspace/agents/deezoh/HEARTBEAT.md`, and reran the breakout session as `deezoh-observe-breakout-v6` plus a same-session follow-up.
+
+### Issues Captured
+
+- Issue `DHI-076`
+  Raw event: fresh live breakout replay `deezoh-observe-breakout-v5` still labeled `selected_workflow` as the coaching format instead of a canonical market workflow id.
+  What happened: the live Deezoh runtime ignored the structure-first workflow contract even though the local question engine and tests were already fixed.
+  Why it matters: Sal asked for chart-style workflow truth, not a response-style label. This breaks comparison across replays and makes it harder to tell whether breakout behavior improved.
+  Recurrence: reproduced on 2026-05-03 before the heartbeat patch.
+  Affected agent/workflow/data source/timeframe: Deezoh, breakout observation workflow, OpenClaw injected bootstrap, 4H/15M breakout review.
+  Proposed fix: move the canonical workflow-id rule into `HEARTBEAT.md`, which is always injected, then sync and rerun.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: a fresh breakout replay must output `selected_workflow = breakout_acceptance`, not a skill or answer-format label.
+  Status: `fixed and verified`
+
+- Issue `DHI-077`
+  Raw event: the same-session breakout follow-up switched `typed_wait` to `WAIT_CONFIRMATION`, which is not a canonical wait id.
+  What happened: live Deezoh preserved the improved breakout label after the heartbeat patch but still invented a new wait state instead of mapping to the contract.
+  Why it matters: non-canonical wait names break desk-state comparisons and weaken downstream automation that expects the official wait set.
+  Recurrence: reproduced on `deezoh-observe-breakout-v6` follow-up.
+  Affected agent/workflow/data source/timeframe: Deezoh, typed wait contract, direct observation follow-up.
+  Proposed fix: add an explicit canonical-wait rule to `HEARTBEAT.md` and keep future replays pinned to `WAIT_ACCEPTANCE`, `WAIT_TRIGGER`, `WAIT_RETEST`, or `WAIT_REFRESH`.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: future direct follow-ups must not emit ad-hoc waits like `WAIT_CONFIRMATION`.
+  Status: `fixed in instructions, pending replay confirmation`
+
+- Issue `DHI-078`
+  Raw event: the same-session breakout follow-up described `03:36 UTC` reports as `8+ hours old` while the session clock was `11:45 GMT+8`, which is only about 9 minutes later.
+  What happened: Deezoh mixed timezones and turned fresh same-hour UTC reports into stale-hour claims.
+  Why it matters: stale-data warnings are valuable only if the time math is correct. False stale calls make Sal trust the desk less and can suppress valid setups unnecessarily.
+  Recurrence: reproduced on `deezoh-observe-breakout-v6` follow-up.
+  Affected agent/workflow/data source/timeframe: Deezoh, freshness reasoning, direct observation follow-up.
+  Proposed fix: add an explicit UTC-to-UTC freshness rule to `HEARTBEAT.md`.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: future follow-ups must not describe fresh same-hour UTC reports as many-hours-old when only the displayed local timezone changed.
+  Status: `fixed in instructions, pending replay confirmation`
+
+### Proved
+
+- Local selector and contract surfaces remain healthy:
+  - `deezoh_observation_suite_smoke` passed
+  - `workflow_contract_surfaces_smoke` passed
+  - `test_desk_contract_bridge_entry_signals` passed
+  - `hermes_dual_lane_contract_smoke` passed
+  - `test_deezoh_question_engine` passed `16 / 16`
+- Hermes remains internally consistent and paper-safe:
+  - `HERMES_DECISION_TRACE.json generated_at = 2026-05-03T03:12:57Z`
+  - `status = ready`
+  - `decision = no_trade`
+  - `evidence_pack_id = 2654c8dbc1eb5354`
+- Screener workflow audit stayed correct:
+  - quiet builders -> `accumulation_hunt`
+  - accepted continuation -> `trend_continuation_hunt`
+  - post-news rotation -> `post_news_rotation_hunt`
+  - failed-breakout short -> `failed_breakout_short_hunt`
+  - range rotation -> `range_rotation_hunt`
+  - degraded inputs -> `no_trade_protection`
+- Macro workflow audit stayed correct:
+  - pre-event -> `pre_event_risk_control`
+  - post-event -> `post_event_digest`
+  - cross-asset divergence -> `cross_asset_divergence`
+  - unusual behavior capture -> `unusual_behavior_precedent`
+  - degraded inputs -> `data_degraded_macro`
+- Fresh breakout replay after the heartbeat patch improved materially:
+  - `deezoh-observe-breakout-v6` read `WORKFLOW.md` and `QUESTION_ENGINE.md`
+  - `selected_workflow = breakout_acceptance`
+  - `winner = no_trade`
+  - `typed_wait = WAIT_ACCEPTANCE`
+  - `actually_spawned = None`
+  - `not_fresh_but_referenced` correctly focused on degraded derivatives and fallback chart analysis, not on an invented coaching mode
+- Same-session follow-up still changed state framing:
+  - winner stayed `no_trade`
+  - next question sharpened toward 1H stochastic plus non-fallback chart confirmation
+  - the wait/ranking update path is real, even though the wait label and freshness math still need replay confirmation after the final heartbeat patch
+
+### Remaining Issues
+
+- TradingView/CDP visual chart confirmation is still broken:
+  - `CHART_ANALYSIS.json` remains fresh but fallback-only
+  - `specialist_verified = false`
+  - Deezoh is still reasoning off deterministic structure instead of a verified visual chart lane
+- Derivatives are fresh again but still degraded fallback:
+  - Binance fallback is present
+  - long/short ratios and liquidation context remain absent
+- Watchlist remains placeholder quality:
+  - `WATCHLISTS.json` is current
+  - entries are still `0% MONITOR`
+  - `watchlist.log` still says metrics CSVs are missing
+- OpenClaw workspace bootstrap remains oversized:
+  - `/root/.openclaw/workspace/MEMORY.md = 151412 chars`
+  - `/root/.openclaw/workspace/agents/deezoh/AGENTS.md = 26643 chars`
+  - Deezoh `HEARTBEAT.md` is now only `3660` chars and is the safe always-injected fix surface for this class
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-41` Move Deezoh workflow-id guard into an always-injected file so live replays keep canonical workflow labels even when larger bootstrap files are truncated. Status: done.
+- `Q-2026-05-03-42` Enforce canonical typed waits and UTC-to-UTC freshness math in the same injected heartbeat surface. Status: done, pending replay confirmation.
+- `Q-2026-05-03-43` Reduce or split oversized OpenClaw bootstrap context, starting with workspace `MEMORY.md`, so live observation turns stop losing late instructions to truncation. Status: queued.
+- `Q-2026-05-03-44` Repair the watchlist metrics lane so `WATCHLISTS.json` stops publishing all-zero monitor placeholders. Status: queued.
+
+## 2026-05-03 Heartbeat TradingView Jackson Registration And CDP Blocker Pass
+
+- Heartbeat: `deezoh-15-minute-observation-loop`
+- Objective: continue live chart-style observation, determine whether the TradingView/Jackson lane is only unregistered or genuinely blocked, make bounded safe fixes, then retest Deezoh against the fresh evidence.
+
+### What Ran
+
+- Rechecked live report freshness under `/root/openclawtrading/reports/auto`.
+- Rechecked TradingView Desktop CDP:
+  - `/json/version` works on port `9222`
+  - `/json/list` returns `[]`
+  - `/json/new?...` rejects direct `GET` with HTTP `405`
+  - the chart runner's `PUT /json/new?...` path still fails with HTTP `500`
+- Checked OpenClaw MCP and `mcporter` discovery:
+  - `openclaw mcp list` initially showed only `market-data`
+  - `mcporter list` initially showed only `market-data`
+- Registered Jackson safely:
+  - `openclaw mcp set tradingview-jackson {"command":"node","args":["/root/.openclaw/workspace/projects/tradingview-mcp-jackson/src/server.js"]}`
+  - `mcporter config add tradingview-jackson --command node --arg /root/.openclaw/workspace/projects/tradingview-mcp-jackson/src/server.js --scope home`
+- Patched `agents/chart-analyzer/run_chart_analyzer.sh` so `CHART_ANALYZER_EXECUTION.json` records `ports_checked`, CDP version status, target count, TradingView target count, and target-create error.
+- Synced the runner to:
+  - `/root/openclawtrading/agents/chart-analyzer/run_chart_analyzer.sh`
+  - `/root/.openclaw/workspace/agents/chart-analyzer/run_chart_analyzer.sh`
+- Ran the chart runner and the full live desk observability chain.
+- Ran a real Deezoh replay through OpenClaw:
+  - session id `deezoh-observe-chart-cdp-blocker-v1`
+  - command shape: `openclaw agent --agent main --thinking on --json`
+
+### Issues Captured
+
+- Issue `DHI-079`
+  Raw event: the Jackson server process existed on the VPS, but neither OpenClaw MCP nor `mcporter` had an active `tradingview-jackson` registration.
+  What happened: a future chart target repair would still have failed because the runner calls `mcporter call tradingview-jackson.*`, and `mcporter` returned `Unknown MCP server 'tradingview-jackson'`.
+  Why it matters: this separated `exists` from `wired`; a running Node process is not enough for Deezoh or chart-analyzer to use the TradingView MCP tools.
+  Recurrence: reproduced on 2026-05-03 during the heartbeat blocker pass.
+  Affected agent/workflow/data source/timeframe: chart-analyzer, TradingView MCP/Jackson, Deezoh visual chart lane, all chart timeframes.
+  Proposed fix: register Jackson in OpenClaw MCP and `mcporter` home config without restarting TradingView or changing trading policy.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: `openclaw mcp list` includes `tradingview-jackson`; `mcporter list` shows `tradingview-jackson (81 tools)`.
+  Status: `fixed and verified`
+
+- Issue `DHI-080`
+  Raw event: after Jackson registration was repaired, `tv_health_check` and `chart_get_state` still failed because no TradingView chart/page target exists on CDP.
+  What happened: TradingView Desktop exposes the browser endpoint on port `9222`, but `/json/list` has target count `0`, TradingView target count `0`, and target creation fails with HTTP `500`.
+  Why it matters: Deezoh must not treat Binance OHLCV fallback as visual TradingView confirmation. The problem is now narrowed to TradingView Desktop target exposure or launch/profile state, not MCP registration.
+  Recurrence: repeated across May 2 and May 3 chart repair passes; now recorded with machine-readable probe fields.
+  Affected agent/workflow/data source/timeframe: chart-analyzer, TradingView visual specialist lane, Deezoh chart-side workflow, `1D/4H/1H/15M`.
+  Proposed fix: review the live TradingView launch/profile state and choose a safe repair path: controlled restart with a visible chart target, alternate browser-backed TradingView visual lane, or manual visual-input lane until CDP page targets are restored.
+  Owner: `OpenClaw runtime + architect-codex`
+  Risk: `needs_review`
+  Approval needed: `yes before restarting TradingView Desktop or changing the runtime launch service`
+  Proof test: `CHART_ANALYZER_EXECUTION.json` must show `specialist_verified=true`, non-null `target_id`, non-null screenshot/state path, and Deezoh must require that proof before upgrading chart confidence.
+  Status: `blocked; root cause narrowed`
+
+### Proved
+
+- Jackson is now discoverable:
+  - `openclaw mcp list` shows `market-data` and `tradingview-jackson`
+  - `mcporter list` shows `tradingview-jackson (81 tools)`
+- The live chart runner now records exact CDP proof:
+  - port `9224`: connection refused
+  - port `9222`: version ok, browser `Chrome/140.0.7339.133`
+  - port `9222`: target count `0`
+  - port `9222`: TradingView target count `0`
+  - port `9222`: target creation HTTP `500`
+- The full live desk chain refreshed after the patch:
+  - `MANAGER_STATUS.json` stayed `ALL HEALTHY`
+  - `DEEZOH_THOUGHTS.json` stayed `winner = no_trade`
+  - `COUNCIL_REVIEW.json` stayed `actually_ran = true` with `bull,bear,critic,judge`
+  - `CHART_ANALYSIS.json` stayed `data_quality = PARTIAL`, `zone_confirmed = false`
+  - `EXECUTION_REPORT.json` opened no entries because Deezoh phase stayed `WAIT`
+  - `PAPER_TRADES.json` stayed `open_count = 0`
+- The real Deezoh replay `deezoh-observe-chart-cdp-blocker-v1` behaved correctly:
+  - selected `data_unreliable` with `WAIT_REFRESH`
+  - winner stayed `no_trade`
+  - explicitly refused to treat fallback chart data as visual confirmation
+  - named best long, best short, and best no-trade cases
+  - identified the contradiction: bearish fallback trend label versus bullish EMA/MACD/midrange context and dead volume
+  - next question asked whether to run chart-analyzer repair or use a manual visual read as temporary specialist input
+- Local smoke tests still passed:
+  - `deezoh_observation_suite_smoke`
+  - `workflow_contract_surfaces_smoke`
+  - `test_desk_contract_bridge_entry_signals`
+  - `hermes_dual_lane_contract_smoke`
+
+### Remaining Issues
+
+- TradingView visual chart confirmation is still blocked at CDP target exposure. Jackson is wired now, but it has no page target to attach to.
+- `DHI-077` and `DHI-078` still need the exact same-session breakout follow-up replay confirmation after the heartbeat instruction patch; this pass verified a chart-blocker replay instead.
+- Derivatives remain `degraded_fallback`, so OI/funding/liquidation context is still weaker than the intended desk contract.
+- Watchlist quality remains queued; this pass did not touch `WATCHLISTS.json` all-zero monitor placeholders.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-45` Keep Jackson MCP registration in both OpenClaw MCP and `mcporter` config; future checks must verify `exists`, `wired`, and `callable` separately. Status: done.
+- `Q-2026-05-03-46` Repair TradingView Desktop CDP page-target exposure with review before restart or launch-service mutation. Status: blocked pending runtime-owner decision.
+- `Q-2026-05-03-47` Add or keep a manual visual-read intake path so Sal can temporarily provide chart proof without letting Deezoh self-upgrade fallback data. Status: queued.
