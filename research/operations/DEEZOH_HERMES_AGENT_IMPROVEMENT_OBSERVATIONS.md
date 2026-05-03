@@ -2245,3 +2245,136 @@ Each hourly run must include:
 - `Q-2026-05-03-27` Update future OpenClaw/Kimi replay recipes to use `--thinking on/off`, not Codex-style `medium`. Status: queued.
 - `Q-2026-05-03-28` Repair catalyst/news/macro-calendar/divergence/altfins/critic proof after the current indicator and strategy gap is closed. Status: queued.
 - `Q-2026-05-03-29` Keep strategy reports from calling advisory tracked signals "open trades" unless `PAPER_TRADES.json` confirms real paper exposure. Status: done.
+
+## 2026-05-03 Heartbeat Context Lane Completion
+
+### Trigger
+
+- Heartbeat: `deezoh-15-minute-observation-loop`
+- Objective: continue live chart-style replay until Deezoh, screener, macro, and related agents are using fresh evidence; fix stale lanes that make Deezoh overtrust partial chart labels.
+
+### What Ran
+
+- Rechecked live report freshness after the prior indicator/strategy repair.
+- Directly refreshed news, catalyst, macro calendar, and divergence lanes.
+- Fixed the divergence scanner report root so it writes `DIVERGENCES.json` under `/root/openclawtrading/reports/auto` instead of `/root/reports/auto`.
+- Fixed macro calendar runtime behavior so missing optional `yfinance` does not trigger a package-install attempt on every chain run.
+- Installed and path-fixed the AltFins fetcher on the live VPS.
+- Added news, macro calendar, catalyst, AltFins, and divergence refreshes to `run_desk_observability_chain.sh`.
+- Reran the full live desk chain and then ran a live OpenClaw Deezoh replay using the full fresh context set.
+
+### Issues Captured
+
+- Issue `DHI-069`
+  Raw event: `NEWS.json`, `CATALYST_REPORT.json`, `MACRO.json`, and `DIVERGENCES.json` were stale or missing while Deezoh was being asked to judge chart-side trade temptation.
+  What happened: the core desk chain refreshed chart, indicator, strategy, derivatives, and Deezoh thoughts, but not all event/context lanes needed for a safer answer.
+  Why it matters: news, catalysts, macro calendar, and divergences change whether Deezoh should discount or preserve a trade idea.
+  Recurrence: reproduced on the May 3 heartbeat and fixed in the same pass.
+  Affected agent/workflow/data source/timeframe: Deezoh chart workflow, macro-bias, catalyst, divergence scanner, desk observability chain.
+  Proposed fix: refresh these context lanes in the desk observability chain before rebuilding Deezoh thoughts.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: full live chain should leave `NEWS.json`, `CATALYST_REPORT.json`, `MACRO.json`, and `DIVERGENCES.json` fresh.
+  Status: `fixed and verified`
+
+- Issue `DHI-070`
+  Raw event: `divergence_scanner.py --top 20` completed successfully but saved to `/root/reports/auto/DIVERGENCES.json`.
+  What happened: the script resolved its root as two parents above `/root/openclawtrading/scripts`, which lands on `/root`, not the live repo root.
+  Why it matters: manager and Deezoh kept seeing divergence as missing even though the scanner had run.
+  Recurrence: reproduced on the May 3 heartbeat and fixed in the same pass.
+  Affected agent/workflow/data source/timeframe: divergence scanner, manager status, Deezoh context, all scanned timeframes.
+  Proposed fix: use the active runtime report path and keep `ROOT` at `/root/openclawtrading`.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: fresh divergence run must write `/root/openclawtrading/reports/auto/DIVERGENCES.json`.
+  Status: `fixed and verified`
+
+- Issue `DHI-071`
+  Raw event: `macro_calendar_checker.py` attempted to install `yfinance` every time it ran when the package was absent.
+  What happened: the script still produced the FOMC macro calendar, but wasted time and log noise on optional earnings-package installation.
+  Why it matters: a 15-minute observation loop should not repeatedly spend time on optional dependency installation attempts.
+  Recurrence: reproduced on the May 3 heartbeat and fixed in the same pass.
+  Affected agent/workflow/data source/timeframe: macro calendar, desk observability chain, heartbeat runtime.
+  Proposed fix: skip optional `yfinance` installation unless `CHIMERA_AUTO_INSTALL_YFINANCE=1` is explicitly set.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: fresh macro calendar run should skip yfinance cleanly and still write `MACRO.json`.
+  Status: `fixed and verified`
+
+- Issue `DHI-072`
+  Raw event: `ALTFINS.json` was missing from the live VPS, but the local `altfins_fetcher.py` producer existed and had the same wrong report-root pattern.
+  What happened: the AltFins lane was not installed for live use and would have written to the wrong root if copied as-is.
+  Why it matters: Deezoh lacked an independent trend/indicator source that can push back against weak chart labels.
+  Recurrence: reproduced on the May 3 heartbeat and fixed in the same pass.
+  Affected agent/workflow/data source/timeframe: AltFins fetcher, manager status, Deezoh trading coach overlay.
+  Proposed fix: route AltFins output through `REPORTS_AUTO`, sync the producer to the VPS, and run it in the desk chain.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: fresh `ALTFINS.json` should exist under `/root/openclawtrading/reports/auto` with BTC/ETH/SOL/HYPE coins and signal data.
+  Status: `fixed and verified`
+
+- Issue `DHI-073`
+  Raw event: the final live OpenClaw Deezoh replay returned `OPENCLAW_RC 0` and a strong no-yes-man answer, but the wrapper payload still carried `replayInvalid = true`.
+  What happened: the agent behavior passed, but the replay harness validity flag is not clean.
+  Why it matters: this loop should distinguish useful agent behavior from clean harness proof; otherwise future audits can overstate test cleanliness.
+  Recurrence: observed once on the May 3 heartbeat.
+  Affected agent/workflow/data source/timeframe: OpenClaw live replay harness, Deezoh observation proof.
+  Proposed fix: inspect OpenClaw replay validity rules separately; do not block the current evidence-lane repair on this because the agent response and return code succeeded.
+  Owner: `architect-codex + OpenClaw runtime`
+  Risk: `needs_review`
+  Approval needed: `no for queue capture`
+  Proof test: future replay should return success and `replayInvalid = false`, or document why this flag is expected for embedded runs.
+  Status: `queued`
+
+### Proved
+
+- Full live desk chain completed with `CHAIN_RC:0`.
+- Manager status moved from `5 UNHEALTHY` earlier in the loop to `ALL HEALTHY`.
+- Fresh reports after the chain:
+  - `NEWS.json` fresh
+  - `CATALYST_REPORT.json risk_level = NORMAL`, `macro_gate = OPEN`
+  - `MACRO.json` fresh with FOMC in 3 days
+  - `DIVERGENCES.json` fresh in `/root/openclawtrading/reports/auto`
+  - `ALTFINS.json` fresh with BTC/ETH/SOL/HYPE and 24 signals on direct run
+  - `INDICATOR_REPORT.json` fresh
+  - `STRATEGY_REPORT.json matching_strategy = false`, `passing_strategies = 0`, `open_trades = 0`, `tracked_strategy_signals = 11`
+  - `DERIVATIVES.json` fresh degraded fallback
+- Deezoh artifact stayed conservative:
+  - `DEEZOH_THOUGHTS.json selected_workflow = accumulation_hunt`
+  - `winner = no_trade`
+  - `same_cycle_confirmed = true`
+  - `optional_lane_health.status = ok`
+- Execution safety stayed intact:
+  - `EXECUTION_REPORT.json entries_opened = []`
+  - `PAPER_TRADES.json open_count = 0`
+- Live Deezoh replay passed the behavior check:
+  - selected `accumulation_hunt`
+  - kept `no_trade`
+  - pushed back on the short temptation
+  - cited unverified fallback chart data, blocked indicator timing, bullish weekly divergence, AltFins uptrend, mixed strategy, macro caution, and weekend liquidity.
+  - included an unsafe-learning guard: do not learn "bearish fallback label = short signal."
+- Local bounded tests still passed:
+  - `deezoh_observation_suite_smoke`
+  - `workflow_contract_surfaces_smoke`
+  - `test_desk_contract_bridge_entry_signals`
+  - `hermes_dual_lane_contract_smoke`
+
+### Remaining Issues
+
+- TradingView/CDP visual chart confirmation is still broken; chart evidence is still fallback, not specialist-verified visual analysis.
+- Council remains `partially_visible`; critic/auditor lane still needs stronger same-cycle proof.
+- Derivatives are fresh but still `degraded_fallback`, so long/short ratio and liquidation heatmap context are still weaker than desired.
+- OpenClaw replay returned useful behavior but had `replayInvalid = true`; the harness validity flag needs follow-up.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-30` Refresh news, catalyst, macro calendar, and divergence before Deezoh thoughts in the desk chain. Status: done.
+- `Q-2026-05-03-31` Fix divergence scanner report root from `/root/reports/auto` to `/root/openclawtrading/reports/auto`. Status: done.
+- `Q-2026-05-03-32` Prevent macro calendar from repeatedly trying optional package installs during heartbeat runs. Status: done.
+- `Q-2026-05-03-33` Install and path-fix AltFins fetcher for the live VPS chain. Status: done.
+- `Q-2026-05-03-34` Investigate OpenClaw `replayInvalid = true` on successful embedded Deezoh replay. Status: queued.
+- `Q-2026-05-03-35` Repair TradingView/CDP visual chart confirmation and council critic proof after the evidence-lane health reaches green. Status: queued.
