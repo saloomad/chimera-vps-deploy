@@ -37,8 +37,9 @@ def main() -> int:
     out = {
         "decision": "block",
         "reason": (
-            "The objective contract is still marked active. Run the review step, update "
-            "`.claude/OBJECTIVE_CONTRACT.md`, and set status to complete or blocked before stopping."
+            "The objective contract is still marked active. Run the review step, make the review outcome explicit "
+            "as complete, iterate, or blocked, update `.claude/OBJECTIVE_CONTRACT.md`, and confirm proof, dependent "
+            "surface updates, continuity updates, unapproved_items, remaining_work, and any needed detector or learning capture before stopping."
         ),
     }
     print(json.dumps(out))

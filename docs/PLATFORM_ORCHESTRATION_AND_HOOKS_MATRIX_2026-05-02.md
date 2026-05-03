@@ -80,6 +80,15 @@ Use them like this:
 - `background tasks`
   - for detached work audit and control
 
+### OpenClaw Control-Layer Rule
+
+When the change touches runtime hooks, Task Flow, Lobster, standing orders, startup docs, or continuity ownership:
+
+- use `critical-config-instruction-and-compaction-guard-loop.md`
+- use `critical-change-guard`
+- update runtime receipt and proof paths
+- prefer hook proof or runtime proof over doc-only proof
+
 Best OpenClaw hook jobs:
 
 - `message:received`
@@ -185,6 +194,47 @@ The practical ones we should use most:
 - `PreCompact` and `PostCompact`
   - best for protecting continuation, PM state, objective state, and proof state around compaction
 
+### Hook Policy By Event
+
+#### `PreToolUse`
+
+Use it to enforce:
+
+- choose the workflow before mutating the system
+- load the starter stack when meaningful work begins
+- force `critical-change-guard` for control-layer edits
+- check `pipeline-enforcement-detector` when runtime, trading, Task Flow, Lobster, or recurring ownership surfaces are touched
+- check `hook-opportunity-detector` when the same pre-action reminder keeps repeating
+
+#### `PostToolUse`
+
+Use it to enforce:
+
+- proof after the change
+- dependent-surface updates
+- continuity and PM follow-through
+- detector loading when the change exposed a reusable pattern or missing automation
+- `codex-lesson-harvester` when the tool step created a durable lesson
+
+#### `SubagentStop`
+
+Use it to enforce:
+
+- review whether the subagent actually solved the assigned slice
+- review report quality, proof quality, file list, tests, and residual risks
+- load `codex-workflow-detector`, `codex-skill-opportunity-detector`, or `hook-opportunity-detector` when the subagent exposed a repeated pattern
+- load `pipeline-enforcement-detector` when the subagent exposed a runtime-owner gap
+- load `codex-lesson-harvester` or `cross-project-ai-lessons` when the result should help future projects
+
+#### `Stop`
+
+Use it to enforce:
+
+- objective review outcome must be explicit: `complete`, `iterate`, or `blocked`
+- proof must be explicit
+- dependent docs, continuity, and PM surfaces must be updated when required
+- detectors and learning capture must run before closeout if the session produced a reusable pattern or lesson
+
 Hook handler types in Claude Code:
 
 - `command`
@@ -258,7 +308,7 @@ After compaction:
 
 Current honest truth:
 
-- we still do not have a separately verified native hook surface here like Claude Code or OpenClaw
+- OpenCode still does not have a separately verified native hook surface here like Claude Code or OpenClaw
 - but OpenCode does have verified native project surfaces for:
   - `AGENTS.md` rules
   - `opencode.json` config
@@ -266,6 +316,12 @@ Current honest truth:
   - custom commands
   - native skill discovery
   - permission rules
+- OpenCowork now also has a real local Chimera bundle using:
+  - local skills in `%AppData%\open-cowork\claude\skills\`
+  - a local plugin in `%AppData%\open-cowork\claude\plugins\source\chimera-enforcement-bundle`
+  - local plugin hooks for prompt start, risky tools, proof nudges, and stop gates
+- both OpenCode and OpenCowork should write activation proof into:
+  - `trace/platform_activation_receipts.jsonl`
 
 So the best enforcement surfaces here are:
 
@@ -302,6 +358,7 @@ Use them like this:
   - enforce continuation across sessions
 
 Do not pretend OpenCode has a proven hook API until it actually does.
+For OpenCowork specifically, local plugin hooks are real only after the local plugin is enabled and picked up by the desktop app.
 
 ## Recommended Default By Need
 

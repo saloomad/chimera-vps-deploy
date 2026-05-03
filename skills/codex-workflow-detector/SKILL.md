@@ -26,6 +26,7 @@ Create or update a workflow when:
 7. a workflow now matters enough to be promoted across platforms
 8. Sal keeps having to remind agents how to explain or close out the same kind of work
 9. the same risky config, instruction, or compaction repair keeps recurring
+10. `PreToolUse`, `SubagentStop`, `PostToolUse`, or `Stop` exposed the same ordered gap again
 
 ## Read First
 
@@ -70,3 +71,4 @@ Promote:
 - to `workflow` when order matters
 - to `skill` when behavior should be automatically reused
 - to shared mirrors and AGENTS references when the pattern is important on more than one platform
+- and update the global registry docs when the workflow changes how the system should think across platforms

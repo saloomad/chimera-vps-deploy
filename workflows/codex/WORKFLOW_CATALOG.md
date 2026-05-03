@@ -89,6 +89,13 @@ Communication rule:
 - Main workflows:
   - `reusable-pattern-capture.md`
   - `skill-workflow-mirror-and-publication.md`
+  - `detector-registry-and-learning-promotion-loop.md`
+- Main detector skills:
+  - `codex-workflow-detector`
+  - `codex-skill-opportunity-detector`
+  - `hook-opportunity-detector`
+  - `pipeline-enforcement-detector` when runtime ownership is the real issue
+  - `codex-lesson-harvester` and `cross-project-ai-lessons` when the result should help future projects too
 
 ### 10. Platform Enforcement And Receipts
 
@@ -96,6 +103,10 @@ Communication rule:
 - Loop type: bounded implementation plus review
 - Main workflow:
   - `platform-enforcement-selection-and-receipt-loop.md`
+- Main detector skills:
+  - `hook-opportunity-detector`
+  - `pipeline-enforcement-detector`
+  - `codex-feature-opportunity-detector`
 
 ### 11. Critical Config, Instruction, And Compaction Governance
 
@@ -113,8 +124,10 @@ Communication rule:
 - Use when: tasks, reminders, or delivery/front-door surfaces may be stale or drifted
 - Loop type: bounded reconciliation loop
 - Main workflows:
+  - `pm-front-door-reconciliation-loop.md`
   - `task-and-continuity-closeout.md`
-  - project-operations-manager skill
+- Main skills:
+  - `project-operations-manager`
 
 ### 13. Trading / Deezoh Lifecycle
 
@@ -123,6 +136,11 @@ Communication rule:
 - Main workflows:
   - `deezoh-market-condition-and-trade-lifecycle-loop.md`
   - `openclaw-monitoring-and-consumer-loop.md`
+- Main monitor:
+  - `vibe-coding-monitor` when interaction or operator friction should be reviewed on Windows or VPS
+- Main enforcement skills:
+  - `pipeline-enforcement-detector`
+  - `openclaw-feature-router`
 
 ## Rule
 
@@ -143,3 +161,10 @@ For any meaningful system change, also define:
 - dependent surfaces to update
 - proof shape
 - documentation and continuity update path
+- activation receipt path when the platform can support it
+
+## Global Reference
+
+If the task is "what do we already have, what should load when, what is left, and what can other projects reuse," use:
+
+- `docs/GLOBAL_PLATFORM_SKILL_WORKFLOW_REGISTRY_2026-05-03.md`

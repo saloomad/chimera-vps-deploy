@@ -17,6 +17,36 @@ DANGEROUS_PATTERNS = [
     r"\bgit\s+reset\b",
     r"\bgit\s+checkout\s+--\b",
 ]
+CONTROL_LAYER_MARKERS = [
+    "agents.md",
+    "claude.md",
+    ".claude\\settings.json",
+    ".claude/hooks/",
+    ".claude/hooks\\",
+    "opencode.json",
+    ".opencode/",
+    ".opencode\\",
+    "plugin-registry.json",
+    "\\skills\\",
+    "/skills/",
+    "\\workflows\\",
+    "/workflows/",
+    "task_registry.md",
+    "project_registry.md",
+    "continuation.md",
+    "kanban.md",
+]
+PIPELINE_MARKERS = [
+    "orchestration\\taskflow.json",
+    "/root/.openclaw/",
+    "\\hooks\\",
+    "/hooks/",
+    "openclawtrading",
+    "hermes_runtime_bridge.py",
+    "deezoh",
+    "lobster",
+    "standing order",
+]
 
 
 def read_contract() -> str:
@@ -29,28 +59,73 @@ def contract_active(text: str) -> bool:
     return re.search(r"^status:\s*active\s*$", text, flags=re.IGNORECASE | re.MULTILINE) is not None
 
 
-def build_context(tool_name: str, has_active_contract: bool) -> str:
+def payload_text(payload: dict) -> str:
+    try:
+        text = json.dumps(payload.get("tool_input", {}), ensure_ascii=False)
+    except Exception:
+        text = str(payload.get("tool_input", ""))
+    return text.lower()
+
+
+def has_any_marker(text: str, markers: list[str]) -> bool:
+    return any(marker in text for marker in markers)
+
+
+def classify_trigger(tool_name: str, payload: dict, has_active_contract: bool) -> str:
+    text = payload_text(payload)
+    if has_any_marker(text, CONTROL_LAYER_MARKERS):
+        return "control_layer_change"
+    if has_any_marker(text, PIPELINE_MARKERS):
+        return "pipeline_surface_change"
+    if not has_active_contract:
+        return "mutating_tool_without_active_contract"
+    return tool_name.lower()
+
+
+def build_context(tool_name: str, has_active_contract: bool, trigger: str) -> str:
+    if trigger == "control_layer_change":
+        return (
+            "This edit touches the control layer. Use `critical-change-guard` and "
+            "`critical-config-instruction-and-compaction-guard-loop.md`, then update proof, continuity, and any "
+            "dependent instruction or registry surfaces. If this change touches skills, workflows, or detectors, also "
+            "check whether `codex-workflow-detector`, `codex-skill-opportunity-detector`, or "
+            "`hook-opportunity-detector` should be consulted before you continue."
+        )
+
+    if trigger == "pipeline_surface_change":
+        return (
+            "This change touches runtime or pipeline ownership surfaces. Check whether "
+            "`pipeline-enforcement-detector` and `openclaw-feature-router` should be consulted so hooks, Task Flow, "
+            "Lobster, standing orders, commands, or review gates own the workflow in the right place."
+        )
+
     if tool_name == "Bash":
         if has_active_contract:
             return (
                 "A meaningful objective is active. Before and after this shell step, keep the workflow, write scope, "
                 "and proof chain explicit. If this step changes the system, update `.claude/OBJECTIVE_CONTRACT.md` "
-                "with current_phase, last_proof, next_step, and review_outcome."
+                "with current_phase, last_proof, next_step, and review_outcome. If the step reveals a repeated gap, "
+                "load the workflow, skill, or hook detectors instead of leaving it as a manual reminder."
             )
         return (
             "This shell step can change the system. Before continuing, make sure you have chosen the workflow, stated "
-            "the objective and done contract, and decided whether `.claude/OBJECTIVE_CONTRACT.md` should be active."
+            "the objective and done contract, and decided whether `.claude/OBJECTIVE_CONTRACT.md` should be active. "
+            "For meaningful work, load `prompt-upgrade-engineer`, `vibe-coding-operator`, and "
+            "`objective-orchestration-loop` first."
         )
 
     if has_active_contract:
         return (
             "A meaningful objective is active. Before this file change, keep the current slice tied to the real end "
-            "objective and remember to update proof, dependent surfaces, and review state after the change."
+            "objective and remember to update proof, dependent surfaces, and review state after the change. If this "
+            "edit exposes a repeated pattern, load the detector skills before you close the slice."
         )
 
     return (
         "This file change may be meaningful work. Before continuing, make sure you have chosen the workflow, stated "
-        "the objective and done contract, and activated `.claude/OBJECTIVE_CONTRACT.md` if this is more than a tiny fix."
+        "the objective and done contract, and activated `.claude/OBJECTIVE_CONTRACT.md` if this is more than a tiny "
+        "fix. For meaningful work, use the starter stack: `prompt-upgrade-engineer`, "
+        "`sal-communication-contract`, `vibe-coding-operator`, and `objective-orchestration-loop`."
     )
 
 
@@ -92,17 +167,13 @@ def main() -> int:
                 print(json.dumps(out))
                 return 0
 
-    log_receipt(
-        "PreToolUse",
-        "activated",
-        trigger=tool_name.lower(),
-        notes=f"Pre-tool guard ran for {tool_name}.",
-    )
+    trigger = classify_trigger(tool_name, payload, is_active)
+    log_receipt("PreToolUse", "activated", trigger=trigger, notes=f"Pre-tool guard ran for {tool_name}.")
 
     out = {
         "hookSpecificOutput": {
             "hookEventName": "PreToolUse",
-            "additionalContext": build_context(tool_name, is_active),
+            "additionalContext": build_context(tool_name, is_active, trigger),
         }
     }
     print(json.dumps(out))

@@ -26,6 +26,7 @@ Create or update a reusable artifact when any of these are true:
 5. a rule is important enough that forgetting it would create real damage
 6. Sal has to repeatedly correct how the agent explains work, proof, or next steps
 7. control-layer edits or compaction mistakes keep requiring the same reminder
+8. `PreToolUse`, `SubagentStop`, `PostToolUse`, or `Stop` exposed the same missing skill again
 
 ## Read First
 
@@ -78,3 +79,4 @@ For each captured pattern, leave behind:
 5. what future sessions should do differently
 6. whether the pattern should be shared cross-platform
 7. how the resulting skill should visibly change the user-facing answer
+8. whether the global registry docs also need an update

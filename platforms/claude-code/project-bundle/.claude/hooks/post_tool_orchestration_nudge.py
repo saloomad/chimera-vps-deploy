@@ -8,6 +8,24 @@ from receipt_logger import log_receipt
 
 PROJECT_DIR = Path(__file__).resolve().parents[2]
 CONTRACT_PATH = PROJECT_DIR / ".claude" / "OBJECTIVE_CONTRACT.md"
+CONTROL_LAYER_MARKERS = [
+    "agents.md",
+    "claude.md",
+    "opencode.json",
+    ".opencode",
+    ".claude/hooks",
+    "\\skills\\",
+    "/skills/",
+    "\\workflows\\",
+    "/workflows/",
+]
+
+
+def payload_text(payload: dict) -> str:
+    try:
+        return json.dumps(payload.get("tool_input", {}), ensure_ascii=False).lower()
+    except Exception:
+        return str(payload.get("tool_input", "")).lower()
 
 
 def contract_active() -> bool:
@@ -27,20 +45,30 @@ def main() -> int:
         return 0
 
     tool_name = str(payload.get("tool_name", ""))
+    trigger = "control_layer_followup" if any(marker in payload_text(payload) for marker in CONTROL_LAYER_MARKERS) else tool_name.lower()
     log_receipt(
         "PostToolUse",
         "activated",
-        trigger=tool_name.lower(),
+        trigger=trigger,
         notes="Post-tool proof reminder ran while an objective contract was active.",
     )
+
+    extra = ""
+    if trigger == "control_layer_followup":
+        extra = (
+            " Because this touched the control layer, also review whether the workflow catalog, enforcement inventory, "
+            "platform registry, or shared mirrors need updates, and whether a detector or learning skill should run."
+        )
 
     out = {
         "hookSpecificOutput": {
             "hookEventName": "PostToolUse",
             "additionalContext": (
                 "An active objective contract exists. After this tool step, update `.claude/OBJECTIVE_CONTRACT.md` "
-                "with current_slice, last_proof, current_phase, next_step, and review_outcome. "
-                "Make test or proof explicit if the tool changed the system."
+                "with current_slice, last_proof, current_phase, next_step, review_outcome, unapproved_items, and "
+                "remaining_work. Keep unapproved_items and remaining_work as short aggregated lists with plain-English "
+                "descriptions, and carry them into the next meaningful reply. Make test or proof explicit if the tool "
+                "changed the system." + extra
             ),
         }
     }

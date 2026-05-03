@@ -13,11 +13,13 @@ Before answering any meaningful request:
 - say what the current bounded slice is
 - say what the done contract is
 - say which phase you are in: plan, execute, test or proof, review, or mixed
+- include one short carry-forward block with objective status, unapproved items, and remaining work
+- when items are open, give each one a brief plain-English description of what it is and why it still matters
 
 If the task is multi-step or needs follow-through:
 - create or update `.claude/OBJECTIVE_CONTRACT.md`
 - set `status: active`
-- keep `current_phase`, `last_proof`, `next_step`, and `review_outcome` current
+- keep `current_phase`, `last_proof`, `next_step`, `review_outcome`, `unapproved_items`, and `remaining_work` current
 - use `complete` only when the ultimate objective is done
 - if a slice lands but the larger mission remains open, record `iterate`
 - iterate until the ultimate objective is complete or blocked
