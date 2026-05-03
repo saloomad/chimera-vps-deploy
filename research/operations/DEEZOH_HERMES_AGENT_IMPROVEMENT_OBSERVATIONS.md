@@ -3016,3 +3016,181 @@ Each hourly run must include:
 - `Q-2026-05-03-51` Keep watchlist fallback urgency capped below execution language and require chart/indicator/risk-reward/trigger confirmation before promotion. Status: done.
 - `Q-2026-05-03-52` Add Deezoh direct-observation canonical workflow/wait contract to the main OpenClaw injected workspace instructions, not only Deezoh-specific heartbeat files. Status: done.
 - `Q-2026-05-03-53` Decide whether the old metrics CSV producer should be restored or formally replaced by the newer scanner/report stack. Status: queued.
+
+## 2026-05-03 Automation Run Fresh Deezoh Suite And Smoke Harness Repair
+
+- Heartbeat: `openclaw-deezoh-hermes-agent-improvement-loop`
+- Objective: run a fresh live Deezoh observation suite plus screener and macro workflow audits, verify Hermes state, and land any safe bounded fix exposed by the run.
+
+### What Ran
+
+- Re-read bootstrap truth, the latest Deezoh handoff, and the shared observation ledger.
+- Re-verified live VPS reachability and current report freshness under `/root/openclawtrading/reports/auto`.
+- Ran four fresh live Deezoh observation prompts through `openclaw agent --agent main --thinking low --json`:
+  - `deezoh-observe-breakout-v8`
+  - `deezoh-observe-consolidation-v7`
+  - `deezoh-observe-news-v8`
+  - `deezoh-observe-liquidity-trap-v6`
+- Ran fresh workflow-family audits:
+  - `screener-workflow-audit-v4`
+  - `macro-workflow-audit-v5`
+- Re-checked live Hermes traces:
+  - `HERMES_DECISION_TRACE.json`
+  - `HERMES_LANE_THESIS.json`
+- Reproduced the live smoke-harness failure by running `python3 scripts/tests_deezoh_observation_suite_smoke.py` from `/root/openclawtrading`.
+- Patched the Deezoh smoke harness import path so it works whether `deezoh_question_engine` is loaded as `scripts.deezoh_question_engine` or as a top-level module:
+  - `C:\Users\becke\claudecowork\scripts\tests\deezoh_observation_suite_smoke.py`
+  - synced to `/root/openclawtrading/scripts/tests_deezoh_observation_suite_smoke.py`
+- Re-ran the smoke harness locally and live from the VPS repo root after the patch.
+
+### Issues Captured
+
+- Issue `DHI-084`
+  Raw event: `cd /root/openclawtrading && python3 scripts/tests_deezoh_observation_suite_smoke.py` failed with `ModuleNotFoundError: No module named 'scripts'`.
+  What happened: the live smoke harness only imported `from scripts.deezoh_question_engine import build_thought_bundle`, which breaks when the repo is executed from a layout where `scripts/` is already on `sys.path`.
+  Why it matters: the bounded Deezoh regression suite could not be run from the live VPS repo root, so a useful safety check was failing before any behavioral assertions ran.
+  Recurrence: reproduced in this automation run on 2026-05-03.
+  Affected agent/workflow/data source/timeframe: Deezoh question-engine smoke verification, live VPS repo-root execution path.
+  Proposed fix: keep the existing package import, then fall back to direct module import when `scripts` is not a package import target.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: local and live `deezoh_observation_suite_smoke` both pass when run directly.
+  Status: `fixed and verified`
+
+- Issue `DHI-085`
+  Raw event: fresh Deezoh direct-observation runs still answered `actually_spawned: none` while also claiming broad report reads or extra live market context such as live exchange data, L/S ratio history, and OI history.
+  What happened: the live replies were directionally better than earlier runs, but provenance is still not machine-verifiable inside the direct observation path. The desk can sound more certain than the visible specialist/run proof actually supports.
+  Why it matters: this is exactly the unsafe edge for Sal-facing chart reads. A reply that sounds like a verified specialist pass without a visible spawn or structured report-dependency receipt is hard to trust and hard to monitor.
+  Recurrence: reproduced across `deezoh-observe-breakout-v8`, `deezoh-observe-news-v8`, and `deezoh-observe-liquidity-trap-v6`.
+  Affected agent/workflow/data source/timeframe: Deezoh direct observation, specialist provenance, chart-side and derivatives-side confidence language.
+  Proposed fix: add a structured provenance contract for direct observation replies so they must name either actual spawned specialists or exact report/tool dependencies in a machine-readable form, and forbid unproved “live exchange data” claims when the visible path only used reports.
+  Owner: `architect-codex + codex-main-thread`
+  Risk: `medium`
+  Approval needed: `no`
+  Proof test: a rerun should either show real spawned specialists or a strict report-only provenance list that matches the visible tool path.
+  Status: `queued`
+
+### Proved
+
+- Fresh Deezoh observation outputs stayed structurally conservative:
+  - breakout: `selected_workflow = breakout_acceptance`, `winner = no_trade`, `typed_wait = WAIT_ACCEPTANCE`
+  - consolidation: `selected_workflow = consolidation_resolution`, `winner = best_no_trade`, `typed_wait = WAIT_ACCEPTANCE`
+  - news: `selected_workflow = news_event_control`, `winner = no_trade`, `typed_wait = WAIT_ACCEPTANCE`
+  - failed-breakout/liquidity-trap: `selected_workflow = failed_breakout_reversal`, `winner = no_trade`, `typed_wait = WAIT_TRIGGER`
+- Screener workflow-family audit still routes correctly:
+  - accumulation -> `accumulation_hunt`
+  - continuation -> `trend_continuation_hunt`
+  - post-news rotation -> `post_news_rotation_hunt`
+  - failed-breakout short -> `failed_breakout_short_hunt`
+  - range rotation -> `range_rotation_hunt`
+  - stale/contradictory inputs -> `no_trade_protection`
+- Macro workflow-family audit still routes correctly:
+  - pre-event control -> `pre_event_risk_control`
+  - post-event digest -> `post_event_digest`
+  - cross-asset divergence -> `cross_asset_divergence`
+  - unusual-behavior precedent capture -> `unusual_behavior_precedent`
+  - degraded or missing inputs -> `data_degraded_macro`
+- Hermes stayed paper-safe:
+  - `HERMES_DECISION_TRACE.json status = ready`
+  - `HERMES_LANE_THESIS.json status = ready`
+  - both stayed `decision = no_trade`
+  - `evidence_pack_id = 2654c8dbc1eb5354`
+- The smoke harness fix worked:
+  - local `python C:\Users\becke\claudecowork\scripts\tests\deezoh_observation_suite_smoke.py` passed
+  - live `cd /root/openclawtrading && python3 scripts/tests_deezoh_observation_suite_smoke.py` passed
+
+### Remaining Issues
+
+- TradingView visual chart confirmation is still blocked at CDP target exposure, so direct observation remains chart-fallback-first instead of visually specialist-verified.
+- Deezoh direct observation still lacks machine-verifiable specialist provenance even when the answer sounds stronger than a report-only read.
+- Hermes is still safe, but the live Hermes traces used in this pass were about one hour old rather than same-minute fresh.
+- The watchlist fallback is improved but still `PARTIAL` until the old metrics CSV lane is intentionally restored or retired.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-54` Keep the Deezoh smoke harness import-robust across both package and repo-root execution layouts. Status: done.
+- `Q-2026-05-03-55` Add a machine-readable provenance contract to direct observation replies so “actually_spawned” and “actually_read” can be trusted automatically. Status: queued.
+- `Q-2026-05-03-56` Re-run Hermes with a same-cycle refresh when the next pass needs stronger live freshness proof instead of relying on hour-old ready/no-trade traces. Status: queued.
+
+## 2026-05-03 Derivatives Brief And Deezoh Consumption Repair
+
+- Heartbeat: `deezoh-15-minute-observation-loop`
+- Objective: re-test Deezoh as if Sal is reading the chart desk, then fix the next blocker that weakens pushback, no-trade quality, or evidence-aware questioning.
+
+### What Ran
+
+- Checked fresh live `/root/openclawtrading/reports/auto/DERIVATIVES.json`.
+- Confirmed derivatives were present but `data_quality = PARTIAL` and `status = degraded_fallback`.
+- Found `MARKET_CONDITIONS.json`, `LIQUIDATION_SUMMARY.json`, and `MAXPAIN_SUMMARY.json` were still missing.
+- Patched the derivatives brief funding threshold so raw funding decimals are interpreted correctly.
+- Added a derivatives brief smoke test.
+- Found a second consumer bug: `build_deezoh_thoughts.py` was passing only `DERIVATIVES.market` into Deezoh, which dropped `_brief`, `coins`, data quality, and source provenance.
+- Patched Deezoh's question engine to expose derivatives data quality, source/status, top funding extremes, OI groups, missing exact liquidity fields, focus-symbol derivatives, and a pressure-only warning.
+- Re-ran the full live desk observability chain after syncing the bounded fixes to `/root/openclawtrading`.
+
+### Issues Captured
+
+- Issue `DHI-086`
+  Raw event: live `DERIVATIVES.json` had Binance fallback funding data, but `_brief.extreme_funding` could stay empty because the threshold compared raw decimal funding to `0.015` instead of `0.00015`.
+  What happened: a 0.015% threshold was coded as 1.5% in raw decimal units.
+  Why it matters: Deezoh could miss useful funding-pressure evidence and ask weaker follow-up questions even though fallback derivatives data existed.
+  Recurrence: observed during the 2026-05-03 heartbeat pass after the derivatives fallback lane started producing 30+ coins.
+  Affected agent/workflow/data source/timeframe: derivatives fetcher, Deezoh market-maker evidence, funding/OI fallback context, multi-timeframe desk cycle.
+  Proposed fix: define explicit raw-decimal and percent-unit constants, then test that 0.015% funding appears in the brief while stronger funding appears in top-level signals.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: `python scripts/tests/derivatives_brief_smoke.py`.
+  Status: `fixed and verified`
+
+- Issue `DHI-087`
+  Raw event: `build_deezoh_thoughts.py` passed only `DERIVATIVES.market` into Deezoh when that key existed.
+  What happened: the fixed derivatives `_brief` was generated but Deezoh did not receive it, so the coach could not cite the funding/OI context or mark it pressure-only.
+  Why it matters: the system looked improved at the producer layer while the decision layer remained blind to the exact evidence Sal needed explained.
+  Recurrence: reproduced in this heartbeat pass by comparing live `DERIVATIVES.json` with live `DEEZOH_THOUGHTS.json`.
+  Affected agent/workflow/data source/timeframe: `build_deezoh_thoughts.py`, `deezoh_question_engine.py`, Deezoh no-trade reasoning, derivatives fallback source.
+  Proposed fix: pass the full `DERIVATIVES.json` object into Deezoh and extract a compact derivatives evidence view with pressure-only warnings.
+  Owner: `codex-main-thread`
+  Risk: `low`
+  Approval needed: `no`
+  Proof test: `python scripts/tests/deezoh_derivatives_context_smoke.py` and live desk chain replay.
+  Status: `fixed and verified`
+
+### Proved
+
+- Local tests passed:
+  - `deezoh_derivatives_context_smoke`
+  - `derivatives_brief_smoke`
+  - `deezoh_observation_suite_smoke`
+  - `workflow_contract_surfaces_smoke`
+  - `learning_runtime_bridge_smoke`
+  - `watchlist_generator_fallback_smoke`
+  - `learning_feedback_loop_smoke`
+  - `hermes_dual_lane_contract_smoke`
+- Live `/root/openclawtrading/reports/auto/DERIVATIVES.json` after patch:
+  - `status = degraded_fallback`
+  - `data_quality = PARTIAL`
+  - `coins_count = 33`
+  - `_brief.extreme_funding_count = 6`
+  - signal included `FUNDING_EXTREME: KNC (-1.858%), ORCA (-0.060%)`
+- Live `/root/openclawtrading/reports/auto/DEEZOH_THOUGHTS.json` after the full desk chain:
+  - `selected_workflow = accumulation_hunt`
+  - `winner = no_trade`
+  - `typed_wait = WAIT_TRIGGER`
+  - derivatives evidence now includes `data_quality = PARTIAL`, `pressure_only = true`, funding signals, and missing exact fields `liquidation_hotspots` plus `long_short_skew`
+  - best no-trade case now includes: `Derivatives are pressure/proxy evidence only, not exact liquidation or long-short proof.`
+  - `EXECUTION_REPORT.json entries_opened = []`
+
+### Remaining Issues
+
+- TradingView visual chart confirmation remains blocked by CDP target exposure.
+- Derivatives are improved but still fallback-only until exact liquidation and long/short skew sources are restored.
+- `MARKET_CONDITIONS.json`, `LIQUIDATION_SUMMARY.json`, and `MAXPAIN_SUMMARY.json` are still missing in the live auto report directory.
+- Direct observation still needs the machine-readable provenance contract from `DHI-085`.
+
+### Optimization Queue Updates
+
+- `Q-2026-05-03-57` Keep derivatives fallback pressure visible in Deezoh while labeling it as partial/proxy, not entry confirmation. Status: done.
+- `Q-2026-05-03-58` Restore or replace exact liquidity sources for liquidation hotspots, long/short skew, and max-pain context. Status: queued.
+- `Q-2026-05-03-59` Add direct-observation provenance enforcement so claims of reads/spawns match machine-verifiable evidence. Status: queued.
