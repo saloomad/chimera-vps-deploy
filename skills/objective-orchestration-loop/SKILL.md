@@ -13,6 +13,7 @@ The model should always do a fast orchestration precheck, then say plainly:
 - which orchestration class fits
 - why that route fits better than the main alternatives
 - what the done contract is
+- what open approvals and remaining work are still being carried forward
 
 Do not silently skip this thinking for meaningful work.
 Do not pretend a full loop ran when the direct route was the right choice.
@@ -81,6 +82,7 @@ Before every non-trivial reply, decide one of these orchestration decisions:
 5. `always-on pipeline`
    - recurring monitor or runtime loop
    - use the platform-native scheduler, flow, or runtime automation when available
+   - if runtime ownership is unclear, consult `pipeline-enforcement-detector`
 
 The model should choose the lightest route that is still honest and sufficient.
 
@@ -107,6 +109,108 @@ When these cues appear:
 - classify the orchestration shape before doing more work
 - write or restate the done contract
 - decide whether a continuation path is required on the current platform
+- if the user also wants stronger enforcement, route to `hook-opportunity-detector` or `pipeline-enforcement-detector`
+
+## Continuation Ownership Rule
+
+When the work needs more than one pass, the orchestration layer must decide who owns continuation:
+
+1. same-thread heartbeat
+2. Codex cron automation
+3. platform-native scheduler
+4. no automation at all
+
+Pick the lightest owner that can honestly finish the job.
+
+- use a thread heartbeat for current-thread follow-through
+- use a Codex automation for local recurring audits, reminders, and bounded executors
+- use the platform scheduler when the real runtime owner is Linux cron, Windows Scheduled Tasks, or another always-on system
+
+Do not keep a Codex heartbeat alive forever just because it already exists.
+
+## Automation Prompt Contract
+
+If orchestration chooses an automation or recurring loop, the prompt must name:
+
+- `ultimate objective`
+- `current run mission`
+- `evidence first`
+- `resume from previous result`
+- `allowed actions`
+- `drift guard`
+- `host unavailable rule`
+- `review outcome rule`
+- `output contract`
+
+The automation must continue from the last unresolved blocker or proof gap before widening scope.
+
+## Previous-Stage Resume Rule
+
+Recurring work must not start each wake as if it is the first run.
+
+Use file-backed state in this order:
+
+1. last automation output or status file
+2. latest handoff or observation ledger
+3. current PM or task surface
+4. fresh proof from this run
+
+If those disagree:
+
+- prefer fresh proof over older summaries
+- say what changed
+- keep the original objective unless the user explicitly replaced it
+
+## Drift And Objective-Loss Guard
+
+The automation or recurring loop may discover the next slice only when it still serves the same `ultimate_objective`.
+
+Allowed:
+
+- next missing proof
+- next unresolved blocker
+- next safe bounded fix
+- next missing owner or receiver
+
+Not allowed:
+
+- starting a different project because the current one slowed down
+- promoting a side observation into the new main goal
+- calling the whole objective complete because one slice landed
+
+If no meaningful progress was possible this run:
+
+- record why
+- preserve the objective
+- decide `iterate` or `blocked` honestly
+
+## Host-Unavailable Rule
+
+When recurring work depends on a local machine or remote reachability:
+
+- separate `host unavailable` from `system unhealthy`
+- a missing local run can mean the PC was off or asleep
+- a wrapper or SSH timeout can coexist with fresh remote artifacts
+- do not claim everything is broken without independent evidence
+
+If reachability is the only problem, say that plainly and avoid wider failure claims.
+
+## Enforcement Decision Rule
+
+If the objective includes words like:
+
+- `enforce`
+- `auto trigger`
+- `hook`
+- `workflow owner`
+- `pipeline`
+- `prove what fired`
+
+then also consult:
+
+- `C:\Users\becke\.codex\skills\hook-opportunity-detector\SKILL.md`
+- `C:\Users\becke\.codex\skills\pipeline-enforcement-detector\SKILL.md`
+- `C:\Users\becke\claudecowork\workflows\codex\platform-enforcement-selection-and-receipt-loop.md`
 
 ## First Decision: Pick The Right Orchestration Class
 
@@ -146,6 +250,8 @@ Use this visible structure in the reasoning and, when helpful, in the user-facin
 - `reason_for_route`
 - `objective`
 - `done_contract`
+- `unapproved_items`
+- `remaining_work`
 - `dimensions` when the work truly has several separable dimensions
 - `current_phase`
 - `next_step`
@@ -177,6 +283,8 @@ Every meaningful pass should be able to restate the current state in this shape:
 - `chosen_path`
 - `current_phase`
 - `current_reality`
+- `unapproved_items`
+- `remaining_work`
 - `objective_done_criteria`
 - `slice_done_criteria`
 - `last_proof`
@@ -207,6 +315,35 @@ For multi-pass bounded builds and deep research swarms:
 For direct tasks:
 
 - the contract can stay in-chat only
+
+## Carry-Forward Enforcement
+
+On meaningful replies, the orchestration layer must keep a short carry-forward status block visible to the user.
+
+That block must cover:
+
+- `objective status`
+  - `ultimate_objective`
+  - `current_slice`
+  - whether the broader objective is still open
+- `unapproved or decision-needed items`
+  - anything still waiting for approval, ranking, or confirmation
+  - if none, say `none`
+- `remaining project work`
+  - the meaningful tasks still left before the broader objective is done
+  - if none, say `none`
+
+Formatting rule:
+
+- aggregate the carry-forward items in one short block
+- accumulate still-relevant open items from prior conversations when they belong to the same project objective; do not limit the block to the current thread only
+- organize the block by project objective when more than one objective is still open
+- for each open item, include a brief plain-English description
+- say why it is still open or why it still matters
+
+Do not let those items disappear just because the thread temporarily shifted to a side topic.
+Do not pull in unrelated older work.
+If a slice finished but the larger objective is still open, the carry-forward block must still show the unresolved work.
 
 ## Mandatory Phases
 
