@@ -40,6 +40,19 @@ For meaningful replies, use `sal-communication-contract` so visual or workflow u
 
 For any meaningful create, build, fix, refactor, workflow change, skill change, or automation change, also use the shared change lifecycle workflow and the platform hooks matrix.
 
+## Task-Switch Gate Reality
+
+This platform does not currently have a separately versioned native hook or command bundle in this repo that can hard-deny a new task the way Claude Code or OpenClaw can.
+
+So the strongest truthful rule here is:
+
+1. treat `github-coordination-gate`, `task-transition-publish`, `platform-live-repo-router`, and `task-change-readiness-gate` as mandatory
+2. before leaving one meaningful task for another, run the shared guard from the Windows workspace:
+   - `python C:\Users\becke\claudecowork\chimera-vps-deploy\scripts\github_coordination_guard.py validate-platform --coordination-root C:\Users\becke\claudecowork\chimera-vps-deploy --platform opencode`
+3. if that guard fails, do not move on
+
+Be honest that this is a wrapper rule, not a separately proven native Space Agent hard-stop API.
+
 ## Continuity rule
 
 If a Space Agent session learns something durable:

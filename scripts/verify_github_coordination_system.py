@@ -50,6 +50,7 @@ PLATFORM_KEYWORDS = {
     ROOT / "platforms" / "opencode" / "CHIMERA_BOOTSTRAP.md": ["github-coordination-gate", "platform-live-repo-router"],
     ROOT / "platforms" / "space-agent" / "AGENTS.md": ["github-coordination-gate", "task-change-readiness-gate"],
     ROOT / "platforms" / "opencowork" / "local-bundle" / "chimera-enforcement-bundle" / "README.md": ["github-coordination-gate", "task-change-readiness-gate"],
+    ROOT / "platforms" / "opencode" / "project-bundle" / "README.md": ["validate_task_transition.ps1", "objective-start"],
 }
 VPS_RUNTIME_KEYWORDS = {
     "/root/.openclaw/workspace/AGENTS.md": ["github-coordination-gate", "task-change-readiness-gate", "/root/chimera-deploy"],
@@ -115,6 +116,19 @@ def skill_checks() -> list[dict[str, object]]:
 
 def doc_checks() -> list[dict[str, object]]:
     return [{"path": str(path), "ok": path.exists()} for path in REQUIRED_DOCS]
+
+
+def wrapper_checks() -> list[dict[str, object]]:
+    targets = [
+        ROOT / "platforms" / "claude-code" / "project-bundle" / ".claude" / "hooks" / "user_prompt_orchestration_gate.py",
+        ROOT / "platforms" / "opencode" / "project-bundle" / "scripts" / "validate_task_transition.ps1",
+        ROOT / "platforms" / "opencode" / "project-bundle" / ".opencode" / "commands" / "objective-start.md",
+        ROOT / "platforms" / "space-agent" / "AGENTS.md",
+    ]
+    results = []
+    for path in targets:
+        results.append({"path": str(path), "ok": path.exists()})
+    return results
 
 
 def registry_checks() -> list[dict[str, object]]:
@@ -233,6 +247,7 @@ def main() -> int:
         "skills": skill_checks(),
         "docs": doc_checks(),
         "registry": registry_checks(),
+        "wrappers": wrapper_checks(),
         "platform_files": platform_file_checks(),
         "local_skill_mirrors": local_skill_mirror_checks(),
         "vps_skill_mirrors": vps_skill_checks(),

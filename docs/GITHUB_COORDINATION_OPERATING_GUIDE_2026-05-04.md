@@ -95,6 +95,15 @@ Minimum proof:
 - shared skills
 - platform bootstraps
 
+### Current stronger wrappers beyond docs
+
+- Claude Code:
+  native `UserPromptSubmit` hook can now deny a new meaningful task when `windows-claude` shared coordination state is stale
+- OpenCode:
+  stronger objective-start wrapper now requires the shared task-transition validator before a new meaningful task should begin
+- Space Agent:
+  still wrapper-only from the versioned surfaces we have; no separately proven native hard-stop API is available in this repo
+
 ## Shared Skills
 
 All platforms should read:

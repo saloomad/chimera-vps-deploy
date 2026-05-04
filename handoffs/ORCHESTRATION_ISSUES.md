@@ -57,3 +57,31 @@ Each issue should capture:
 - `next_fix`: run future scenario tests where one strong slice lands inside a broader build-and-iterate request, and verify the system keeps the larger objective open
 - `prevention_change`: added an objective hierarchy rule, updated the state contract and review semantics, and tightened heartbeat stop language around the real objective
 - `status`: fixed in instruction layer, real-session validation next
+
+## 2026-05-04 - First-Blocker Stop Instead Of Recovery Branch Orchestration
+
+- `date`: 2026-05-04
+- `issue`: orchestration stopped at the first runtime blocker instead of exhausting safe recovery branches
+- `symptom`: the run surfaced `bgc missing` and stale-path failures as if they were end-state blockers instead of continuing through host checks, install, fallback, and path repair
+- `root_cause`: the orchestration workflow did not force a strong enough recovery tree for dependency, import, or wrong-call-shape failures
+- `missed_trigger_or_wrong_rule`: missing explicit `if dependency missing -> verify host-specificity -> check sibling runtime -> install if safe -> patch fallback -> retest` behavior
+- `impact`: the user had to manually push the run to continue doing obvious repair work that should have happened automatically under orchestration
+- `proof`: the same session then repaired `scripts/bitget_technical_analysis.py` with dynamic skill-path resolution and direct Bitget REST fallback, installed `bgc` on Windows, proved VPS `bgc` already existed, re-ran the script successfully on Windows and on `/root/.openclaw/workspace`, and corrected the `tvremix` structure-call misunderstanding by switching from `timeframe` to the documented `interval` parameter
+- `owner`: `architect-codex`
+- `next_fix`: add blocker-recovery branches to the orchestration workflow and mirror the lesson into the source-truth docs that relied on the bad stop
+- `prevention_change`: orchestration now requires dependency-path-doc-check recovery passes before a run can honestly call a blocker exhausted
+- `status`: fixed in workflow and truth surfaces, needs future-session regression proof
+
+## 2026-05-04 - Heartbeat Stopped While Broader Objective Was Still Open
+
+- `date`: 2026-05-04
+- `issue`: a thread heartbeat was stopped after one strong slice landed even though the broader GitHub coordination objective still had open implementation work
+- `symptom`: the run correctly finished the architecture and first proof slice, but incorrectly deleted the continuation heartbeat while Linux auto-pull and weaker-platform hardening were still open
+- `root_cause`: I treated "remaining work is now a separate blocker/follow-up" as if that meant the guarded objective was resolved, instead of checking whether the user's stated broader objective had actually reached `complete` or `blocked`
+- `missed_trigger_or_wrong_rule`: the real rule is "do not stop the heartbeat until the broader objective is complete or blocked," not "stop it when one phase becomes well-understood"
+- `impact`: the user had to reopen the same objective manually, and it weakened trust in the orchestration guard
+- `proof`: the heartbeat was recreated, the Linux GitHub auth/pull path was finished on the VPS, the Claude Code task-switch hook was hardened to deny stale transitions, the OpenCode wrapper was strengthened, and the broader coordination objective continued instead of being left in a false-done state
+- `owner`: `architect-codex`
+- `next_fix`: keep a stronger objective-vs-slice check in closeout review and add a durable note to the next checkpoint whenever a heartbeat is intentionally stopped while related work remains
+- `prevention_change`: future closeout on this objective must explicitly state whether the remaining work is still part of the same broader objective before deleting the heartbeat
+- `status`: fixed in this run, future-session regression proof still needed
