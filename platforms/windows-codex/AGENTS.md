@@ -180,6 +180,9 @@ For any meaningful create, build, fix, refactor, workflow change, skill change, 
 
 For meaningful replies, also use `sal-communication-contract`.
 
+Treat it as mandatory by default on every meaningful reply, not as an optional polish step.
+Only skip it for a tiny one-line mechanical answer.
+
 That means the answer should usually make these things clear:
 
 - what we are working on
