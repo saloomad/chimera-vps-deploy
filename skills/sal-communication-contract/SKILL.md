@@ -23,6 +23,7 @@ The agent should:
 - explain what has already been done
 - explain what is being done now
 - explain what is left
+- assume Sal may not remember prior tracker codes, file names, or project shorthand unless the current answer reintroduces them in plain English
 - define technical terms the first time they matter
 - explain what a file, branch, commit, workflow, or report actually means
 - end with a short conclusion and next step
@@ -34,6 +35,12 @@ Treat this skill as mandatory by default, not optional.
 If the reply involves progress, proof, GitHub, workflow, planning, debugging, tradeoffs, or next steps, this skill should already be active.
 
 If Sal recently complained that the explanation was confusing, do not fall back to shorthand later in the same objective.
+
+If Sal complained that tracker IDs, file dumps, or shorthand were confusing:
+
+- do not lead with task IDs, project IDs, branch names, or filenames
+- restate the human meaning first
+- only mention the code or file name after the plain-English explanation, and only if it still helps
 
 ## Required Reply Shape
 
@@ -50,6 +57,9 @@ For meaningful work, the user-facing reply should normally cover these pieces in
 
 The exact headers can vary, but the structure must still be there.
 
+Do not assume Sal remembers the last reply.
+Reintroduce the human meaning of the current work before relying on earlier labels.
+
 ## Teaching Rule
 
 If you use a technical term that Sal may not know, define it in the same answer.
@@ -64,6 +74,17 @@ Use short definitions like:
 - `PM`: project management, meaning the files that track what work exists, who owns it, and what is done
 
 Do not stack jargon without translation.
+
+Also treat internal tracker shorthand as jargon.
+
+This includes:
+
+- task IDs like `T-238`
+- project IDs like `P-006`
+- GitHub labels like `PR #2`
+- internal names like `GL-002`
+
+If one of these appears, immediately translate it into plain English.
 
 ## Proof Translation Rule
 
@@ -81,6 +102,12 @@ Good:
 - `OBJECTIVE_PLAN_TEMPLATE.md`: the template for tracking the goal, current phase, proof, and next step during multi-step work
 - `pm-front-door-reconciliation-loop.md`: the checklist for fixing project-tracking drift so the top-level status files stay trustworthy
 
+If you mention a file that was edited, also say:
+
+- what kind of file it is
+- why that file matters
+- what changed inside it
+
 ## Frustration Rule
 
 If Sal is frustrated about explanation quality:
@@ -93,14 +120,23 @@ If Sal is frustrated about explanation quality:
 
 Treat frustration about jargon, missing context, or artifact dumping as a real signal, not a tone problem.
 
+If Sal has already complained about shorthand in the current objective:
+
+- slow down
+- assume Sal may have forgotten the earlier context
+- restate the plain-English meaning instead of saying only the tracker code or filename
+
 ## Do Not Do This
 
 - do not assume Sal knows Git or workflow terms
+- do not assume Sal remembers task numbers, project numbers, or file names from earlier turns
 - do not answer with only filenames, commits, or branch names
+- do not answer with only task IDs, project IDs, pull request numbers, or internal labels
 - do not make Sal open files just to understand the result
 - do not give proof without translation
 - do not end without a clear conclusion
 - do not explain only what changed technically; explain what it means practically
+- do not dump a list of edited files without saying what each one is and why it changed
 
 ## Success Condition
 
