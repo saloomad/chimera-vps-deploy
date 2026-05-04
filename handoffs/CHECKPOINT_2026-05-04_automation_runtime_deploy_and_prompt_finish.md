@@ -28,6 +28,7 @@ Finish the remaining automation-orchestration work by deciding the live runtime 
   - `openclaw-next-actions-brief`
 - [x] Changed `openclaw-next-actions-brief` from `gpt-5.2` to `gpt-5.4` with reasoning `medium`.
 - [x] Synced both automation changes through the automation app layer and re-validated TOML parsing.
+- [x] Committed and pushed the selected shared repo skill and handoff files to `saloomad/chimera-vps-deploy` at `99a9866`.
 - [x] Deployed `automation-platform-operator` to:
   - `/root/openclawtrading/skills/automation-platform-operator`
   - `/root/.openclaw/kimi-skills/automation-platform-operator`
@@ -35,10 +36,11 @@ Finish the remaining automation-orchestration work by deciding the live runtime 
 
 ## Partially Done
 - [~] The new runtime skill is now present and wired through the live extra skill directory, but this pass did not run a real OpenClaw agent conversation that proves auto-triggered use in practice.
+- [~] The live VPS shared repo at `/root/chimera-deploy` was fetched but could not fast-forward pull because that worktree is dirty with tracked local modifications and untracked GitHub-coordination files.
 
 ## Not Done
 - [ ] Decide whether `automation-design-best-practices` should also be added to the live VPS runtime skill dir or remain a Codex/Windows and shared-mirror-only design surface.
-- [ ] Commit and push the specific shared repo changes if they are not yet published.
+- [ ] Clean or reconcile the dirty `/root/chimera-deploy` worktree before trying to pull the newly pushed shared repo changes there.
 
 ## Decisions Made
 - **Decision**: deploy only `automation-platform-operator` to the live OpenClaw runtime load path for now | **Why**: it is the narrow, low-blast-radius scheduler chooser the runtime most directly needs; `objective-orchestration-loop` is broader and higher-impact.
@@ -59,8 +61,9 @@ Finish the remaining automation-orchestration work by deciding the live runtime 
 
 ## Sync Status
 - **GitHub status**: not checked yet in this handoff
+- **GitHub status**: selected shared repo changes pushed to `origin/main` at `99a9866`
 - **Other platforms that should pull this**: Windows Claude, future Windows Codex threads, live Kimi VPS follow-up sessions
-- **What still needs sync**: publish the selected shared repo files if not yet pushed
+- **What still needs sync**: reconcile the dirty `/root/chimera-deploy` worktree if that mirror must match `origin/main` immediately
 
 ## Routing Used
 - **Task lane**: mixed
@@ -71,6 +74,6 @@ Finish the remaining automation-orchestration work by deciding the live runtime 
 - **Better route next time**: after deploying a live runtime skill, add one bounded real-session proof so `wired` can be distinguished from `used` immediately
 
 ## Next Actions (for next agent)
-1. **[HIGH]** Commit and push the selected `chimera-vps-deploy` skill and handoff files if they have not been published yet.
+1. **[HIGH]** Reconcile the dirty `/root/chimera-deploy` worktree so the shared VPS repo can pull `99a9866` cleanly without overwriting local GitHub-coordination changes.
 2. **[HIGH]** Run one bounded OpenClaw session that should naturally benefit from `automation-platform-operator` and record whether the runtime only has `present + wired` proof or also `used` proof.
 3. **[MEDIUM]** Decide whether `automation-design-best-practices` belongs in the live runtime extra skill dir too, or whether keeping it out reduces unnecessary behavior surface.
