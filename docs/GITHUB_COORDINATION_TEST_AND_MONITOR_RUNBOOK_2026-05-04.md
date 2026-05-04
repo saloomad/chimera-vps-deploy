@@ -48,6 +48,23 @@ Expected:
 - all platform states appear
 - all publish-queue files appear
 
+### 4. OpenClaw runtime gate smoke
+
+Expected:
+
+- a new-task style message passes when `kimi-vps` shared state is current
+- a new-task style message is warned or blocked when `kimi-vps` shared state is stale or missing
+- the hook writes a receipt that shows whether the gate passed or failed
+
+### 5. OpenClaw bootstrap injection smoke
+
+Expected:
+
+- a fresh agent workspace is created if needed
+- the GitHub task-transition workflow is injected
+- the GitHub operating guide is injected
+- the bootstrap hook finishes without file-write errors
+
 ## Manual Scenarios
 
 ### Scenario A: finished slice
@@ -73,6 +90,21 @@ Expected:
 - `session-states/<platform>.yaml` updates
 - `publish-queue/<platform>.yaml` records the blocker and next owner
 
+### Scenario D: OpenClaw tries to switch tasks too early
+
+Expected:
+
+- the intake hook warns that shared GitHub state must be fixed first
+- the response points to the missing or stale coordination file
+- a gate receipt is written for audit
+
+### Scenario E: OpenClaw switches tasks after honest shared update
+
+Expected:
+
+- the intake hook says the task-change gate passed
+- the next task may begin without hidden publish debt
+
 ## Monitoring Routine
 
 Run after meaningful coordination changes and at least once per day on the main coordination host:
@@ -81,6 +113,7 @@ Run after meaningful coordination changes and at least once per day on the main 
 2. `github_coordination_guard.py startup-summary`
 3. review newest handoff
 4. review any platform queue file with `publish_required: true`
+5. on OpenClaw, review the latest gate receipts when runtime gate logic changed
 
 ## Failure Signs
 
@@ -88,3 +121,5 @@ Run after meaningful coordination changes and at least once per day on the main 
 - a platform state file is older than its objective contract
 - a platform startup doc does not mention the shared coordination skills
 - a platform claims work is shared but GitHub has no matching repo or push
+- OpenClaw accepts a new meaningful task without a current `kimi-vps` coordination state
+- OpenClaw bootstrap says it injected the workflow but the new workspace never received the GitHub coordination files

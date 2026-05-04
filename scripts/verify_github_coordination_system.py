@@ -35,6 +35,7 @@ VPS_SKILL_ROOTS = [
     "/root/.openclaw/kimi-skills",
     "/root/openclawtrading/skills",
 ]
+VPS_COORDINATION_ROOT = "/root/chimera-deploy"
 PLATFORM_KEYWORDS = {
     ROOT / "platforms" / "windows-codex" / "AGENTS.md": ["github-coordination-gate", "task-transition-publish"],
     ROOT / "platforms" / "windows-codex" / "CHIMERA_BOOTSTRAP.md": ["chimera-windows-live", "github-coordination-gate"],
@@ -47,6 +48,20 @@ PLATFORM_KEYWORDS = {
     ROOT / "platforms" / "space-agent" / "AGENTS.md": ["github-coordination-gate", "task-change-readiness-gate"],
     ROOT / "platforms" / "opencowork" / "local-bundle" / "chimera-enforcement-bundle" / "README.md": ["github-coordination-gate", "task-change-readiness-gate"],
 }
+VPS_RUNTIME_KEYWORDS = {
+    "/root/.openclaw/workspace/AGENTS.md": ["github-coordination-gate", "task-change-readiness-gate", "/root/chimera-deploy"],
+    "/root/openclawtrading/AGENTS.md": ["github-coordination-gate", "task-change-readiness-gate", "/root/chimera-deploy"],
+    "/root/.openclaw/workspace/hooks/message-router/handler.js": ["github_coordination_guard.py", "task-change gate", "kimi-vps"],
+    "/root/.openclaw/workspace/hooks/mandatory-bootstrap/handler.js": ["GITHUB_TASK_TRANSITION_AND_PUBLISH_LOOP.md", "GITHUB_COORDINATION_OPERATING_GUIDE_2026-05-04.md"],
+}
+VPS_COORDINATION_PATHS = [
+    f"{VPS_COORDINATION_ROOT}/scripts/github_coordination_guard.py",
+    f"{VPS_COORDINATION_ROOT}/workflows/GITHUB_TASK_TRANSITION_AND_PUBLISH_LOOP.md",
+    f"{VPS_COORDINATION_ROOT}/docs/GITHUB_COORDINATION_OPERATING_GUIDE_2026-05-04.md",
+    f"{VPS_COORDINATION_ROOT}/docs/GITHUB_COORDINATION_TEST_AND_MONITOR_RUNBOOK_2026-05-04.md",
+    f"{VPS_COORDINATION_ROOT}/session-states/kimi-vps.yaml",
+    f"{VPS_COORDINATION_ROOT}/publish-queue/kimi-vps.yaml",
+]
 
 
 def run(cmd: list[str]) -> tuple[int, str, str]:
@@ -111,6 +126,51 @@ def vps_skill_checks() -> list[dict[str, object]]:
     return results
 
 
+def vps_coordination_path_checks() -> list[dict[str, object]]:
+    results = []
+    for remote_path in VPS_COORDINATION_PATHS:
+        rc, out, err = run(["ssh", "root@100.67.172.114", f"test -f {remote_path} && echo ok || echo missing"])
+        results.append({"path": remote_path, "ok": rc == 0 and out.strip() == "ok", "details": out if out else err})
+    return results
+
+
+def vps_runtime_file_checks() -> list[dict[str, object]]:
+    results = []
+    for remote_path, keywords in VPS_RUNTIME_KEYWORDS.items():
+        remote_script = (
+            "python3 - <<'PY'\n"
+            "from pathlib import Path\n"
+            f"path = Path({remote_path!r})\n"
+            "if not path.exists():\n"
+            "    print('__MISSING__')\n"
+            "else:\n"
+            "    print(path.read_text(encoding='utf-8', errors='replace'))\n"
+            "PY"
+        )
+        rc, out, err = run(["ssh", "root@100.67.172.114", remote_script])
+        if rc != 0 or out.strip() == "__MISSING__":
+            results.append({"path": remote_path, "ok": False, "missing_keywords": keywords})
+            continue
+        lower = out.lower()
+        missing = [kw for kw in keywords if kw.lower() not in lower]
+        results.append({"path": remote_path, "ok": not missing, "missing_keywords": missing})
+    return results
+
+
+def vps_guard_check() -> list[dict[str, object]]:
+    rc, out, err = run(
+        [
+            "ssh",
+            "root@100.67.172.114",
+            (
+                "python3 /root/chimera-deploy/scripts/github_coordination_guard.py "
+                "validate-platform --coordination-root /root/chimera-deploy --platform kimi-vps"
+            ),
+        ]
+    )
+    return [{"path": f"{VPS_COORDINATION_ROOT}/scripts/github_coordination_guard.py", "ok": rc == 0, "details": out if out else err}]
+
+
 def state_checks() -> list[dict[str, object]]:
     guard = ROOT / "scripts" / "github_coordination_guard.py"
     platforms = ["windows-codex", "windows-claude", "opencowork-local", "kimi-vps", "opencode"]
@@ -139,6 +199,9 @@ def main() -> int:
         "platform_files": platform_file_checks(),
         "local_skill_mirrors": local_skill_mirror_checks(),
         "vps_skill_mirrors": vps_skill_checks(),
+        "vps_coordination_paths": vps_coordination_path_checks(),
+        "vps_runtime_files": vps_runtime_file_checks(),
+        "vps_guard": vps_guard_check(),
         "platform_states": state_checks(),
     }
     print(json.dumps(payload, indent=2))
