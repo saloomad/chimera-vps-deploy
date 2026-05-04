@@ -47,11 +47,21 @@ def main() -> int:
         "hookSpecificOutput": {
             "hookEventName": "UserPromptSubmit",
             "additionalContext": (
-                "Run the orchestration precheck, use the shared starter stack for meaningful work, "
-                "state the workflow and enforcement surface plainly, keep the receipt path visible, "
-                "and if the work edits instructions, config, hooks, skills, workflows, detectors, or compaction behavior, "
-                "route through critical-change-guard and the critical control-layer workflow."
-            ),
+            "Run the orchestration precheck, use the shared starter stack for meaningful work, "
+            "choose the model-routing lane honestly for planning, execution, review, or fast mechanical work, "
+            "and if the current session model does not match the preferred lane, say that plainly instead of pretending it auto-switched, "
+            "and before meaningful task intake read the shared `handoffs/`, `session-states/`, and `publish-queue/` surfaces, "
+            "using `chimera-vps-deploy/scripts/github_coordination_guard.py startup-summary` when available, "
+            "and load the shared skills `github-coordination-gate`, `task-transition-publish`, and `platform-live-repo-router` when shared publish or repo routing matters, "
+            "and if the prompt is about cron, recurring jobs, scheduled tasks, crontab, timers, or automation drift, load cron-doctor for diagnosis and cron-worker-guardrails for safe job design, "
+            "treat cron-scheduler as reference-only unless there is explicit approval for scheduler mutation, "
+            "state the workflow and enforcement surface plainly, keep the receipt path visible, "
+            "include one short carry-forward block with objective status, unapproved items, and remaining work, "
+            "and give each open item a brief plain-English description, "
+            "and if the work edits instructions, config, hooks, skills, workflows, detectors, or compaction behavior, "
+            "route through critical-change-guard and the critical control-layer workflow, "
+            "and if another meaningful task is starting before the current one is publish-ready, update the shared session-state and publish-queue files first."
+        ),
         }
     }
     print(json.dumps(out))

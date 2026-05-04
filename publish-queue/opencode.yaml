@@ -1,0 +1,9 @@
+platform: opencode
+project: chimera
+publish_required: true
+current_task: github-coordination-enforcement
+reason_not_published: OpenCode does not have the same hook surface, so the wrapper and file-backed contract still need proving.
+local_only_changes:
+  - platforms/opencode/AGENTS.md
+target_repo: saloomad/chimera
+next_action: Use the shared guard script at startup and before task changes until a native enforcement surface exists.

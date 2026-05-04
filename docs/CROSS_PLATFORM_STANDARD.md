@@ -15,6 +15,7 @@ Keep the same Chimera project logic across platforms while still fitting each pl
 - one shared GitHub sync contract
 - one shared task and action-trace structure
 - one shared continuity structure
+- one shared task-transition publish contract
 - one shared simulation and backtest standard
 - one shared rule that objectives continue until done or blocked
 
@@ -38,8 +39,44 @@ Keep the same Chimera project logic across platforms while still fitting each pl
 
 - shared skill source: `skills/`
 - shared handoffs: `handoffs/`
+- shared task-transition state: `session-states/`
+- shared unpublished work queue: `publish-queue/`
 - platform bootstrap snapshots: `platforms/`
 - automation templates: `automation_specs/`
+- coordination guard script: `scripts/github_coordination_guard.py`
+- coordination verification script: `scripts/verify_github_coordination_system.py`
+
+### Platform Live Repos
+
+- Windows live repo: `saloomad/chimera-windows-live`
+- Linux live repo: `saloomad/chimera-linux-live`
+
+## Task-Transition Publish Contract
+
+Do not wait for session end to publish shared truth.
+
+When a platform moves from one meaningful task or bounded slice to another, it must first publish one of these states into the shared repo:
+
+- `published-ready`
+- `in-progress-not-ready`
+- `blocked-needs-follow-up`
+
+Minimum shared update before another task starts:
+
+1. fetch the coordination repo
+2. read `handoffs/`, `session-states/`, and `publish-queue/`
+3. update `session-states/<platform>.yaml`
+4. update `publish-queue/<platform>.yaml` if code is not ready to publish
+
+This contract exists because continuous sessions still change tasks, and task boundaries are the real continuity risk.
+
+## Required Shared Coordination Skills
+
+All platforms should read:
+
+- `skills/github-coordination-gate`
+- `skills/task-transition-publish`
+- `skills/platform-live-repo-router`
 
 ## Required Project Structure Families
 
@@ -76,6 +113,15 @@ Heartbeat or recurring continuation flows should:
 5. stop only on completion, blocker, or approval boundary
 6. update continuity and task/action truth after meaningful progress
 7. leave a clean next action for the next wake or next session
+
+Cadence should be chosen from expected pass length and work shape:
+
+- no heartbeat for a `direct task` expected to finish in one pass
+- about `5` minutes for very short bounded passes
+- about `10` minutes for normal bounded implementation or follow-through passes
+- about `15` minutes for medium passes or native VPS work
+- `30` minutes or longer only for genuinely long-running or externally gated passes
+- update the cadence when the real pass length changes
 
 ## Orchestration Classes
 

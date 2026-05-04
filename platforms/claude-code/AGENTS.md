@@ -41,6 +41,9 @@ If the user wants automatic event enforcement or a stronger pipeline owner, also
 
 7. `hook-opportunity-detector`
 8. `pipeline-enforcement-detector`
+9. `github-coordination-gate`
+10. `task-transition-publish`
+11. `platform-live-repo-router`
 
 For meaningful replies, use `sal-communication-contract` so the answer starts with brief context, teaches terms, explains proof artifacts, and ends with a short bottom line plus next step.
 
@@ -74,3 +77,4 @@ Best hook uses here:
 - `PreToolUse` and `PostToolUse` for guardrails and proof capture
 - slash commands for repeatable orchestration entry points
 - activation receipts in `trace/platform_activation_receipts.jsonl` for proof of what fired
+- shared coordination guards for startup and task-transition proof

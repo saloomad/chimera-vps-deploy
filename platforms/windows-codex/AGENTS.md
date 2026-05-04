@@ -15,6 +15,29 @@ The old Linux PC (192.168.1.203, /home/open-claw/) has been replaced by the Kimi
 When SSHing to the trading system, ALWAYS use root@100.67.172.114, NEVER open-claw@192.168.1.203.
 When referencing paths, ALWAYS use /root/..., NEVER /home/open-claw/....
 
+## SKILL DIRECTORY TRUTH
+
+When the task involves installing, checking, mirroring, or repairing skills, use the real platform skill-load paths:
+
+- Windows Claude:
+  - `C:\Users\becke\.claude\skills`
+- Windows Codex:
+  - `C:\Users\becke\.codex\skills`
+- Windows OpenClaw local:
+  - `C:\Users\becke\.openclaw\skills`
+- Shared repo mirror:
+  - `C:\Users\becke\claudecowork\chimera-vps-deploy\skills`
+- Live VPS OpenClaw repo mirror:
+  - `/root/openclawtrading/skills`
+- Live VPS OpenClaw runtime extra skills:
+  - `/root/.openclaw/kimi-skills`
+
+Important:
+
+- The live VPS may load skills from `/root/.openclaw/kimi-skills` even when `/root/.openclaw/skills` also exists.
+- Do not assume a copy into `/root/.openclaw/skills` is sufficient for live runtime use.
+- For live VPS MCP server registration, prefer `openclaw mcp set <name> <json>` instead of hand-editing `openclaw.json`.
+
 ---
 
 ## HANDOFF PROTOCOL — Read Before Starting Work
@@ -27,6 +50,35 @@ Before doing ANY work, check for pending handoffs from other agents:
 3. If a handoff exists: continue from the first unfinished action
 4. If no handoff: proceed normally
 5. At session end: create a new handoff using CHECKPOINT_TEMPLATE.md
+
+## GITHUB COORDINATION GATE
+
+Do not treat "session end" as the only publish point.
+
+Before starting a new meaningful task or bounded slice:
+
+1. `git fetch` the shared Chimera repo
+2. read the newest `handoffs/CHECKPOINT_*.md`
+3. read every file in `session-states/`
+4. read every file in `publish-queue/`
+5. update `session-states/windows-codex.yaml` before leaving the old task behind
+6. if code is not ready to publish, update `publish-queue/windows-codex.yaml` before moving on
+
+Use `scripts/github_coordination_guard.py` in the shared repo as the proof surface.
+
+Read these shared coordination skills during startup and task changes:
+
+- `github-coordination-gate`
+- `task-transition-publish`
+- `platform-live-repo-router`
+
+Required publish states:
+
+- `published-ready`
+- `in-progress-not-ready`
+- `blocked-needs-follow-up`
+
+If the slice is unfinished but another task must start, publish metadata now instead of leaving the work only in local memory.
 
 ## RESPONSE HEADER
 
@@ -137,6 +189,27 @@ That means the answer should usually make these things clear:
 - what the proof artifacts mean in plain English
 - the bottom line
 - what happens next
+
+For every meaningful reply, also include a short carry-forward status block that covers:
+
+- `objective status`
+  - the current `ultimate objective`
+  - the current bounded slice or phase
+  - whether the broader objective is still open
+- `unapproved or decision-needed items`
+  - anything still waiting for Sal's approval, ranking, or confirmation
+  - if none, say `none`
+- `remaining project work`
+  - the meaningful tasks still left before the broader objective is actually done
+  - if none, say `none`
+
+Formatting rule:
+
+- aggregate these as one short carry-forward block instead of scattering them across the reply
+- for each open item, include a brief plain-English description of what it is and why it is still open
+
+Do not let those open items disappear just because the thread drifted into a side topic.
+Keep carrying them forward until they are complete, blocked, explicitly withdrawn, or replaced by a newer stated objective.
 
 Do not dump commit ids, branch names, workflow names, or filenames without explaining what they mean.
 

@@ -1,0 +1,9 @@
+platform: opencowork-local
+project: chimera
+status: active
+current_task: github-coordination-enforcement
+review_outcome: iterate
+shared_publish_status: in-progress-not-ready
+last_updated: 2026-05-04T00:00:00Z
+proof: OpenCowork hook bundle now has a shared coordination contract to follow.
+next_action: Read the coordination repo before task intake and keep publish debt visible.

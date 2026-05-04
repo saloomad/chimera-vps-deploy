@@ -14,6 +14,9 @@ Purpose: one startup note for the Kimi VPS so local Kimi sessions, OpenClaw runt
    - `skills/codex-runtime-router`
    - `skills/model-registry`
    - `skills/github-manager`
+   - `skills/github-coordination-gate`
+   - `skills/task-transition-publish`
+   - `skills/platform-live-repo-router`
    - `skills/project-operations-manager`
    - `skills/agent-session-resume`
    - `skills/openclaw-replay-and-backtest`
@@ -26,6 +29,7 @@ Purpose: one startup note for the Kimi VPS so local Kimi sessions, OpenClaw runt
 - Native Kimi skills home: `/root/.kimi/skills/`
 - Live Chimera runtime repo: `/root/openclawtrading/`
 - Shared deploy repo: `/root/chimera-deploy/`
+- Linux live repo: `saloomad/chimera-linux-live`
 - Live OpenClaw config: `/root/.openclaw/openclaw.json`
 
 ## Shared Routing Rules
@@ -45,6 +49,22 @@ If a shared skill changes:
 2. install or copy it into `/root/.kimi/skills/`
 3. mention the sync state in the latest handoff
 4. do not call it synced unless the GitHub repo is pushed and the local Kimi copy is updated
+
+## Knowledge Capture Rule
+
+If a Kimi/OpenClaw session creates durable knowledge about:
+
+- research
+- build patterns
+- skills or workflows
+- architecture decisions
+- contradictions across sources
+
+then update the Chimera knowledge wiki before closeout or record plainly why capture was deferred.
+
+Default VPS wiki:
+
+- `/root/openclawtrading/research/chimera-knowledge-wiki`
 
 ## Same Project Structure Rule
 

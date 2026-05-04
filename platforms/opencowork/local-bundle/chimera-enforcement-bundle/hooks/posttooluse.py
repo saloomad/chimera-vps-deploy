@@ -53,7 +53,11 @@ def main() -> int:
     if active_contract():
         context = (
             "An active objective contract exists. After this tool step, update proof, dependent surfaces, "
-            "current phase, next step, and review state explicitly."
+            "current phase, next step, review state, unapproved items, and remaining work explicitly. "
+            "Keep unapproved items and remaining work as short aggregated lists with brief plain-English descriptions, "
+            "and carry them into the next meaningful reply. If the bounded slice moved or another task is about to "
+            "start, also update `chimera-vps-deploy/session-states/opencowork-local.yaml`, and update "
+            "`chimera-vps-deploy/publish-queue/opencowork-local.yaml` whenever the code is not publish-ready."
         )
     out = {"hookSpecificOutput": {"hookEventName": "PostToolUse", "additionalContext": context}}
     print(json.dumps(out))

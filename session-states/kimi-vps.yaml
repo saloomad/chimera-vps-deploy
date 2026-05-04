@@ -1,0 +1,9 @@
+platform: kimi-vps
+project: chimera
+status: active
+current_task: github-coordination-enforcement
+review_outcome: iterate
+shared_publish_status: in-progress-not-ready
+last_updated: 2026-05-04T00:00:00Z
+proof: The Linux runtime must read shared coordination state before taking over unfinished work.
+next_action: Pull the coordination repo, inspect publish debt, then continue the right bounded slice.

@@ -1,0 +1,9 @@
+platform: opencode
+project: chimera
+status: active
+current_task: github-coordination-enforcement
+review_outcome: iterate
+shared_publish_status: in-progress-not-ready
+last_updated: 2026-05-04T00:00:00Z
+proof: OpenCode must read shared task and publish state before starting new meaningful work.
+next_action: Use the coordination repo as the startup front door before local execution.

@@ -68,7 +68,9 @@ def main() -> int:
                 "with current_slice, last_proof, current_phase, next_step, review_outcome, unapproved_items, and "
                 "remaining_work. Keep unapproved_items and remaining_work as short aggregated lists with plain-English "
                 "descriptions, and carry them into the next meaningful reply. Make test or proof explicit if the tool "
-                "changed the system." + extra
+                "changed the system. If the bounded slice moved or another task is about to start, also update "
+                "`session-states/windows-claude.yaml`, and update `publish-queue/windows-claude.yaml` whenever the "
+                "code is still not publish-ready." + extra
             ),
         }
     }

@@ -31,6 +31,9 @@ If the session shows friction or weak operator guidance:
 If architecture or system-wide tradeoffs exist:
 
 6. `major-build-council-orchestrator`
+7. `github-coordination-gate`
+8. `task-transition-publish`
+9. `platform-live-repo-router`
 
 For meaningful replies, use `sal-communication-contract` so visual or workflow updates still explain the practical meaning of files, steps, and proof.
 
@@ -53,3 +56,4 @@ Read it before visual work when prior research, build lessons, workflow guidance
 Update it when a Space Agent session produces durable visual, workflow, or architecture knowledge that should survive the session.
 
 Use it as the durable research layer behind visual work, not as live runtime truth.
+Also use the shared coordination repo before changing meaningful UI or coordination tasks.
