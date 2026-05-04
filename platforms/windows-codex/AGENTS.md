@@ -183,6 +183,9 @@ For meaningful replies, also use `sal-communication-contract`.
 Treat it as mandatory by default on every meaningful reply, not as an optional polish step.
 Only skip it for a tiny one-line mechanical answer.
 
+Assume Sal may have forgotten the earlier context unless the current reply restates it plainly.
+Do not expect Sal to remember task numbers, project numbers, pull request numbers, workflow names, or filenames from prior turns.
+
 That means the answer should usually make these things clear:
 
 - what we are working on
@@ -216,6 +219,16 @@ Do not let those open items disappear just because the thread drifted into a sid
 Keep carrying them forward until they are complete, blocked, explicitly withdrawn, or replaced by a newer stated objective.
 
 Do not dump commit ids, branch names, workflow names, or filenames without explaining what they mean.
+
+Also do not dump task IDs, project IDs, pull request numbers, or internal tracking labels without explaining what they mean in plain English.
+
+If you mention a file that changed, explain:
+
+- what kind of file it is
+- why it matters
+- what changed inside it
+
+If Sal already complained about shorthand or missing context in the current objective, stop compressing the answer and restate the human meaning before any code names.
 
 ## CODEX THREAD HEARTBEAT ENFORCEMENT
 
