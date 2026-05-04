@@ -53,6 +53,7 @@ If the user wants auto-triggered enforcement or a recurring workflow owner:
 8. `github-coordination-gate`
 9. `task-transition-publish`
 10. `platform-live-repo-router`
+11. `task-change-readiness-gate`
 
 If architecture or system-wide tradeoffs exist:
 

@@ -24,13 +24,14 @@ Make sure GitHub is used correctly even when the session is continuous.
    - `blocked-needs-follow-up`
 4. Update `session-states/<platform>.yaml`
 5. Update `publish-queue/<platform>.yaml` when the code is not publish-ready
-6. Route the real files to the correct repo:
+6. Run `task-change-readiness-gate` and do not proceed unless the current task is honestly ready to leave
+7. Route the real files to the correct repo:
    - `chimera`
    - `chimera-vps-deploy`
    - `chimera-windows-live`
    - `chimera-linux-live`
-7. Run the guard or verification script
-8. Only then move to the next meaningful task
+8. Run the guard or verification script
+9. Only then move to the next meaningful task
 
 ## Review Outcomes
 

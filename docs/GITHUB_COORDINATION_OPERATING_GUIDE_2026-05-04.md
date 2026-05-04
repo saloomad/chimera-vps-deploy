@@ -87,6 +87,19 @@ All platforms should read:
 - `skills/github-coordination-gate`
 - `skills/task-transition-publish`
 - `skills/platform-live-repo-router`
+- `skills/task-change-readiness-gate`
+
+## The New Automatic Gate
+
+The new gate skill is `task-change-readiness-gate`.
+
+In plain English, it asks:
+
+- are we actually safe to leave this task?
+- is the shared GitHub state current?
+- can another platform understand what is unfinished?
+
+If the answer is no, the platform should not move on yet.
 
 ## Proof
 

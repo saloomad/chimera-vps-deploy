@@ -34,6 +34,7 @@ Expected:
 - required docs and workflow exist
 - platform files mention the coordination skills
 - platform state files validate
+- the task-change gate skill is present and referenced
 
 ### 3. Startup summary
 

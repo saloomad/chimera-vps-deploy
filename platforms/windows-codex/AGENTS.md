@@ -71,6 +71,7 @@ Read these shared coordination skills during startup and task changes:
 - `github-coordination-gate`
 - `task-transition-publish`
 - `platform-live-repo-router`
+- `task-change-readiness-gate`
 
 Required publish states:
 

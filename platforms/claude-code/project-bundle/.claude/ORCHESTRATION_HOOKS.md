@@ -34,3 +34,4 @@ This project-level Claude Code setup enforces the shared Chimera orchestration c
 - a task cannot be abandoned locally without shared publish truth
 - meaningful replies should carry forward objective status, unapproved items, and remaining work in one short visible block
 - shared coordination skills should be loaded when startup or task-transition publish logic matters
+- task-change-readiness-gate should be treated as the final permission check before a new meaningful task starts

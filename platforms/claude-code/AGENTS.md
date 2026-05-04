@@ -44,6 +44,7 @@ If the user wants automatic event enforcement or a stronger pipeline owner, also
 9. `github-coordination-gate`
 10. `task-transition-publish`
 11. `platform-live-repo-router`
+12. `task-change-readiness-gate`
 
 For meaningful replies, use `sal-communication-contract` so the answer starts with brief context, teaches terms, explains proof artifacts, and ends with a short bottom line plus next step.
 

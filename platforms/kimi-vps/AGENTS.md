@@ -23,6 +23,7 @@ Read these shared coordination skills before meaningful startup and task changes
 - `github-coordination-gate`
 - `task-transition-publish`
 - `platform-live-repo-router`
+- `task-change-readiness-gate`
 
 If a task is not done but Linux must move on, publish the unfinished state explicitly instead of keeping it only in local runtime files.
 

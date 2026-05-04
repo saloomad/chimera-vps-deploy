@@ -18,6 +18,7 @@ Read these shared skills before meaningful task changes:
 - `skills/github-coordination-gate`
 - `skills/task-transition-publish`
 - `skills/platform-live-repo-router`
+- `skills/task-change-readiness-gate`
 
 Current honest limit:
 

@@ -34,6 +34,7 @@ If architecture or system-wide tradeoffs exist:
 7. `github-coordination-gate`
 8. `task-transition-publish`
 9. `platform-live-repo-router`
+10. `task-change-readiness-gate`
 
 For meaningful replies, use `sal-communication-contract` so visual or workflow updates still explain the practical meaning of files, steps, and proof.
 

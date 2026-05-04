@@ -30,7 +30,7 @@ If the prompt is non-trivial:
 - load `codex-runtime-router`
 - check `model-registry` before making model or routing claims
 - use `scripts/github_coordination_guard.py startup-summary` as the shared front door when available
-- load `github-coordination-gate`, `task-transition-publish`, and `platform-live-repo-router` when shared publish or repo routing matters
+- load `github-coordination-gate`, `task-transition-publish`, `platform-live-repo-router`, and `task-change-readiness-gate` when shared publish or repo routing matters
 
 If the task is multi-step or needs follow-through:
 - create or update `.claude/OBJECTIVE_CONTRACT.md`
@@ -46,6 +46,7 @@ If the task is multi-step or needs follow-through:
 If the prompt is switching to another meaningful task while the current one is not fully done:
 - do not rely on continuous-session memory
 - publish the shared state before changing tasks
+- run `task-change-readiness-gate` before deciding the task switch is allowed
 - use one of these shared publish statuses:
   - `published-ready`
   - `in-progress-not-ready`

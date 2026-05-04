@@ -17,6 +17,7 @@ Purpose: one startup note for the Kimi VPS so local Kimi sessions, OpenClaw runt
    - `skills/github-coordination-gate`
    - `skills/task-transition-publish`
    - `skills/platform-live-repo-router`
+   - `skills/task-change-readiness-gate`
    - `skills/project-operations-manager`
    - `skills/agent-session-resume`
    - `skills/openclaw-replay-and-backtest`

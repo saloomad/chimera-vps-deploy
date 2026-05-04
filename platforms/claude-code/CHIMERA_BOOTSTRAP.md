@@ -9,7 +9,8 @@ Read order:
 5. `skills/github-coordination-gate`
 6. `skills/task-transition-publish`
 7. `skills/platform-live-repo-router`
-8. latest `handoffs/CHECKPOINT_*.md`
+8. `skills/task-change-readiness-gate`
+9. latest `handoffs/CHECKPOINT_*.md`
 
 Platform truth:
 

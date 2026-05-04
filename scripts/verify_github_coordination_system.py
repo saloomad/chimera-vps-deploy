@@ -18,6 +18,7 @@ REQUIRED_SKILLS = [
     "github-coordination-gate",
     "task-transition-publish",
     "platform-live-repo-router",
+    "task-change-readiness-gate",
 ]
 REQUIRED_DOCS = [
     ROOT / "docs" / "GITHUB_COORDINATION_OPERATING_GUIDE_2026-05-04.md",
@@ -37,14 +38,14 @@ VPS_SKILL_ROOTS = [
 PLATFORM_KEYWORDS = {
     ROOT / "platforms" / "windows-codex" / "AGENTS.md": ["github-coordination-gate", "task-transition-publish"],
     ROOT / "platforms" / "windows-codex" / "CHIMERA_BOOTSTRAP.md": ["chimera-windows-live", "github-coordination-gate"],
-    ROOT / "platforms" / "claude-code" / "AGENTS.md": ["github-coordination-gate", "task-transition-publish"],
+    ROOT / "platforms" / "claude-code" / "AGENTS.md": ["github-coordination-gate", "task-transition-publish", "task-change-readiness-gate"],
     ROOT / "platforms" / "claude-code" / "CHIMERA_BOOTSTRAP.md": ["github-coordination-gate", "chimera-vps-deploy"],
-    ROOT / "platforms" / "kimi-vps" / "AGENTS.md": ["github-coordination-gate", "chimera-linux-live"],
+    ROOT / "platforms" / "kimi-vps" / "AGENTS.md": ["github-coordination-gate", "chimera-linux-live", "task-change-readiness-gate"],
     ROOT / "platforms" / "kimi-vps" / "CHIMERA_BOOTSTRAP.md": ["github-coordination-gate", "task-transition-publish"],
-    ROOT / "platforms" / "opencode" / "AGENTS.md": ["github-coordination-gate", "task-transition-publish"],
+    ROOT / "platforms" / "opencode" / "AGENTS.md": ["github-coordination-gate", "task-transition-publish", "task-change-readiness-gate"],
     ROOT / "platforms" / "opencode" / "CHIMERA_BOOTSTRAP.md": ["github-coordination-gate", "platform-live-repo-router"],
-    ROOT / "platforms" / "space-agent" / "AGENTS.md": ["github-coordination-gate"],
-    ROOT / "platforms" / "opencowork" / "local-bundle" / "chimera-enforcement-bundle" / "README.md": ["github-coordination-gate"],
+    ROOT / "platforms" / "space-agent" / "AGENTS.md": ["github-coordination-gate", "task-change-readiness-gate"],
+    ROOT / "platforms" / "opencowork" / "local-bundle" / "chimera-enforcement-bundle" / "README.md": ["github-coordination-gate", "task-change-readiness-gate"],
 }
 
 

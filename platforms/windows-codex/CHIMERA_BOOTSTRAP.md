@@ -43,6 +43,8 @@ Purpose: one plain-English startup note for Windows Codex so VPS, GitHub, skills
   - Use before leaving unfinished work behind.
 - `platform-live-repo-router`
   - Use when deciding which repo owns a change.
+- `task-change-readiness-gate`
+  - Use right before leaving one meaningful task for another.
 - `codex-runtime-router`
   - Use for platform routing, model lane choice, response header, and session closeout sync.
 - `agent-session-resume`
