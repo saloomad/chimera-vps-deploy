@@ -1,0 +1,9 @@
+platform: windows-claude
+project: chimera
+publish_required: true
+current_task: github-coordination-enforcement
+reason_not_published: Windows Claude platform bundle needs the new shared coordination guard mirrored and proven.
+local_only_changes:
+  - platforms/claude-code/project-bundle/.claude/
+target_repo: saloomad/chimera
+next_action: Pull the shared guard changes, then verify the hook bundle reads and blocks correctly.

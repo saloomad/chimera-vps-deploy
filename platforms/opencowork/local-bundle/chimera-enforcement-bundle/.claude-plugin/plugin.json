@@ -1,0 +1,9 @@
+{
+  "name": "chimera-enforcement-bundle",
+  "description": "Chimera OpenCowork local enforcement bundle with startup commands, hook guardrails, and activation receipts.",
+  "author": {
+    "name": "Sal / Chimera",
+    "email": "local@chimera"
+  },
+  "version": "1.0.0"
+}

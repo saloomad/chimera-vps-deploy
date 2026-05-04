@@ -28,17 +28,29 @@ If a change only exists in one file and nowhere else was updated, it is probably
 ## The Main Enforcement Choices
 
 - `instruction`
+  - use when the behavior should guide the agent before work starts
 - `skill`
+  - use when the behavior should be reusable by agents directly
 - `workflow`
+  - use when the behavior is a step-by-step sequence
 - `detector`
+  - use when the system should notice that a skill or workflow is missing or should activate
 - `hook`
+  - use when the behavior should run automatically on an event
 - `slash command`
+  - use when the user or agent should be able to trigger a repeatable entry point on demand
 - `Task Flow`
+  - use when OpenClaw needs durable recurring multi-step state
 - `Lobster`
+  - use when OpenClaw needs a bounded deterministic subflow
 - `standing order`
+  - use when recurring work needs ongoing authority and boundaries
 - `scheduler`
+  - use when the system needs a wake-up or cadence
 - `monitor`
+  - use when drift, repeated failure, or stale behavior should be detected later
 - `wrapper script`
+  - use when a platform lacks stronger native hooks and needs a repeatable wrapper
 
 ## Platform Summary
 
@@ -55,20 +67,40 @@ Best native enforcement surfaces:
 
 Use them like this:
 
-- hooks for event-driven checks, routing hints, bootstrap injection, and continuity capture
-- Task Flow for restart-safe recurring state across a larger program
-- Lobster for smaller deterministic subflows inside the larger recurring program
-- standing orders for ongoing authority, boundaries, and escalation rules
-- cron or timers for wake-up cadence, not for owning business logic
-- background tasks for detached work audit and control
+- `hooks`
+  - for event-driven checks, routing hints, bootstrap injection, continuity capture, and reply-contract nudges such as objective carry-forward
+- `Task Flow`
+  - for restart-safe recurring state across a larger program
+- `Lobster`
+  - for smaller deterministic subflows inside the larger recurring program
+- `standing orders`
+  - for ongoing authority, boundaries, and escalation rules
+- `cron or timers`
+  - for wake-up cadence, not for owning business logic
+- `background tasks`
+  - for detached work audit and control
+
+### OpenClaw Control-Layer Rule
+
+When the change touches runtime hooks, Task Flow, Lobster, standing orders, startup docs, or continuity ownership:
+
+- use `critical-config-instruction-and-compaction-guard-loop.md`
+- use `critical-change-guard`
+- update runtime receipt and proof paths
+- prefer hook proof or runtime proof over doc-only proof
 
 Best OpenClaw hook jobs:
 
 - `message:received`
+  - detect the request type and suggest the right feature or workflow
 - `agent:bootstrap`
+  - inject must-read startup files and current guardrails
 - `session start`
+  - enforce the current contract at the beginning of work
 - `pre-compact` and `post-compact`
+  - preserve unfinished objective state around compaction
 - `gateway restart`
+  - run runtime health checks or restore required context
 
 Do not use OpenClaw hooks for:
 
@@ -120,50 +152,218 @@ Verified current hook events from the official Claude Code docs include:
 
 The practical ones we should use most:
 
-- `UserPromptSubmit` for orchestration precheck, starter-stack reminders, and prompt shaping
-- `PreToolUse` for risky-command guardrails, write-scope checks, and workflow checks
-- `PostToolUse` for proof capture, "what else must be updated" reminders, and closeout enforcement
-- `PostToolUseFailure` for failure capture and retry routing
-- `PostToolBatch` for batch review
-- `Stop` for blocking premature closeout
-- `SubagentStop` for subagent proof and integration review
-- `TaskCreated` and `TaskCompleted` when task gating matters
-- `InstructionsLoaded` for checking loaded instruction layers
-- `PreCompact` and `PostCompact` for continuity capture
-- `SessionStart` and `SessionEnd` for startup reminders and final capture
+- `UserPromptSubmit`
+  - before the main answer starts
+  - best for orchestration precheck, starter-stack reminders, prompt shaping, and carry-forward reply reminders
+- `PreToolUse`
+  - before a tool runs
+  - best for risky-command guardrails, write-scope checks, and "did we choose the workflow yet" checks
+- `PostToolUse`
+  - after a tool succeeds
+  - best for proof capture, "what else must be updated" reminders, closeout enforcement, and open-work carry-forward nudges
+- `PostToolUseFailure`
+  - after a tool fails
+  - best for debugging guidance, retry routing, and failure capture
+- `PostToolBatch`
+  - after a batch of tool calls
+  - best for batch review or "run monitor / review now" checks
+- `Stop`
+  - when Claude is about to stop
+  - best for blocking premature closeout if review is still missing or open carry-forward items were not resolved
+- `SubagentStop`
+  - when a subagent finishes
+  - best for requiring proof or integration review before accepting the subagent result
+- `TaskCreated` and `TaskCompleted`
+  - best when task creation/completion itself should be gated
+- `InstructionsLoaded`
+  - best for confirming the instruction layer loaded correctly
+- `PreCompact` and `PostCompact`
+  - best for continuity capture around compaction
+- `SessionStart` and `SessionEnd`
+  - best for startup reminders and final capture
+
+- `InstructionsLoaded`
+  - best for confirming that startup rules, shared context pointers, and the starter stack were actually loaded
+
+- `ConfigChange`
+  - best for forcing the risky control-layer workflow when settings, instructions, or routing config change
+
+- `FileChanged`
+  - best for reacting when control-layer files such as `AGENTS.md`, `CLAUDE.md`, `opencode.json`, skills, workflows, or PM continuity files change
+
+- `PreCompact` and `PostCompact`
+  - best for protecting continuation, PM state, objective state, and proof state around compaction
+
+### Hook Policy By Event
+
+#### `PreToolUse`
+
+Use it to enforce:
+
+- choose the workflow before mutating the system
+- load communication and response-shape skills when meaningful work begins
+- load the starter stack when meaningful work begins
+- force `critical-change-guard` for control-layer edits
+- force markdown-governance workflow for meaningful `.md` creation or updates
+- check `pipeline-enforcement-detector` when runtime, trading, Task Flow, Lobster, or recurring ownership surfaces are touched
+- check `hook-opportunity-detector` when the same pre-action reminder keeps repeating
+
+#### `PostToolUse`
+
+Use it to enforce:
+
+- proof after the change
+- dependent-surface updates
+- continuity and PM follow-through
+- issue and improvement backlog updates when the step exposed a real problem
+- detector loading when the change exposed a reusable pattern or missing automation
+- `codex-lesson-harvester` when the tool step created a durable lesson
+
+#### `SubagentStop`
+
+Use it to enforce:
+
+- review whether the subagent actually solved the assigned slice
+- review report quality, proof quality, file list, tests, and residual risks
+- check whether the subagent should have used an existing workflow or skill
+- load `codex-workflow-detector`, `codex-skill-opportunity-detector`, or `hook-opportunity-detector` when the subagent exposed a repeated pattern
+- load `pipeline-enforcement-detector` when the subagent exposed a runtime-owner gap
+- load `codex-lesson-harvester` or `cross-project-ai-lessons` when the result should help future projects
+
+#### `Stop`
+
+Use it to enforce:
+
+- objective review outcome must be explicit: `complete`, `iterate`, or `blocked`
+- proof must be explicit
+- dependent docs, continuity, and PM surfaces must be updated when required
+- detectors and learning capture must run before closeout if the session produced a reusable pattern or lesson
+- unresolved issues should be written to markdown and reviewed later instead of disappearing with the chat
 
 Hook handler types in Claude Code:
 
 - `command`
+  - best default for production use
 - `http`
+  - good when the hook should call a service
 - `mcp_tool`
+  - good when the enforcement is best exposed through MCP
 - `prompt`
+  - useful for policy checks with an LLM
 - `agent`
+  - experimental; use carefully, and prefer command hooks for critical production behavior
 
 Important Claude Code limits:
 
-- hooks cannot do all orchestration for you
+- hooks cannot magically do all orchestration for you
 - `PostToolUse` cannot undo an action that already happened
-- `Stop` fires when the answer ends, not only when the task is truly complete
+- `Stop` fires when the answer ends, not only when the task is actually complete
 - continuation after close still depends on files or another platform
+
+### Control-Layer Hook Policy
+
+When the changed file is part of the control layer, the system should not treat it like a normal code edit.
+
+Treat these as control-layer files:
+
+- `AGENTS.md`
+- `CLAUDE.md`
+- startup docs
+- `.claude/settings.json`
+- `opencode.json`
+- `.opencode/*`
+- local plugin registry or bundle files
+- skill files
+- workflow files
+- detector files
+- continuation, kanban, work-log, task, or PM front-door files
+
+For these changes, prefer:
+
+- `PreToolUse`
+  - warn or block casual edits
+  - require `critical-change-guard`
+- `PostToolUse`
+  - require proof, dependent-surface review, and continuity update
+- `Stop`
+  - prevent closeout until the risky control-layer workflow is reviewed
+- `FileChanged`
+  - route to `critical-config-instruction-and-compaction-guard-loop.md`
+
+### Compaction Continuity Policy
+
+Use compaction hooks to force state capture before context is compressed away.
+
+Before compaction:
+
+- save objective state
+- save current slice
+- save proof path
+- save PM state if it changed
+- save continuation next step
+
+After compaction:
+
+- restore the objective contract
+- restate the next step
+- verify PM and continuation files are still the truth source
+- decide whether the result is `iterate`, `complete`, or `blocked`
 
 ### OpenCowork / OpenCode
 
 Current honest truth:
 
-- we do not have a separately verified native hook surface here like Claude Code or OpenClaw
+- OpenCode still does not have a separately verified native hook surface here like Claude Code or OpenClaw
+- but OpenCode does have verified native project surfaces for:
+  - `AGENTS.md` rules
+  - `opencode.json` config
+  - custom agents
+  - custom commands
+  - native skill discovery
+  - permission rules
+- OpenCowork now also has a real local Chimera bundle using:
+  - local skills in `%AppData%\open-cowork\claude\skills\`
+  - a local plugin in `%AppData%\open-cowork\claude\plugins\source\chimera-enforcement-bundle`
+  - local plugin hooks for prompt start, risky tools, proof nudges, and stop gates
+- both OpenCode and OpenCowork should write activation proof into:
+  - `trace/platform_activation_receipts.jsonl`
 
 So the best enforcement surfaces here are:
 
-- startup docs
-- wrappers
+- startup docs and rules
+- project config
+- native agents
+- native commands
+- native skills
+- permission rules
 - file-backed `plan.md`
-- shared skills
 - shared workflows
 - explicit handoffs
 - review gates
 
-Do not pretend OpenCowork has a proven hook API until it actually does.
+Use them like this:
+
+- `startup docs and rules`
+  - load the starter stack and current guardrails
+- `project config`
+  - set default agent, permission guardrails, and shared instruction files
+- `native agents`
+  - separate planning, build, and review roles cleanly
+- `native commands`
+  - give repeatable entry points like objective start, review, and close
+- `native skills`
+  - load reusable process knowledge on demand
+- `permission rules`
+  - slow down risky shell or file actions without blocking normal work
+- `plan.md`
+  - hold state for multi-step work
+- `shared workflows`
+  - enforce the process shape
+- `handoffs`
+  - enforce continuation across sessions
+
+Do not pretend OpenCode has a proven hook API until it actually does.
+For OpenCowork specifically, local plugin hooks are real only after the local plugin is enabled and picked up by the desktop app.
 
 ## Recommended Default By Need
 
@@ -187,3 +387,15 @@ If the need is:
   - use a skill
 - "force the system to notice drift"
   - use a monitor or detector
+
+## Best Chimera Pattern
+
+For most OpenClaw recurring systems:
+
+- standing order gives authority
+- scheduler wakes the work
+- Task Flow owns the durable recurring state
+- Lobster owns bounded deterministic subflows
+- hooks enforce event-driven checks and routing
+- monitors detect drift
+- closeout workflows decide complete vs iterate vs blocked

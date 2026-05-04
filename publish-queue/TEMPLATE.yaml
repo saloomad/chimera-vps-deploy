@@ -1,0 +1,8 @@
+platform: replace-me
+project: chimera
+publish_required: false
+current_task: none
+reason_not_published: none
+local_only_changes: []
+target_repo: saloomad/chimera
+next_action: none

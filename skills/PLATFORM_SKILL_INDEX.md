@@ -143,6 +143,24 @@ Each platform's skill-creator has overlapping but distinct triggers:
 
 **Best practice**: Create skills in `chimera-vps-deploy/skills/` on Windows, commit, push, then VPS pulls. This keeps both platforms in sync.
 
+## GitHub Coordination Skill Set
+
+Shared source:
+
+- `chimera-vps-deploy/skills/github-coordination-gate/`
+- `chimera-vps-deploy/skills/task-transition-publish/`
+- `chimera-vps-deploy/skills/platform-live-repo-router/`
+
+Purpose:
+
+- `github-coordination-gate` forces startup reads of handoffs, session states, and publish queue.
+- `task-transition-publish` forces shared publish state before another meaningful task starts.
+- `platform-live-repo-router` decides whether work belongs in `chimera`, `chimera-vps-deploy`, `chimera-windows-live`, or `chimera-linux-live`.
+
+Platform rule:
+
+- Codex, Claude Code, OpenCowork, Kimi VPS, OpenCode, and Space Agent should all read the shared coordination skills through their platform bootstrap or instruction files.
+
 ---
 
 ## Testing Discoverability

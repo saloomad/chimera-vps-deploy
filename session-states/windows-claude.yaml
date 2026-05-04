@@ -1,0 +1,9 @@
+platform: windows-claude
+project: chimera
+status: active
+current_task: github-coordination-enforcement
+review_outcome: iterate
+shared_publish_status: in-progress-not-ready
+last_updated: 2026-05-04T00:00:00Z
+proof: Windows Claude should read the same coordination state before moving to a new task.
+next_action: Consume publish queue and newest handoff before continuing work.

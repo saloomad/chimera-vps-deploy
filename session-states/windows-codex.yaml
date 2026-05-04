@@ -1,0 +1,9 @@
+platform: windows-codex
+project: chimera
+status: active
+current_task: github-coordination-enforcement
+review_outcome: iterate
+shared_publish_status: in-progress-not-ready
+last_updated: 2026-05-04T14:30:00Z
+proof: Created chimera-windows-live and chimera-linux-live, added shared coordination skills plus guide and runbook, mirrored skills into local Windows skill homes and VPS Kimi/OpenClaw skill homes, and passed full coordination verification.
+next_action: Commit and push this coordination slice, then pull the shared repo on each platform and verify the new startup/task-transition behavior in live sessions.

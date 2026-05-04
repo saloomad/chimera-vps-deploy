@@ -16,6 +16,8 @@ Purpose: one plain-English startup note for Windows Codex so VPS, GitHub, skills
 - The live machine is now the Kimi VPS at `root@100.67.172.114`.
 - The live Chimera workspace is now `/root/openclawtrading/`.
 - GitHub repo `saloomad/chimera-vps-deploy` is the shared cross-platform sync point for handoffs, deploy assets, and shared skill copies.
+- Windows live repo `saloomad/chimera-windows-live` is the Windows-only runnable state repo.
+- Linux live repo `saloomad/chimera-linux-live` is the Linux-only runnable state repo.
 
 ## Never Use These Old Defaults
 - Do not use `open-claw@192.168.1.203`.
@@ -35,6 +37,14 @@ Purpose: one plain-English startup note for Windows Codex so VPS, GitHub, skills
   - Use for model names, providers, endpoints, and fallback order.
 - `github-manager`
   - Use for cross-platform GitHub sync, pull/push flow, and merge cleanup.
+- `github-coordination-gate`
+  - Use at startup and before changing meaningful tasks.
+- `task-transition-publish`
+  - Use before leaving unfinished work behind.
+- `platform-live-repo-router`
+  - Use when deciding which repo owns a change.
+- `task-change-readiness-gate`
+  - Use right before leaving one meaningful task for another.
 - `codex-runtime-router`
   - Use for platform routing, model lane choice, response header, and session closeout sync.
 - `agent-session-resume`
@@ -53,12 +63,14 @@ These local skill copies already exist in:
 - If a task mentions the old OpenClaw Linux PC, translate it to the Kimi VPS unless the user explicitly says the old host still matters.
 
 ## GitHub Truth
-- Shared repo: `saloomad/chimera-vps-deploy`
+- Shared coordination repo: `saloomad/chimera-vps-deploy`
 - Use it for:
   - handoffs
   - shared deploy scripts
   - shared skills that must exist on more than one platform
   - durable cross-platform notes
+- Windows live repo: `saloomad/chimera-windows-live`
+- Linux live repo: `saloomad/chimera-linux-live`
 
 ## Default Sync Pattern
 1. Pull the latest `chimera-vps-deploy`.
@@ -126,6 +138,20 @@ Every meaningful session should capture:
   - local only
   - shared in repo but not pushed yet
   - pushed and available to other platforms
+
+If a session created durable knowledge about:
+
+- research
+- building or implementation patterns
+- skills or workflows
+- architecture decisions
+- contradictions across sources
+
+then update the Chimera knowledge wiki before closeout or record plainly why capture was deferred.
+
+Default local wiki:
+
+- `C:\Users\becke\claudecowork\research\chimera-knowledge-wiki`
 
 If a shared skill changed, mirror it into `chimera-vps-deploy/skills/` and mention it in the newest checkpoint.
 

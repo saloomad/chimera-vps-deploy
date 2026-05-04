@@ -1,0 +1,9 @@
+platform: kimi-vps
+project: chimera
+publish_required: true
+current_task: github-coordination-enforcement
+reason_not_published: Linux instructions need the new startup and task-transition contract before runtime adoption.
+local_only_changes:
+  - platforms/kimi-vps/AGENTS.md
+target_repo: saloomad/chimera
+next_action: Pull the coordination repo, read queue plus session states, and wire the runtime workflow accordingly.

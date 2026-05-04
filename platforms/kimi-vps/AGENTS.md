@@ -2,6 +2,31 @@
 
 Read `CHIMERA_BOOTSTRAP.md` first.
 
+## GITHUB COORDINATION GATE
+
+Do not wait for a Linux session to end before publishing shared truth.
+
+Before starting a new meaningful task:
+
+1. pull or fetch the shared Chimera repo
+2. read the newest handoff under `handoffs/`
+3. read all files in `session-states/`
+4. read all files in `publish-queue/`
+5. update `session-states/kimi-vps.yaml` before leaving the previous task
+6. if the code is not ready to publish, update `publish-queue/kimi-vps.yaml`
+
+Use `scripts/github_coordination_guard.py` in the shared repo as the startup and task-transition proof surface.
+Use `saloomad/chimera-linux-live` for Linux-only runnable state.
+
+Read these shared coordination skills before meaningful startup and task changes:
+
+- `github-coordination-gate`
+- `task-transition-publish`
+- `platform-live-repo-router`
+- `task-change-readiness-gate`
+
+If a task is not done but Linux must move on, publish the unfinished state explicitly instead of keeping it only in local runtime files.
+
 Use the shared `objective-orchestration-loop` skill as an every-message orchestration precheck, and use the full loop for every non-trivial objective.
 
 For each meaningful request, say:
@@ -10,6 +35,14 @@ For each meaningful request, say:
 - which orchestration class fits
 - why that route fits
 - what the done contract is
+
+Also include one short carry-forward block that shows:
+
+- `objective status`
+- `unapproved or decision-needed items`
+- `remaining project work`
+
+Keep each open item as a brief plain-English description, and keep carrying unresolved items forward until they are complete, blocked, withdrawn, or replaced by a newer stated objective.
 
 Rules:
 
@@ -28,6 +61,11 @@ Default starter stack for meaningful software work:
 If friction, weak explanation, or missed activation appears:
 
 5. `vibe-coding-monitor`
+
+If the user wants stronger automatic enforcement or pipeline ownership:
+
+6. `hook-opportunity-detector`
+7. `pipeline-enforcement-detector`
 
 ## Deezoh Coach Suite
 
@@ -62,6 +100,68 @@ Prefer proof from:
 - activation receipts
 - stale-runtime lint
 - live replay tests
+
+### Deezoh Direct Observation Contract
+
+When a prompt asks Deezoh to output fields such as `selected_workflow`, `winner`, `typed_wait`, `next_question`, or `unsafe_lesson_to_record`, keep those fields canonical even if the prose is conversational.
+
+Use only these market workflow ids for `selected_workflow`:
+
+- `breakout_acceptance`
+- `consolidation_resolution`
+- `news_event_control`
+- `liquidity_trap`
+- `accumulation_hunt`
+- `failed_breakout_reversal`
+- `active_trade_management`
+- `data_degraded_watch`
+
+Do not output invented workflow labels such as `data_degraded_mode`, `trading_coach_overlay`, or `three-case comparison`.
+
+Use only canonical wait ids from `DESK_CONTRACT.md` and `WORKFLOW.md` for `typed_wait`.
+Common valid waits include:
+
+- `WAIT_REFRESH`
+- `WAIT_EVENT`
+- `WAIT_ZONE`
+- `WAIT_COOLDOWN`
+- `WAIT_RETEST`
+- `WAIT_TRIGGER`
+- `WAIT_ACCEPTANCE`
+- `WAIT_INVALIDATION`
+- `WAIT_EXECUTION`
+- `WAIT_MANAGEMENT`
+- `WAIT_BOOK_RISK`
+- `WAIT_SWEEP`
+- `WAIT_RECLAIM`
+
+Do not output invented wait labels such as `WAIT_CONFIRMATION` or `WAIT_FOR_FULL_PIPELINE`.
+If the meaning is "the full pipeline is not verified", use `WAIT_REFRESH` for broken/stale data or `WAIT_TRIGGER` / `WAIT_ACCEPTANCE` for missing setup confirmation.
+
+For focused direct-observation prompts, use a fast path instead of the full broad workspace bootstrap.
+
+Fast-path rules:
+
+- Start from the current live report files and the Deezoh contract files that directly control the answer.
+- Read the minimum needed set first:
+  - `/root/.openclaw/workspace/agents/deezoh/QUESTION_ENGINE.md`
+  - `/root/.openclaw/workspace/agents/deezoh/WORKFLOW.md`
+  - the fresh live reports under `/root/openclawtrading/reports/auto/` that match the prompt
+- Prefer current-cycle report truth over historical orchestration notes, old memory files, generic project analysis, or broad workspace scans.
+- If the prompt says `Answer only` or `Answer in this order only`, output exactly that bounded field list and nothing before it.
+- Do not open with a greeting, desk briefing, or broad market summary when the prompt is a fielded direct-observation prompt.
+- Do not search the wider workspace for extra context once the prompt contract fields are already answerable from the live reports and Deezoh contract files.
+- Do not open with a generic market briefing when the user asked for a bounded JSON or fielded direct-observation reply.
+- If evidence is stale or degraded, finish the bounded answer anyway and say that in the required fields instead of drifting into tool exploration.
+- Do not call extra live quote, market-data, web, or generic finance tools for a focused direct-observation prompt if the fresh report set already answers the request.
+- Only call an extra tool when a required report is missing or stale enough that the direct observation answer cannot be completed honestly from the current cycle.
+- Keep `actually_read`, `actually_spawned`, and `not_fresh_but_referenced` as JSON arrays in the final answer, even when they are empty.
+- Render those three fields as literal JSON arrays that start with `[` and end with `]`.
+- Never wrap those arrays in backticks, never collapse them into comma-separated prose, and never use the word `none` in place of `[]`.
+- If the prompt requests numbered fields, keep the same numbering and place the value directly after each label.
+- Keep `selected_workflow` structural. If macro or event risk vetoes the trade, reflect that in `winner`, `best_no_trade`, and the explanation instead of renaming the structural workflow.
+- For failed-breakout prompts, keep `selected_workflow = liquidity_trap` unless current-cycle reports prove the trap phase already resolved into a confirmed reversal beyond the first rejection.
+- Keep `typed_wait` to canonical waits from `DESK_CONTRACT.md` and `WORKFLOW.md`. Never invent `WAIT_MACRO`.
 
 If architecture or system-wide tradeoffs exist:
 
@@ -135,6 +235,19 @@ Prefer these when they truly fit:
 - cron or Linux timers only as wake-up triggers
 - background tasks for detached-work audit and control
 
+## Cron And Scheduler Rule
+
+When the request is about cron, recurring jobs, scheduled tasks, timers, stale workers, or automation drift:
+
+- use `cron-doctor` for diagnosis
+- use `cron-worker-guardrails` for worker hardening and safe recurring-job design
+- treat `cron-scheduler` as reference-only unless there is explicit approval for live scheduler mutation
+- say plainly which scheduler is the real truth surface:
+  - root crontab
+  - OpenClaw cron registry
+  - another platform-native scheduler
+- do not recommend cron for rich stateful logic when a hook, Task Flow, Lobster flow, or standing order is the better owner
+
 ## Required Shared Skills
 
 Keep these installed locally:
@@ -153,6 +266,8 @@ Keep these installed locally:
 - `strategy-backtest-lab`
 - `pipeline-simulation-lab`
 - `chimera-knowledge-wiki`
+- `hook-opportunity-detector`
+- `pipeline-enforcement-detector`
 
 ## KNOWLEDGE WIKI RULE
 

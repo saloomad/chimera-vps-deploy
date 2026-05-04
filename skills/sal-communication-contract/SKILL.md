@@ -5,7 +5,9 @@ description: Communication contract for talking to Sal in plain English during m
 
 # Sal Communication Contract
 
-Use this skill whenever the reply is more than a tiny one-line answer.
+Use this skill on every meaningful user-facing reply.
+
+Only skip it for a tiny one-line mechanical answer where no explanation is needed.
 
 This skill exists because "plain English" by itself was too vague.
 The agent must actively teach, define terms, and explain proof artifacts in human terms.
@@ -24,6 +26,14 @@ The agent should:
 - define technical terms the first time they matter
 - explain what a file, branch, commit, workflow, or report actually means
 - end with a short conclusion and next step
+
+## Default Rule
+
+Treat this skill as mandatory by default, not optional.
+
+If the reply involves progress, proof, GitHub, workflow, planning, debugging, tradeoffs, or next steps, this skill should already be active.
+
+If Sal recently complained that the explanation was confusing, do not fall back to shorthand later in the same objective.
 
 ## Required Reply Shape
 

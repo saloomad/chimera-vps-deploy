@@ -1,0 +1,89 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "chimera-build",
+  "instructions": [
+    "docs/PLATFORM_ORCHESTRATION_AND_HOOKS_MATRIX_2026-05-02.md",
+    "workflows/codex/meaningful-change-lifecycle-and-enforcement-loop.md"
+  ],
+  "permission": {
+    "external_directory": {
+      "C:/Users/becke/.codex/**": "allow",
+      "C:/Users/becke/.config/opencode/**": "allow"
+    },
+    "skill": {
+      "*": "allow"
+    },
+    "task": {
+      "*": "allow"
+    }
+  },
+  "agent": {
+    "chimera-build": {
+      "description": "Default Chimera build agent with orchestration precheck, plain-English explanations, and meaningful-change closeout.",
+      "mode": "primary",
+      "model": "minimax-coding-plan/MiniMax-M2.7-highspeed",
+      "prompt": "{file:./.opencode/prompts/chimera-build.md}",
+      "permission": {
+        "bash": {
+          "*": "ask",
+          "git status*": "allow",
+          "git diff*": "allow",
+          "git log*": "allow",
+          "ls*": "allow",
+          "dir*": "allow",
+          "Get-ChildItem*": "allow",
+          "Select-String*": "allow",
+          "rm *": "deny",
+          "del *": "deny",
+          "rmdir *": "deny",
+          "git reset *": "deny",
+          "git checkout --*": "deny",
+          "git push *": "ask"
+        },
+        "edit": "allow",
+        "question": "allow",
+        "skill": {
+          "*": "allow"
+        },
+        "task": {
+          "*": "allow"
+        }
+      }
+    },
+    "chimera-plan": {
+      "description": "Planning-first Chimera agent for objective contracts, workflow choice, and route clarity before implementation.",
+      "mode": "primary",
+      "model": "kimi-for-coding/kimi-for-coding",
+      "prompt": "{file:./.opencode/prompts/chimera-plan.md}",
+      "permission": {
+        "edit": "deny",
+        "bash": "deny",
+        "question": "allow",
+        "skill": {
+          "*": "allow"
+        },
+        "task": {
+          "*": "allow"
+        }
+      }
+    },
+    "chimera-review": {
+      "description": "Review and proof agent for Chimera. Use after meaningful changes to decide complete, iterate, or blocked.",
+      "mode": "subagent",
+      "model": "kimi-for-coding/kimi-for-coding",
+      "prompt": "{file:./.opencode/prompts/chimera-review.md}",
+      "permission": {
+        "edit": "deny",
+        "bash": {
+          "*": "ask",
+          "git status*": "allow",
+          "git diff*": "allow",
+          "Select-String*": "allow"
+        },
+        "skill": {
+          "*": "allow"
+        }
+      }
+    }
+  }
+}

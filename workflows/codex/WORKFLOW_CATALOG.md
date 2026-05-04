@@ -15,6 +15,11 @@ Add:
 
 5. `major-build-council-orchestrator` when real tradeoffs exist
 6. `vibe-coding-monitor` when friction, misses, or weak explanation appear
+7. `hook-opportunity-detector` when a repeated problem should become an automatic event reaction
+8. `pipeline-enforcement-detector` when a recurring or risky pipeline needs a better runtime owner
+9. `agent-session-resume` when the request is a continuation, transcript follow-up, or handoff follow-up
+10. `response-structure-enforcer` when the reply risks becoming artifact-heavy or too meta
+11. `codex-runtime-router` and `model-registry` when the task is non-trivial and route/model guidance should be explicit
 
 Communication rule:
 
@@ -87,22 +92,78 @@ Communication rule:
 - Main workflows:
   - `reusable-pattern-capture.md`
   - `skill-workflow-mirror-and-publication.md`
+  - `detector-registry-and-learning-promotion-loop.md`
+- Main detector skills:
+  - `codex-workflow-detector`
+  - `codex-skill-opportunity-detector`
+  - `hook-opportunity-detector`
+  - `pipeline-enforcement-detector` when runtime ownership is the real issue
+  - `codex-lesson-harvester` and `cross-project-ai-lessons` when the result should help future projects too
 
-### 10. PM And Front-Door Reconciliation
+### 10. Platform Enforcement And Receipts
+
+- Use when: a platform surface should auto-trigger, guard a risky action, own a pipeline, or prove what fired
+- Loop type: bounded implementation plus review
+- Main workflow:
+  - `platform-enforcement-selection-and-receipt-loop.md`
+- Main detector skills:
+  - `hook-opportunity-detector`
+  - `pipeline-enforcement-detector`
+  - `codex-feature-opportunity-detector`
+
+### 11. Critical Config, Instruction, And Compaction Governance
+
+- Use when: editing control-layer config, startup docs, instructions, skills, workflows, detectors, hook behavior, or compaction governance
+- Loop type: loop-until-done
+- Main workflow:
+  - `critical-config-instruction-and-compaction-guard-loop.md`
+- Main skills:
+  - `critical-change-guard`
+  - `codex-continuity-enforcer`
+  - `hook-opportunity-detector` when the control-layer rule should auto-trigger
+
+### 12. PM And Front-Door Reconciliation
 
 - Use when: tasks, reminders, or delivery/front-door surfaces may be stale or drifted
 - Loop type: bounded reconciliation loop
 - Main workflows:
+  - `pm-front-door-reconciliation-loop.md`
   - `task-and-continuity-closeout.md`
-  - project-operations-manager skill
+- Main skills:
+  - `project-operations-manager`
 
-### 11. Trading / Deezoh Lifecycle
+### 13. Trading / Deezoh Lifecycle
 
 - Use when: market classification, trade lifecycle, desk review, or operator brief work is needed
 - Loop type: stateful loop
 - Main workflows:
   - `deezoh-market-condition-and-trade-lifecycle-loop.md`
   - `openclaw-monitoring-and-consumer-loop.md`
+- Main monitor:
+  - `vibe-coding-monitor` when interaction or operator friction should be reviewed on Windows or VPS
+- Main enforcement skills:
+  - `pipeline-enforcement-detector`
+  - `openclaw-feature-router`
+
+### 14. Markdown Artifact Governance
+
+- Use when: creating or updating meaningful `.md` files such as instructions, workflows, skills, architecture docs, registries, reports, handoffs, or PM surfaces
+- Loop type: bounded closeout loop
+- Main workflow:
+  - `markdown-artifact-governance-and-closeout-loop.md`
+
+### 15. Feedback, Failure, And Improvement Capture
+
+- Use when: a response was weak, a tool failed, a report was weak, the user corrected the agent, or a reusable issue should enter the backlog
+- Loop type: bounded feedback loop
+- Main workflow:
+  - `post-response-failure-feedback-loop.md`
+- Main skills:
+  - `vibe-coding-monitor`
+  - `codex-lesson-harvester`
+  - `codex-workflow-detector`
+  - `codex-skill-opportunity-detector`
+  - `hook-opportunity-detector`
 
 ## Rule
 
@@ -123,3 +184,10 @@ For any meaningful system change, also define:
 - dependent surfaces to update
 - proof shape
 - documentation and continuity update path
+- activation receipt path when the platform can support it
+
+## Global Reference
+
+If the task is "what do we already have, what should load when, what is left, and what can other projects reuse," use:
+
+- `docs/GLOBAL_PLATFORM_SKILL_WORKFLOW_REGISTRY_2026-05-03.md`

@@ -29,6 +29,7 @@ Use this skill when the question is:
 - `references/PROBLEM_TO_FEATURE_MAP.md`
 - `references/OFFICIAL_OPENCLAW_DOCS.md`
 - `references/OPENCLAW_PLATFORM_ENFORCEMENT_2026-05-01.md`
+- `C:\Users\becke\claudecowork\chimera-vps-deploy\docs\ENFORCEMENT_IMPLEMENTATION_INVENTORY_2026-05-02.md`
 - `openclaw-orchestration-proof-router`
 
 ## Core Rule

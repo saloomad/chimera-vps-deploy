@@ -13,6 +13,8 @@ triggers:
 
 Use this skill after every meaningful implementation, audit, decision, or task-state change.
 
+Also use it before and after compaction, session split, or other context-loss boundaries when the current objective would be hard to resume from chat alone.
+
 ## Read First
 
 - `harnesses/codex/chimera/CONTINUATION.md`
@@ -42,5 +44,11 @@ Always update the smallest truthful set of:
 4. record the evidence path
 5. record the next owner or next step
 
-Do not end meaningful work with only a chat summary if future sessions will need the state.
+For compaction-sensitive work, also record:
 
+6. the current objective contract
+7. the current slice
+8. the stop condition
+9. any PM file that became the source of truth
+
+Do not end meaningful work with only a chat summary if future sessions will need the state.

@@ -1,0 +1,9 @@
+platform: replace-me
+project: chimera
+status: idle
+current_task: none
+review_outcome: iterate
+shared_publish_status: idle
+last_updated: 1970-01-01T00:00:00Z
+proof: No shared state recorded yet.
+next_action: Read handoffs, session states, and publish queue before starting meaningful work.

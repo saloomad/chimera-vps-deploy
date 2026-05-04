@@ -1,0 +1,9 @@
+platform: opencowork-local
+project: chimera
+publish_required: true
+current_task: github-coordination-enforcement
+reason_not_published: OpenCowork hook bundle needs the same coordination enforcement mirrored and tested.
+local_only_changes:
+  - platforms/opencowork/local-bundle/chimera-enforcement-bundle/hooks/
+target_repo: saloomad/chimera
+next_action: Validate stop and prompt hooks against the shared guard expectations.
