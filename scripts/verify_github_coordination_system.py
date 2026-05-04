@@ -19,9 +19,12 @@ REQUIRED_SKILLS = [
     "task-transition-publish",
     "platform-live-repo-router",
     "task-change-readiness-gate",
+    "coordination-artifact-lifecycle-guard",
 ]
 REQUIRED_DOCS = [
     ROOT / "docs" / "GITHUB_COORDINATION_OPERATING_GUIDE_2026-05-04.md",
+    ROOT / "docs" / "GITHUB_COORDINATION_ARCHITECTURE_2026-05-04.md",
+    ROOT / "docs" / "GITHUB_COORDINATION_FILE_USAGE_REGISTRY_2026-05-04.md",
     ROOT / "docs" / "GITHUB_COORDINATION_TEST_AND_MONITOR_RUNBOOK_2026-05-04.md",
     ROOT / "workflows" / "GITHUB_TASK_TRANSITION_AND_PUBLISH_LOOP.md",
 ]
@@ -58,9 +61,28 @@ VPS_COORDINATION_PATHS = [
     f"{VPS_COORDINATION_ROOT}/scripts/github_coordination_guard.py",
     f"{VPS_COORDINATION_ROOT}/workflows/GITHUB_TASK_TRANSITION_AND_PUBLISH_LOOP.md",
     f"{VPS_COORDINATION_ROOT}/docs/GITHUB_COORDINATION_OPERATING_GUIDE_2026-05-04.md",
+    f"{VPS_COORDINATION_ROOT}/docs/GITHUB_COORDINATION_ARCHITECTURE_2026-05-04.md",
+    f"{VPS_COORDINATION_ROOT}/docs/GITHUB_COORDINATION_FILE_USAGE_REGISTRY_2026-05-04.md",
     f"{VPS_COORDINATION_ROOT}/docs/GITHUB_COORDINATION_TEST_AND_MONITOR_RUNBOOK_2026-05-04.md",
     f"{VPS_COORDINATION_ROOT}/session-states/kimi-vps.yaml",
     f"{VPS_COORDINATION_ROOT}/publish-queue/kimi-vps.yaml",
+]
+
+REGISTRY_REQUIRED_ARTIFACTS = [
+    "handoffs/CHECKPOINT_*.md",
+    "session-states/*.yaml",
+    "publish-queue/*.yaml",
+    "skills/github-coordination-gate/SKILL.md",
+    "skills/task-transition-publish/SKILL.md",
+    "skills/task-change-readiness-gate/SKILL.md",
+    "skills/platform-live-repo-router/SKILL.md",
+    "skills/coordination-artifact-lifecycle-guard/SKILL.md",
+    "workflows/GITHUB_TASK_TRANSITION_AND_PUBLISH_LOOP.md",
+    "docs/GITHUB_COORDINATION_OPERATING_GUIDE_2026-05-04.md",
+    "docs/GITHUB_COORDINATION_ARCHITECTURE_2026-05-04.md",
+    "docs/GITHUB_COORDINATION_FILE_USAGE_REGISTRY_2026-05-04.md",
+    "scripts/github_coordination_guard.py",
+    "scripts/verify_github_coordination_system.py",
 ]
 
 
@@ -93,6 +115,20 @@ def skill_checks() -> list[dict[str, object]]:
 
 def doc_checks() -> list[dict[str, object]]:
     return [{"path": str(path), "ok": path.exists()} for path in REQUIRED_DOCS]
+
+
+def registry_checks() -> list[dict[str, object]]:
+    registry_path = ROOT / "docs" / "GITHUB_COORDINATION_FILE_USAGE_REGISTRY_2026-05-04.md"
+    if not registry_path.exists():
+        return [{"path": str(registry_path), "ok": False, "missing_artifacts": REGISTRY_REQUIRED_ARTIFACTS}]
+
+    text = registry_path.read_text(encoding="utf-8", errors="replace")
+    missing = [artifact for artifact in REGISTRY_REQUIRED_ARTIFACTS if artifact not in text]
+    needs_core_words = all(word in text for word in ["Purpose", "Automatic Reader Or Owner", "Trigger", "Proof Surface"])
+    results = [{"path": str(registry_path), "ok": not missing and needs_core_words, "missing_artifacts": missing}]
+    if not needs_core_words:
+        results[0]["missing_artifacts"] = missing + ["registry headings incomplete"]
+    return results
 
 
 def platform_file_checks() -> list[dict[str, object]]:
@@ -196,6 +232,7 @@ def main() -> int:
         "repos": repo_checks(),
         "skills": skill_checks(),
         "docs": doc_checks(),
+        "registry": registry_checks(),
         "platform_files": platform_file_checks(),
         "local_skill_mirrors": local_skill_mirror_checks(),
         "vps_skill_mirrors": vps_skill_checks(),

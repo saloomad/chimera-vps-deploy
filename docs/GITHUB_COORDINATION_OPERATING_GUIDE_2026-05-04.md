@@ -6,6 +6,12 @@ Updated: 2026-05-04
 
 Explain how Chimera now uses GitHub during startup, task transitions, unfinished work, and platform-specific publishing.
 
+Use these three files together:
+
+- this operating guide
+- `docs/GITHUB_COORDINATION_ARCHITECTURE_2026-05-04.md`
+- `docs/GITHUB_COORDINATION_FILE_USAGE_REGISTRY_2026-05-04.md`
+
 ## The Four Repos
 
 ### `saloomad/chimera`
@@ -121,6 +127,23 @@ Use:
 
 - `scripts/github_coordination_guard.py`
 - `scripts/verify_github_coordination_system.py`
+
+## Why The Files Exist
+
+These files are not supposed to sit around unused.
+
+They break into three jobs:
+
+- workflow file:
+  the exact steps to follow before leaving one task and starting another
+- guide:
+  the plain-English explanation for humans
+- file usage registry:
+  the truth table that says which files are read automatically, when they are used, and how we prove they are wired
+
+The no-dead-end rule is:
+
+if a durable coordination file does not have a reader, a trigger, and a proof surface, it is not done yet.
 
 ## What "Integrated" Means
 

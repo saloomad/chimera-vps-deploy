@@ -37,14 +37,18 @@ Testing and integration are part of the workflow, not optional cleanup.
    - Windows live files in `chimera-windows-live`
    - Linux or OpenClaw live files in `chimera-linux-live`
    - project code in `chimera`
-9. Run proof:
+9. If the pass created or changed durable coordination artifacts, update:
+   - `docs/GITHUB_COORDINATION_FILE_USAGE_REGISTRY_2026-05-04.md`
+   - the relevant guide or architecture file
+   - the verifier if proof rules changed
+10. Run proof:
    - `github_coordination_guard.py validate-platform`
    - `github_coordination_guard.py startup-summary`
    - `verify_github_coordination_system.py` after coordination changes
-10. If the platform has a native runtime gate, smoke-test that gate with:
+11. If the platform has a native runtime gate, smoke-test that gate with:
    - one allowed task transition
    - one blocked task transition
-11. Only then move to the next meaningful task
+12. Only then move to the next meaningful task
 
 ## Review Outcomes
 
