@@ -24,7 +24,11 @@ Scope: Part 4 / Part 5 data truth, Deezoh evidence logic, local browser scraping
     - `HOMEPAGE_TABLE.json`
     - `HOMEPAGE_SIGNAL.json`
     - `HOMEPAGE_STATS.json`
+    - `HOMEPAGE_DERIVATIVES_HISTORY.jsonl`
+    - `HOMEPAGE_DERIVATIVES_LATEST.json`
+    - `HOMEPAGE_DERIVATIVES_REPLAY.json`
   - so Deezoh provenance shows the CoinGlass homepage lane was actually read
+  - now also writes symbol-specific focused bundles even when the main live bundle is still broad `MARKET` mode
 
 - strengthened `scripts/market-maker/run_liquidation_scans.py`
   - now runs the exact `24h` CoinGlass extractor for supported coins
@@ -38,6 +42,10 @@ Scope: Part 4 / Part 5 data truth, Deezoh evidence logic, local browser scraping
     - `trading_system/data/HOMEPAGE_TABLE.json`
     - `trading_system/data/HOMEPAGE_SIGNAL.json`
     - `trading_system/data/HOMEPAGE_STATS.json`
+    - `trading_system/data/HOMEPAGE_DERIVATIVES_HISTORY.jsonl`
+    - `trading_system/data/HOMEPAGE_DERIVATIVES_LATEST.json`
+    - `trading_system/data/HOMEPAGE_DERIVATIVES_REPLAY.json`
+  - this is now the small snapshot history loop for future derivatives replay/backtest work
 
 - updated Part 4 draft
   - `chimera-vps-deploy/handoffs/parallel_part4_derivatives_and_positioning.md`
@@ -60,16 +68,20 @@ Fresh outputs:
 - `reports/auto/MAXPAIN_SUMMARY.json`
 - `reports/auto/DEEZOH_THOUGHTS.json`
 - `reports/auto/LIQUIDATION_DATA/BTC_24h.json`
+- `reports/auto/DEEZOH_THOUGHTS_FOCUS/INDEX.json`
 - `trading_system/data/HOMEPAGE_TABLE.json`
 - `trading_system/data/HOMEPAGE_SIGNAL.json`
 - `trading_system/data/HOMEPAGE_STATS.json`
+- `trading_system/data/HOMEPAGE_DERIVATIVES_HISTORY.jsonl`
+- `trading_system/data/HOMEPAGE_DERIVATIVES_LATEST.json`
+- `trading_system/data/HOMEPAGE_DERIVATIVES_REPLAY.json`
 
 ## Current truth
 
-- exact local liquidation proof is now working on:
+- exact local liquidation proof is currently working on:
   - `BTC 24h`
-  - `ETH 24h`
-  - `SOL 24h`
+- `ETH 24h` currently returns a locked/unavailable CoinGlass window
+- `SOL 24h` currently fails to render the chart in the unauthenticated local exact lane
 - max-pain fast lane is still `24h`
 - homepage scrape now fills the important missing Part 4 fields:
   - `price_24h_pct`
@@ -92,6 +104,11 @@ Fresh outputs:
   - upside target distance `1.17%`
   - downside target distance `1.653%`
 - `LIQUIDATION_SUMMARY.json` no longer mixes `coinglass_maxpain` screenshot tags into the heatmap proof rows
+- the new focused Deezoh outputs now show:
+  - `BTCUSDT -> exact_both`
+  - `ETHUSDT -> exact_maxpain_only`
+  - `SOLUSDT -> exact_maxpain_only`
+- the new replay lane is wired, but the fresh file currently has only one snapshot so transition counts are still empty
 
 ## Remaining gaps
 

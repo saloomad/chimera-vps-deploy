@@ -34,6 +34,7 @@ Why this owner:
 - `derivatives_sentiment` for long/short, top-trader, taker-ratio, and OI history context
 - `derivatives_fetcher_bitget.py` for current Bitget funding/OI/current-price venue truth
 - `coinglass_homepage_scraper.py` for `price_change_24h_pct`, `oi_change_1h_pct`, `oi_change_24h_pct`, and liquidation table context
+- `HOMEPAGE_DERIVATIVES_HISTORY.jsonl` plus `HOMEPAGE_DERIVATIVES_REPLAY.json` for growing replay/backtest coverage over time
 - CoinGlass scraping for liquidation / max-pain support
 
 `bitget-analyst` is too generic to own the whole section by itself.
