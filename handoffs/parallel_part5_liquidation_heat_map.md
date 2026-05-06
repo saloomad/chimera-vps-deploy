@@ -31,6 +31,7 @@ Why:
 - whether the setup is vulnerable to a stop hunt first
 - timeframe-window truth for `12h`, `24h`, `48h`, `3d`, `1w`
 - whether the liquidation picture supports long, supports short, or argues for waiting
+- a separate agent-analysis pass that confirms the OCR/structured levels or adds extra levels that matter
 - explicit blocker/caveat when the section is only proxy-grade
 
 ## What Does Not Belong Here
@@ -71,6 +72,32 @@ Why:
 - heatmap_balance_state:
 - sweep_bias:
 - confidence:
+
+- structured_zone_extractor:
+  - owner:
+  - method:
+  - status:
+  - notes:
+
+- agent_heatmap_analysis:
+  - owner:
+  - image_analysis_mode:
+  - analysis_status:
+  - zone_confirmation_state:
+  - confirmed_levels:
+    - price_zone:
+      confirmation_role:
+      confidence:
+      reasoning:
+  - additional_levels:
+    - price_zone:
+      level_role:
+      confidence:
+      reasoning:
+  - chart_read_summary:
+  - supports_structured_zones:
+  - disagreements_with_structured_zones:
+  - what_matters_most_now:
 
 - nearest_above_cluster:
   - price_zone:
@@ -116,6 +143,7 @@ Why:
 - `source_mode`
   - `exact_heatmap_vision`
   - `exact_heatmap_structured`
+  - `exact_heatmap_structured_plus_agent_review`
   - `screenshot_only_needs_vision`
   - `derivatives_proxy_only`
   - `missing`
@@ -195,6 +223,24 @@ Why:
   - `mixed`
   - `not_applicable`
 
+- `image_analysis_mode`
+  - `chart_agent_review`
+  - `screenshot_vision_review`
+  - `not_run`
+
+- `analysis_status`
+  - `complete`
+  - `partial`
+  - `blocked`
+  - `not_run`
+
+- `zone_confirmation_state`
+  - `confirms_core_levels`
+  - `confirms_with_additions`
+  - `partially_confirms`
+  - `disagrees_with_structured_read`
+  - `not_run`
+
 - `invalidates_or_delays_setup`
   - `none`
   - `delays_long`
@@ -215,6 +261,9 @@ Why:
 
 - `exact_heatmap_structured`
   - a real structured liquidation report exists with actual cluster/zone outputs, not just proxy derivatives summary
+
+- `exact_heatmap_structured_plus_agent_review`
+  - structured extraction returned exact zones and a separate agent/screenshot review confirmed or extended them
 
 - `screenshot_only_needs_vision`
   - a real screenshot exists for the requested window, but the structured exact extraction did not succeed
@@ -240,6 +289,12 @@ Why:
 - `setup_interaction`
   - how the liquidation picture changes the trade judgment, not what the whole trade plan is
 
+- `agent_heatmap_analysis`
+  - this is the second-pass read
+  - it should confirm the OCR/structured zones when they look right
+  - it may add extra levels or visual caveats when the chart clearly shows more than the extractor captured
+  - it should not replace the structured extractor when exact numeric zones already exist
+
 ## How Deezoh Knows It Is Filled Enough
 
 This section is `complete enough` only when all of these are true:
@@ -253,11 +308,13 @@ This section is `complete enough` only when all of these are true:
   - both `nearest_above_cluster` and `nearest_below_cluster` are filled from exact evidence
   - or the section explicitly says `source_mode = derivatives_proxy_only` and carries `blocker_state` plus `blocker_detail`
 - `setup_interaction` is present
+- if exact structured extraction succeeded, `agent_heatmap_analysis` should also be present unless explicitly marked `not_run` with a reason
 
 Deezoh should treat the section as `not filled enough` when:
 
 - it claims exact clusters without an exact source
 - it has only generic funding/OI pressure but no blocker explanation
+- it has exact zones but no separate confirmation/analysis pass and no reason for skipping it
 - it hides that the section is proxy-only
 - it omits freshness and current price reference
 
@@ -287,8 +344,8 @@ For non-applicable assets:
 - `trading_system/scripts/coinglass_heatmap_exact.py` is now the strongest exact path for this section
   - Windows local proof:
     - `BTC 24h` -> exact structured clusters worked
-    - `ETH 24h` -> current route returns locked/unavailable, not exact
-    - `SOL 24h` -> current route did not render the chart, not exact
+    - `ETH 24h` -> exact structured clusters now work in the authenticated local route
+    - `SOL 24h` -> exact structured clusters now work in the authenticated local route
     - `12h`, `48h`, `3d`, `1w` -> honest blocked-window JSON
 - `trading_system/scripts/liquidation_heatmap.py` can capture screenshots on both Windows and the live VPS, but it is still a capture utility, not the section owner
 - `trading_system/scripts/coinglass_maxpain_scraper.py` works on both Windows and the live VPS and gives real max-pain targets
@@ -302,7 +359,7 @@ Practical trust split:
 
 - trusted for exact cluster truth:
   - `coinglass_heatmap_exact.py` when `data_extracted = true`
-  - current best exact window: `BTC 24h`
+  - current best exact windows: `BTC 24h`, `ETH 24h`, `SOL 24h`
 - trusted for exact-ish magnet support:
   - `MAXPAIN_SUMMARY.json` from the browser scrape lane
 - helper-only:

@@ -80,8 +80,8 @@ Fresh outputs:
 
 - exact local liquidation proof is currently working on:
   - `BTC 24h`
-- `ETH 24h` currently returns a locked/unavailable CoinGlass window
-- `SOL 24h` currently fails to render the chart in the unauthenticated local exact lane
+  - `ETH 24h`
+  - `SOL 24h`
 - max-pain fast lane is still `24h`
 - homepage scrape now fills the important missing Part 4 fields:
   - `price_24h_pct`
@@ -106,8 +106,8 @@ Fresh outputs:
 - `LIQUIDATION_SUMMARY.json` no longer mixes `coinglass_maxpain` screenshot tags into the heatmap proof rows
 - the new focused Deezoh outputs now show:
   - `BTCUSDT -> exact_both`
-  - `ETHUSDT -> exact_maxpain_only`
-  - `SOLUSDT -> exact_maxpain_only`
+  - `ETHUSDT -> exact_both`
+  - `SOLUSDT -> exact_both`
 - the new replay lane is wired, but the fresh file currently has only one snapshot so transition counts are still empty
 
 ## Remaining gaps

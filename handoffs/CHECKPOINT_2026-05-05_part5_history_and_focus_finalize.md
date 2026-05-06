@@ -8,9 +8,9 @@ Scope: finish the remaining derivatives/liquidity follow-up after the first proo
 
 - tightened `parallel_part5_liquidation_heat_map.md`
   - now matches the real local truth:
-    - exact structured heatmap proof is currently strongest on `BTC 24h`
-    - `ETH 24h` is currently locked/unavailable in the unauthenticated exact route
-    - `SOL 24h` currently fails to render the chart in the unauthenticated exact route
+    - exact structured heatmap proof works on `BTC 24h`
+    - exact structured heatmap proof works on `ETH 24h` in the authenticated local route
+    - exact structured heatmap proof works on `SOL 24h` in the authenticated local route
   - now separates:
     - `exact_heatmap_structured`
     - `screenshot_only_needs_vision`
@@ -50,17 +50,19 @@ Passed:
 
 - exact structured heatmap:
   - `BTC 24h` -> works
-  - `ETH 24h` -> `timeframe_locked_or_unavailable`
-  - `SOL 24h` -> `chart_not_rendered`
+  - `ETH 24h` -> works
+  - `SOL 24h` -> works
 - exact max-pain browser scrape:
   - working
 - focused bundle precision:
   - `BTCUSDT -> exact_both`
-  - `ETHUSDT -> exact_maxpain_only`
-  - `SOLUSDT -> exact_maxpain_only`
+  - `ETHUSDT -> exact_both`
+  - `SOLUSDT -> exact_both`
 - history/replay lane:
   - wired and writing files
   - fresh replay only has one snapshot so transition counts are still empty today
+- unsupported coin gap:
+  - `HYPE` is still proxy-only because it is not supported by the maintained CoinGlass screenshot/extractor lane
 
 ## Remaining gaps
 

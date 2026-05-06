@@ -1,6 +1,6 @@
 ---
 name: objective-orchestration-loop
-description: Run every meaningful task through a visible orchestration precheck, then choose the lightest honest route: direct answer, bounded loop, deep swarm, or always-on pipeline.
+description: Run every meaningful task through a visible orchestration precheck, then choose the lightest honest route among a direct answer, bounded loop, deep swarm, or always-on pipeline.
 ---
 
 # Objective Orchestration Loop
@@ -109,6 +109,7 @@ When these cues appear:
 - classify the orchestration shape before doing more work
 - write or restate the done contract
 - decide whether a continuation path is required on the current platform
+- if the chosen owner is a same-thread heartbeat or Codex automation, create or update it in the same pass before claiming orchestration is active
 - if the user also wants stronger enforcement, route to `hook-opportunity-detector` or `pipeline-enforcement-detector`
 
 ## Continuation Ownership Rule
@@ -125,6 +126,9 @@ Pick the lightest owner that can honestly finish the job.
 - use a thread heartbeat for current-thread follow-through
 - use a Codex automation for local recurring audits, reminders, and bounded executors
 - use the platform scheduler when the real runtime owner is Linux cron, Windows Scheduled Tasks, or another always-on system
+- do not say orchestration is "in effect" for a multi-pass Codex thread unless the continuation owner was actually created, updated, or explicitly verified as already active in this pass
+- if the chosen owner is a thread heartbeat, reuse the current thread's heartbeat when it exists; otherwise create it immediately
+- if no safe continuation owner was created or verified, report that as a blocker instead of pretending the orchestration path is live
 
 Do not keep a Codex heartbeat alive forever just because it already exists.
 
@@ -194,6 +198,32 @@ When recurring work depends on a local machine or remote reachability:
 - do not claim everything is broken without independent evidence
 
 If reachability is the only problem, say that plainly and avoid wider failure claims.
+
+## Scrape Artifact Truth Rule
+
+When a workflow is fundamentally a scraping or screenshot workflow:
+
+- treat the captured artifact as the primary truth surface
+- treat transport metadata, hidden API responses, or weak page-side status text as secondary signals
+- if a usable screenshot, DOM artifact, OCR output, or extracted file exists, analyze that artifact before declaring the workflow blocked
+
+Recovery order for scrape-driven lanes:
+
+1. verify whether the real artifact exists
+2. inspect the artifact directly
+3. patch parser, crop, OCR, or replay assumptions if the artifact is usable but under-read
+4. only then escalate auth/session/runtime blockers
+
+Do not let `response missing`, `API empty`, or similar metadata become the reason a scrape workflow stops if the actual captured artifact can still be parsed honestly.
+
+## Persistent Parent Bundle Rule
+
+When a parent trading agent owns a reusable judgment lane and spawned children are expected to help:
+
+- maintain `SPAWN_CONTEXT.md` and `THOUGHTS.md` as the default child handoff
+- let spawned workers read those first before narrow task artifacts
+- if a new screenshot or chart review worker is added, give it a bounded output contract and a parent consumer
+- do not create orphan child analyses that never flow back into the summary or bundle
 
 ## Enforcement Decision Rule
 
