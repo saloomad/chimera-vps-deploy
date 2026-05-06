@@ -369,6 +369,18 @@ Practical trust split:
   - null/empty legacy analysis JSON
   - proxy-only derivatives summaries pretending to be heatmap truth
 
+Generic searchable-symbol rule:
+
+- do **not** collapse `CoinAnk unsupported` into `symbol unsupported`
+- if CoinGlass search can resolve the contract, the maintained lane still supports the symbol
+- proven ad hoc examples now include:
+  - `HYPE`
+    - CoinGlass screenshot works
+    - exact `24h` structured extraction works
+    - agent screenshot review can be merged into the summary lane
+  - `DOGE`
+    - ad hoc `--coin DOGE` run works through the same path
+
 ## Ideal Example Response
 
 ```md
