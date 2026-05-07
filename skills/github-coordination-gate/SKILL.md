@@ -1,6 +1,6 @@
 ---
 name: github-coordination-gate
-description: Force every Chimera platform to fetch shared GitHub state at startup and before meaningful task changes, then update shared task state instead of relying on local memory. Use when starting work, resuming work, switching tasks, or checking publish status. Triggers: github coordination, startup gate, shared state, session states, publish queue, before next task.
+description: Force each Chimera platform to fetch shared GitHub state at startup and before meaningful task changes, then update shared task state instead of relying on local memory. Use when starting work, resuming work, switching tasks, or checking publish status.
 ---
 
 # GitHub Coordination Gate
@@ -64,6 +64,7 @@ Windows:
 ```powershell
 python C:\Users\becke\claudecowork\chimera-vps-deploy\scripts\github_coordination_guard.py startup-summary --coordination-root C:\Users\becke\claudecowork\chimera-vps-deploy
 python C:\Users\becke\claudecowork\chimera-vps-deploy\scripts\github_coordination_guard.py validate-platform --coordination-root C:\Users\becke\claudecowork\chimera-vps-deploy --platform windows-codex
+python C:\Users\becke\claudecowork\chimera-vps-deploy\scripts\github_coordination_guard.py sync-and-publish --coordination-root C:\Users\becke\claudecowork\chimera-vps-deploy --platform windows-codex --repo-root C:\Users\becke\claudecowork
 ```
 
 Linux:
@@ -76,6 +77,8 @@ python3 /root/chimera-deploy/scripts/github_coordination_guard.py validate-platf
 ## Platform Notes
 
 - Windows Codex and Claude Code should read this through their startup docs and hook surfaces.
+- Windows Codex can also run the recurring runner:
+  - `C:\Users\becke\claudecowork\scripts\run_windows_codex_github_coordination_sync.ps1`
 - OpenCowork should read this through the enforcement bundle and stop/start hooks.
 - Kimi VPS should read this before live runtime continuation.
 - OpenCode and Space Agent should use this through startup docs and wrapper checks because their hook surfaces are weaker.

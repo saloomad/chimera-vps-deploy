@@ -137,6 +137,18 @@ Use:
 - `scripts/github_coordination_guard.py`
 - `scripts/verify_github_coordination_system.py`
 
+Windows Codex now has a safe recurring runner for the coordination files:
+
+- `scripts/run_windows_codex_github_coordination_sync.ps1`
+- `scripts/register_windows_codex_github_coordination_task.ps1`
+
+That runner only refreshes and publishes:
+
+- `session-states/windows-codex.yaml`
+- `publish-queue/windows-codex.yaml`
+
+It does not auto-commit arbitrary project code from dirty repos.
+
 ## Why The Files Exist
 
 These files are not supposed to sit around unused.

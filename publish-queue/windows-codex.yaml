@@ -1,20 +1,33 @@
 platform: windows-codex
 project: chimera
 publish_required: true
-current_task: github-coordination-enforcement
-reason_not_published: The repos, shared skills, guides, workflow, verification script, and platform integration are implemented and tested, but this slice has not been committed and pushed yet from the current session.
+current_task: github-automation-and-part6-iteration
+reason_not_published: Repo has 25 uncommitted path(s) on branch add-remaining-files.
 local_only_changes:
-  - workflows/codex/github-publish-and-shared-sync.md
-  - workflows/codex/task-transition-shared-publish-loop.md
-  - chimera-vps-deploy/session-states/
-  - chimera-vps-deploy/publish-queue/
-  - chimera-vps-deploy/scripts/github_coordination_guard.py
-  - chimera-vps-deploy/scripts/verify_github_coordination_system.py
-  - chimera-vps-deploy/skills/github-coordination-gate/
-  - chimera-vps-deploy/skills/task-transition-publish/
-  - chimera-vps-deploy/skills/platform-live-repo-router/
-  - chimera-vps-deploy/docs/GITHUB_COORDINATION_OPERATING_GUIDE_2026-05-04.md
-  - chimera-vps-deploy/docs/GITHUB_COORDINATION_TEST_AND_MONITOR_RUNBOOK_2026-05-04.md
-  - chimera-vps-deploy/workflows/GITHUB_TASK_TRANSITION_AND_PUBLISH_LOOP.md
+  - , type(data[k]).__name__)/357/200/212 elif isinstance(data, list)/357/200/272/357/200/212 print(list, len(data))/357/200/212 if data/357/200/272 print(first"
+  - .learnings/INBOX.md
+  - .tmp_patch_deezoh.py
+  - .tmp_patch_inbox.py
+  - .tmp_patch_macro_bias.py
+  - .tmp_patch_screener.py
+  - ACTION_LOG.md
+  - AGENTS.md
+  - AGENT_OPTIMIZATION.md
+  - AGENT_REASONING_KERNEL.md
+  - AGENT_REGISTRY.md
+  - AGENT_STANDARDS.md
+  - AI_SYSTEMS_INVENTORY.md
+  - ARCHITECTURE.md
+  - CHIMERA_AGENT_ARCHITECTURE.md
+  - CONTINUATION.md
+  - DELIVERY_JOURNAL.md
+  - FILE_ARCHITECTURE.md
+  - HEARTBEAT_REGISTRY.md
+  - KANBAN.md
+  - LEAD_WORKFLOW.md
+  - OPENCLAW_BIBLE.md
+  - OPENCLAW_FEATURES.md
+  - OPENCLAW_FILE_MAP.md
+  - OPENCLAW_HOOKS.md
 target_repo: saloomad/chimera
-next_action: Commit and push the coordination slice, then verify pull and startup behavior on the other platforms and decide how the new live repos should be populated first.
+next_action: Keep the coordination metadata fresh automatically, then continue the next Part 6 quality improvement.
