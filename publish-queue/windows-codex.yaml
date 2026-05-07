@@ -4,7 +4,6 @@ publish_required: true
 current_task: github-automation-and-part6-iteration
 reason_not_published: Repo has 25 uncommitted path(s) on branch add-remaining-files.
 local_only_changes:
-  - , type(data[k]).__name__)/357/200/212 elif isinstance(data, list)/357/200/272/357/200/212 print(list, len(data))/357/200/212 if data/357/200/272 print(first"
   - .learnings/INBOX.md
   - .tmp_patch_deezoh.py
   - .tmp_patch_inbox.py
@@ -29,5 +28,6 @@ local_only_changes:
   - OPENCLAW_FEATURES.md
   - OPENCLAW_FILE_MAP.md
   - OPENCLAW_HOOKS.md
+  - PIPELINE_MAP.md
 target_repo: saloomad/chimera
-next_action: Keep the coordination metadata fresh automatically, then continue the next Part 6 quality improvement.
+next_action: Review intended files, commit the bounded slice, then push with explicit refspec and verify branch parity.
