@@ -20,14 +20,14 @@ local_only_changes:
   - CHIMERA_AGENT_ARCHITECTURE.md
   - CONTINUATION.md
   - DELIVERY_JOURNAL.md
+  - DOCUMENT_REGISTRY.md
   - FILE_ARCHITECTURE.md
   - HEARTBEAT_REGISTRY.md
+  - INDEX.md
   - KANBAN.md
   - LEAD_WORKFLOW.md
   - OPENCLAW_BIBLE.md
   - OPENCLAW_FEATURES.md
   - OPENCLAW_FILE_MAP.md
-  - OPENCLAW_HOOKS.md
-  - PIPELINE_MAP.md
 target_repo: saloomad/chimera
 next_action: Review intended files, commit the bounded slice, then push with explicit refspec and verify branch parity.
