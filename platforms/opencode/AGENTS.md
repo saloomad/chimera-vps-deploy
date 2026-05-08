@@ -59,7 +59,13 @@ If architecture or system-wide tradeoffs exist:
 
 6. `major-build-council-orchestrator`
 
-For meaningful replies, use `sal-communication-contract` so OpenCode answers stay understandable without making Sal decode jargon or raw artifacts.
+For meaningful replies, always check `sal-communication-contract` before sending the answer so OpenCode answers stay understandable without making Sal decode jargon or raw artifacts.
+
+Treat `sal-communication-contract` as the single communication source of truth.
+Treat `response-structure-enforcer` as compatibility-only.
+
+Do not say only `I changed this` or `I updated that`.
+Also explain the important highlight, why that choice was made, what shaped the decision, and what drawback mattered if one existed.
 
 For every meaningful reply, include one short carry-forward block that shows:
 

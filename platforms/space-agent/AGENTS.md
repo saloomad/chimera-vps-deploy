@@ -36,7 +36,13 @@ If architecture or system-wide tradeoffs exist:
 9. `platform-live-repo-router`
 10. `task-change-readiness-gate`
 
-For meaningful replies, use `sal-communication-contract` so visual or workflow updates still explain the practical meaning of files, steps, and proof.
+For meaningful replies, always check `sal-communication-contract` before sending the answer so visual or workflow updates still explain the practical meaning of files, steps, and proof.
+
+Treat `sal-communication-contract` as the single communication source of truth.
+Treat `response-structure-enforcer` as compatibility-only.
+
+Do not say only `I changed this` or `I updated that`.
+Also explain the important highlight, why that choice was made, what shaped the decision, and what drawback mattered if one existed.
 
 For any meaningful create, build, fix, refactor, workflow change, skill change, or automation change, also use the shared change lifecycle workflow and the platform hooks matrix.
 

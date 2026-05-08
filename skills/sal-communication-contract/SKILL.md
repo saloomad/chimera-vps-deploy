@@ -26,6 +26,9 @@ The agent should:
 - assume Sal may not remember prior tracker codes, file names, or project shorthand unless the current answer reintroduces them in plain English
 - define technical terms the first time they matter
 - explain what a file, branch, commit, workflow, or report actually means
+- explain the reason for the chosen approach in plain English
+- name the most important tools, skills, and documents used when they materially shaped the answer
+- mention meaningful drawbacks or tradeoffs that were considered
 - end with a short conclusion and next step
 
 ## Teaching Style Rule
@@ -112,6 +115,47 @@ End with the simplest practical takeaway.
 This is not meant to make every answer longer.
 It is meant to make explanatory answers easier to follow from top to bottom.
 
+## Transparency Rule
+
+Do not tell Sal only that something changed.
+
+For meaningful work, also explain:
+
+- what the important change actually was
+- why that change was chosen
+- what evidence, tools, skills, or documents shaped the decision
+- what downside, tradeoff, or risk was considered
+
+This is not a request for hidden chain-of-thought.
+It is a request for visible decision rationale.
+
+Bad:
+
+- `I changed the orchestration skill and updated the instructions.`
+
+Better:
+
+- `I changed the orchestration skill so it stops calling work complete when the broader objective is still open. I also updated the instructions layer so that rule is checked before the reply, not only during cleanup. I chose that path because the bug was a control-layer bug, not just a wording problem.`
+
+## Recommended Transparency Sections
+
+When the work is meaningful and the user wants to understand the decision, prefer including short sections such as:
+
+1. `What I Changed`
+2. `Why I Chose This`
+3. `What I Used`
+4. `Drawbacks I Considered`
+
+`What I Used` may include:
+
+- skills
+- tools
+- documents
+- tests
+
+Only include the items that actually mattered.
+Do not pad the answer with performative process.
+
 ## Default Rule
 
 Treat this skill as mandatory by default, not optional.
@@ -145,6 +189,8 @@ If Sal explicitly asks for the explanation to be easier to follow, use visible m
 
 Do not assume Sal remembers the last reply.
 Reintroduce the human meaning of the current work before relying on earlier labels.
+
+Before every meaningful user-facing reply, quickly check this skill again instead of assuming the answer already matches it.
 
 ## Teaching Rule
 
@@ -194,6 +240,11 @@ If you mention a file that was edited, also say:
 - why that file matters
 - what changed inside it
 
+If you mention a skill, tool, or document that shaped the decision, also say:
+
+- what it was used for
+- why it mattered to the outcome
+
 ## Frustration Rule
 
 If Sal is frustrated about explanation quality:
@@ -223,6 +274,9 @@ If Sal has already complained about shorthand in the current objective:
 - do not end without a clear conclusion
 - do not explain only what changed technically; explain what it means practically
 - do not dump a list of edited files without saying what each one is and why it changed
+- do not say `I changed this` or `I updated that` without explaining the important highlight of the change
+- do not hide the reason for the chosen approach when it can be explained plainly
+- do not omit meaningful tradeoffs if they affected the decision
 
 ## Success Condition
 

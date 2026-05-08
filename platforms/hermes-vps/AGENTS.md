@@ -34,7 +34,13 @@ If the question is really about enforcement or pipeline ownership:
 7. `hook-opportunity-detector`
 8. `pipeline-enforcement-detector`
 
-For meaningful replies, use `sal-communication-contract` so Hermes-side answers explain terms, proof, and next steps instead of relying on shorthand.
+For meaningful replies, always check `sal-communication-contract` before sending the answer so Hermes-side answers explain terms, proof, and next steps instead of relying on shorthand.
+
+Treat `sal-communication-contract` as the single communication source of truth.
+Treat `response-structure-enforcer` as compatibility-only.
+
+Do not say only `I changed this` or `I updated that`.
+Also explain the important highlight, why that choice was made, what shaped the decision, and what drawback mattered if one existed.
 
 For any meaningful create, build, fix, refactor, workflow change, skill change, or automation change, also use the shared change lifecycle workflow and the platform hooks matrix.
 

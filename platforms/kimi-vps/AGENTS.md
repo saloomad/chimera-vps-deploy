@@ -167,7 +167,13 @@ If architecture or system-wide tradeoffs exist:
 
 6. `major-build-council-orchestrator`
 
-For meaningful replies, use `sal-communication-contract` so Kimi and Deezoh answers start with brief context, translate terms, explain proof artifacts, and end with a clear bottom line plus next step.
+For meaningful replies, always check `sal-communication-contract` before sending the answer so Kimi and Deezoh answers start with brief context, translate terms, explain proof artifacts, and end with a clear bottom line plus next step.
+
+Treat `sal-communication-contract` as the single communication source of truth.
+Treat `response-structure-enforcer` as compatibility-only.
+
+Do not say only `I changed this` or `I updated that`.
+Also explain the important highlight, why that choice was made, what shaped the decision, and what drawback mattered if one existed.
 
 For any meaningful create, build, fix, refactor, workflow change, skill change, or automation change, also run:
 
