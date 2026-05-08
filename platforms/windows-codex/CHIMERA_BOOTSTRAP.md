@@ -33,6 +33,8 @@ Purpose: one plain-English startup note for Windows Codex so VPS, GitHub, skills
 - VPS OpenClaw config: `/root/.openclaw/openclaw.json`
 
 ## Skills Codex Should Use
+- `branch-strategy-gate`
+  - Use at every session start. Enforces `main` for integration, `production` for live. Risk-gates feature branches.
 - `model-registry`
   - Use for model names, providers, endpoints, and fallback order.
 - `github-manager`
@@ -166,6 +168,7 @@ If Codex has to choose between chat memory and one of these files, trust these f
 - `C:\Users\becke\.codex\CHIMERA_BOOTSTRAP.md`
 - `C:\Users\becke\.codex\VPS_CONNECTION.md`
 - `C:\Users\becke\claudecowork\chimera-vps-deploy\handoffs\CHECKPOINT_*.md`
+- `C:\Users\becke\.codex\skills\branch-strategy-gate\SKILL.md`
 - `C:\Users\becke\.codex\skills\codex-runtime-router\SKILL.md`
 - `C:\Users\becke\.codex\skills\model-registry\SKILL.md`
 - `C:\Users\becke\.codex\skills\github-manager\SKILL.md`
