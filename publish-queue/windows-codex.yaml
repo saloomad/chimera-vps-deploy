@@ -1,10 +1,13 @@
 platform: windows-codex
 project: chimera
 publish_required: true
-current_task: github-automation-and-part6-iteration
+current_task: cpu-reduction-diagnosis
 reason_not_published: Repo has 25 uncommitted path(s) on branch add-remaining-files.
 local_only_changes:
   - .learnings/INBOX.md
+  - .playwright-mcp/page-2026-05-01T16-41-18-659Z.yml
+  - .playwright-mcp/page-2026-05-02T20-08-58-633Z.yml
+  - .playwright-mcp/page-2026-05-02T20-12-14-867Z.yml
   - .tmp_patch_deezoh.py
   - .tmp_patch_inbox.py
   - .tmp_patch_macro_bias.py
@@ -26,8 +29,5 @@ local_only_changes:
   - INDEX.md
   - KANBAN.md
   - LEAD_WORKFLOW.md
-  - OPENCLAW_BIBLE.md
-  - OPENCLAW_FEATURES.md
-  - OPENCLAW_FILE_MAP.md
 target_repo: saloomad/chimera
 next_action: Review intended files, commit the bounded slice, then push with explicit refspec and verify branch parity.
