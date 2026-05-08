@@ -19,6 +19,28 @@ PLATFORMS = [
     "opencode",
 ]
 
+SAFE_DOC_REPO_TYPES = ["main", "deploy"]
+SAFE_DOC_PREFIXES = {
+    "main": [
+        "DOCUMENT_REGISTRY.md",
+        "INDEX.md",
+        "PROJECT_REGISTRY.md",
+        "TASK_REGISTRY.md",
+        "ACTION_LOG.md",
+        "DELIVERY_JOURNAL.md",
+        "WORKSPACE_FILE_OPERATING_RULES.md",
+        "AGENT_NAVIGATION_MAP.md",
+        "tracking/",
+        "research/platforms/",
+        "workflows/codex/",
+    ],
+    "deploy": [
+        "handoffs/",
+        "docs/",
+    ],
+}
+SAFE_DOC_SUFFIXES = {".md", ".json", ".yaml", ".yml"}
+
 
 def parse_simple_yaml(path: Path) -> dict[str, str]:
     data: dict[str, str] = {}
@@ -154,6 +176,17 @@ def changed_paths(repo_root: Path, limit: int = 25) -> list[str]:
     return unique
 
 
+def is_safe_doc_path(path: str, repo_type: str) -> bool:
+    normalized = path.replace("\\", "/").strip().lstrip("./")
+    if not normalized:
+        return False
+    if repo_type not in SAFE_DOC_PREFIXES:
+        return False
+    prefixes = SAFE_DOC_PREFIXES[repo_type]
+    suffix = Path(normalized).suffix.lower()
+    return any(normalized == prefix or normalized.startswith(prefix) for prefix in prefixes) and suffix in SAFE_DOC_SUFFIXES
+
+
 def build_publish_state(repo_root: Path) -> dict[str, object]:
     branch = current_branch(repo_root)
     target_repo = current_remote_slug(repo_root)
@@ -268,7 +301,20 @@ def autopublish_coordination(coordination_root: Path, platform: str, commit_mess
             "message": "No coordination-file changes needed publishing.",
         }
     message = commit_message or f"[Codex] Refresh {platform} coordination state"
-    rc, commit_out, commit_err = run(["git", "-C", str(coordination_root), "commit", "-m", message])
+    rc, commit_out, commit_err = run(
+        [
+            "git",
+            "-C",
+            str(coordination_root),
+            "commit",
+            "--only",
+            "-m",
+            message,
+            "--",
+            str(state_rel),
+            str(queue_rel),
+        ]
+    )
     if rc != 0:
         raise RuntimeError(commit_err or commit_out or "Coordination commit failed.")
     rc, push_out, push_err = run(["git", "-C", str(coordination_root), "push", "--verbose", "origin", f"HEAD:{branch}"])
@@ -281,6 +327,93 @@ def autopublish_coordination(coordination_root: Path, platform: str, commit_mess
         "ahead": ahead,
         "behind": behind,
         "pushed": True,
+        "commit": commit_out.splitlines()[-1] if commit_out else message,
+        "push": push_out or push_err,
+    }
+
+
+def autopublish_safe_docs(repo_root: Path, repo_type: str, commit_message: str | None) -> dict[str, object]:
+    if repo_type not in SAFE_DOC_REPO_TYPES:
+        raise RuntimeError(f"Unsupported repo type for safe-doc autopublish: {repo_type}")
+    branch = current_branch(repo_root)
+    all_changes = changed_paths(repo_root, limit=500)
+    allowed = [path for path in all_changes if is_safe_doc_path(path, repo_type)]
+    blocked = [path for path in all_changes if path not in allowed]
+    if not allowed:
+        behind, ahead = ahead_behind(repo_root, branch) if branch != "unknown" else (0, 0)
+        return {
+            "changed": False,
+            "repo_type": repo_type,
+            "branch": branch,
+            "ahead": ahead,
+            "behind": behind,
+            "pushed": False,
+            "message": "No safe documentation changes needed publishing.",
+            "allowed": [],
+            "blocked": blocked[:25],
+        }
+    if blocked:
+        behind, ahead = ahead_behind(repo_root, branch) if branch != "unknown" else (0, 0)
+        return {
+            "changed": False,
+            "repo_type": repo_type,
+            "branch": branch,
+            "ahead": ahead,
+            "behind": behind,
+            "pushed": False,
+            "message": "Skipped safe-doc autopublish because non-allowed changes are present in the same repo.",
+            "allowed": allowed,
+            "blocked": blocked[:25],
+        }
+
+    run(["git", "-C", str(repo_root), "add", "--", *allowed])
+    rc, out, _ = run(["git", "-C", str(repo_root), "diff", "--cached", "--name-only"])
+    if rc != 0:
+        raise RuntimeError("Unable to inspect staged safe documentation changes.")
+    staged = [line.strip() for line in out.splitlines() if line.strip()]
+    if not staged:
+        behind, ahead = ahead_behind(repo_root, branch) if branch != "unknown" else (0, 0)
+        return {
+            "changed": False,
+            "repo_type": repo_type,
+            "branch": branch,
+            "ahead": ahead,
+            "behind": behind,
+            "pushed": False,
+            "message": "No safe documentation changes were stageable.",
+            "allowed": allowed,
+            "blocked": [],
+        }
+
+    message = commit_message or f"[Codex] Auto-publish {repo_type} safe docs"
+    rc, commit_out, commit_err = run(
+        [
+            "git",
+            "-C",
+            str(repo_root),
+            "commit",
+            "--only",
+            "-m",
+            message,
+            "--",
+            *allowed,
+        ]
+    )
+    if rc != 0:
+        raise RuntimeError(commit_err or commit_out or "Safe documentation commit failed.")
+    rc, push_out, push_err = run(["git", "-C", str(repo_root), "push", "--verbose", "origin", f"HEAD:{branch}"])
+    if rc != 0:
+        raise RuntimeError(push_err or push_out or "Safe documentation push failed.")
+    behind, ahead = ahead_behind(repo_root, branch) if branch != "unknown" else (0, 0)
+    return {
+        "changed": True,
+        "repo_type": repo_type,
+        "branch": branch,
+        "ahead": ahead,
+        "behind": behind,
+        "pushed": True,
+        "allowed": allowed,
+        "blocked": [],
         "commit": commit_out.splitlines()[-1] if commit_out else message,
         "push": push_out or push_err,
     }
@@ -482,6 +615,11 @@ def main() -> int:
     sync_publish_cmd.add_argument("--proof")
     sync_publish_cmd.add_argument("--commit-message")
 
+    safe_docs_cmd = sub.add_parser("autopublish-safe-docs")
+    safe_docs_cmd.add_argument("--repo-root", required=True)
+    safe_docs_cmd.add_argument("--repo-type", required=True, choices=SAFE_DOC_REPO_TYPES)
+    safe_docs_cmd.add_argument("--commit-message")
+
     sub.add_parser("self-test")
 
     args = parser.parse_args()
@@ -527,6 +665,11 @@ def main() -> int:
         payload = {"synced": synced, "publish": publish}
         print(json.dumps(payload, indent=2))
         return 0 if publish.get("ahead") == 0 else 1
+
+    if args.command == "autopublish-safe-docs":
+        payload = autopublish_safe_docs(Path(args.repo_root), args.repo_type, args.commit_message)
+        print(json.dumps(payload, indent=2))
+        return 0 if payload.get("ahead") == 0 else 1
 
     if args.command == "self-test":
         return self_test()

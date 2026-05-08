@@ -104,6 +104,40 @@ Minimum proof:
 - Space Agent:
   still wrapper-only from the versioned surfaces we have; no separately proven native hard-stop API is available in this repo
 
+### Windows Codex recurring publisher
+
+Windows Codex now has a recurring runner:
+
+- `C:\Users\becke\claudecowork\scripts\run_windows_codex_github_coordination_sync.ps1`
+- registered by:
+  - `C:\Users\becke\claudecowork\scripts\register_windows_codex_github_coordination_task.ps1`
+
+What it does automatically:
+
+- refreshes and publishes `session-states/windows-codex.yaml`
+- refreshes and publishes `publish-queue/windows-codex.yaml`
+- auto-publishes safe documentation-only updates when the repo is not mixed with code edits
+
+Safe documentation-only autopublish currently covers:
+
+- main repo PM and registry surfaces:
+  - `DOCUMENT_REGISTRY.md`
+  - `INDEX.md`
+  - `PROJECT_REGISTRY.md`
+  - `TASK_REGISTRY.md`
+  - `ACTION_LOG.md`
+  - `DELIVERY_JOURNAL.md`
+  - `tracking/`
+  - `research/platforms/`
+  - `workflows/codex/`
+- deploy repo documentation surfaces:
+  - `handoffs/`
+  - `docs/`
+
+Guardrail:
+
+- if non-document code edits are mixed into the same repo, the runner must skip safe-doc autopublish instead of committing a mixed unsafe slice
+
 ## Shared Skills
 
 All platforms should read:
