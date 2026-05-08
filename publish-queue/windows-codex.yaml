@@ -4,6 +4,7 @@ publish_required: true
 current_task: cpu-reduction-diagnosis
 reason_not_published: Repo has 25 uncommitted path(s) on branch add-remaining-files.
 local_only_changes:
+  - .claude/settings.json
   - .learnings/INBOX.md
   - .playwright-mcp/page-2026-05-01T16-41-18-659Z.yml
   - .playwright-mcp/page-2026-05-02T20-08-58-633Z.yml
@@ -28,6 +29,5 @@ local_only_changes:
   - HEARTBEAT_REGISTRY.md
   - INDEX.md
   - KANBAN.md
-  - LEAD_WORKFLOW.md
 target_repo: saloomad/chimera
 next_action: Review intended files, commit the bounded slice, then push with explicit refspec and verify branch parity.
