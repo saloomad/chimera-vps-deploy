@@ -82,7 +82,9 @@ Why:
 - agent_heatmap_analysis:
   - owner:
   - image_analysis_mode:
+  - model_used:
   - analysis_status:
+  - cluster_notional_mode:
   - zone_confirmation_state:
   - confirmed_levels:
     - price_zone:
@@ -94,6 +96,14 @@ Why:
       level_role:
       confidence:
       reasoning:
+  - cluster_size_review:
+    - price_zone:
+      side:
+      relative_size:
+      peak_count:
+      strength:
+      intensity:
+      interpretation:
   - chart_read_summary:
   - supports_structured_zones:
   - disagreements_with_structured_zones:
@@ -309,6 +319,7 @@ This section is `complete enough` only when all of these are true:
   - or the section explicitly says `source_mode = derivatives_proxy_only` and carries `blocker_state` plus `blocker_detail`
 - `setup_interaction` is present
 - if exact structured extraction succeeded, `agent_heatmap_analysis` should also be present unless explicitly marked `not_run` with a reason
+- if exact structured extraction is missing but screenshot review still ran, the section may use `SCREENSHOT_PLUS_AGENT_REVIEW` and must say it is screenshot-led, not exact-cluster-led
 
 Deezoh should treat the section as `not filled enough` when:
 
