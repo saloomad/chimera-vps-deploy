@@ -1,259 +1,128 @@
 ---
 name: github-manager
-description: Manage GitHub repos, commits, pushes, and cross-platform sync. Use when any agent needs to push changes to GitHub, sync configs between Windows and VPS, update deploy repos, or manage version control. Triggers: push to github, sync repo, commit changes, git push, github update, deploy repo sync, cross-platform sync, pull changes, merge conflicts.
+description: Manage GitHub repos, commits, pushes, pulls, and cross-platform sync for Windows, Linux home, and Kimi VPS. Use when deciding how work should move through main, staging, and production without letting dirty local work leak into live execution.
 ---
 
-# GitHub Manager Skill — Cross-Platform Sync
+# GitHub Manager
 
 ## Purpose
-Central skill for ALL agents on ALL platforms to push code, configs, and docs to GitHub, and to pull updates from other platforms.
 
-## Philosophy
-**GitHub is the single source of truth.** Windows and VPS each push their changes. Conflicts are resolved by the architect agent.
+Use this skill for:
 
----
+- GitHub pushes and pulls
+- branch decisions
+- cross-platform sync
+- publish decisions
+- merge and drift checks
+
+## Core Philosophy
+
+GitHub is the shared checkpoint.
+
+Windows is the control plane.
+Linux home is the draft and test lane.
+Kimi VPS consumes finished tested work only.
 
 ## Repositories
 
-| Repo | Windows Path | VPS Path | Remote | Purpose |
-|------|-------------|----------|--------|---------|
-| `chimera` | `C:\Users\becke\claudecowork\` | `/root/openclawtrading/` | `saloomad/chimera` | Main trading system |
-| `chimera-vps-deploy` | `C:\Users\becke\claudecowork\chimera-vps-deploy\` | `/root/chimera-deploy/` | `saloomad/chimera-vps-deploy` | VPS configs, systemd, cron, scripts |
+| Repo | Windows Path | Linux Home Path | VPS Path | Purpose |
+|------|--------------|-----------------|----------|---------|
+| `chimera` | `C:\Users\becke\claudecowork` | `/home/open-claw/openclawtrading` | `/root/openclawtrading` or deployed runtime copy | main system |
+| `chimera-vps-deploy` | `C:\Users\becke\claudecowork\chimera-vps-deploy` | n/a | `/root/chimera-deploy` | shared deploy scripts, handoffs, shared skills |
 
----
+## Branch Contract
 
-## Platform Identity
+Use this model unless the user explicitly approves another route:
 
-Every commit MUST identify which platform created it:
+- `main` = shared integration branch
+- `staging` = Linux-home test gate
+- `production` = live branch or deployment source for the VPS
+
+## Safe Three-Platform Flow
+
+1. Windows pulls the latest shared truth.
+2. Draft work happens on Linux home or in a bounded Windows slice.
+3. Windows reviews and decides what is ready.
+4. Ready work lands on `main`.
+5. Windows promotes the approved slice from `main` to `staging`.
+6. Linux home tests `staging` from a clean checkout or worktree.
+7. If it passes, Linux home fast-forwards `production`.
+8. Kimi VPS pulls or consumes `production` only.
+
+## Dirty Worktree Rule
+
+If Linux home has active local changes:
+
+- do not pull `staging` into that same dirty tree
+- do not treat the dirty draft tree as the clean promotion gate
+- keep a separate clean staging checkout or worktree
+
+Preferred shape:
+
+- dirty draft repo: `/home/open-claw/openclawtrading`
+- clean staging gate: `/home/open-claw/openclawtrading-staging`
+
+## Authentication Rule
+
+- Never leave GitHub tokens embedded in remote URLs.
+- Prefer GitHub CLI, credential helpers, or other secret-safe auth surfaces.
+- If a remote contains a token, rotate the secret and rewrite the remote URL.
+
+Example safe remote:
 
 ```bash
-# Windows commits
-export GIT_COMMITTER_NAME="Windows Architect"
-export GIT_COMMITTER_EMAIL="windows@chimera.local"
-git commit -m "[Windows] description"
-
-# VPS commits  
-export GIT_COMMITTER_NAME="Kimi VPS"
-export GIT_COMMITTER_EMAIL="vps@chimera.local"
-git commit -m "[VPS] description"
+git remote set-url origin https://github.com/saloomad/chimera.git
 ```
 
----
+## Windows Control Plane Rule
 
-## Authentication
+Windows should own:
 
-### VPS (already configured)
-```bash
-# Token stored in /root/.chimera.env
-cat /root/.chimera.env | grep GITHUB_TOKEN
-```
+- merge decisions
+- branch promotions
+- handoffs
+- publish decisions
+- shared skill and instruction updates
 
-### Windows (if needed)
-```powershell
-# GitHub CLI or token in git credential manager
-gh auth status
-```
+Linux home should own:
 
----
+- Linux-native draft work
+- clean `staging` validation
 
-## Workflows
+Kimi VPS should own:
 
-### 0. Session Closeout Sync
+- runtime verification
+- live services
+- consumption of tested `production`
 
-Before ending a meaningful session that created durable work:
+## Push Checklist
 
-1. list every skill created or updated
-2. list other durable outputs created or updated
-3. say whether each item is:
+Before pushing:
+
+1. run `git status`
+2. confirm the current branch
+3. confirm the intended target branch
+4. confirm no secrets are being committed
+5. confirm whether the result is:
    - local only
-   - shared in repo but not pushed yet
-   - pushed and available to other platforms
-4. if a shared Codex skill changed, mirror it into `chimera-vps-deploy/skills/`
-5. update the latest `handoffs/CHECKPOINT_*.md` with:
-   - skills created
-   - skills updated
-   - other files created
-   - sync status
-   - routing used
-   - next pull target platform
+   - shared in repo but not pushed
+   - committed and pushed
 
-Also capture:
+## Pull Checklist
 
-- model used
-- reasoning used
-- result quality
-- whether a stronger rerun was needed
+Before pulling:
 
-Do not say "synced" unless GitHub or the target platform was actually updated.
-
-### 1. Push Changes (Any Platform)
-
-```bash
-cd /root/chimera-deploy/  # or /root/openclawtrading/
-git status
-git add -A
-# Review diff before commit
-git diff --cached --stat
-export GIT_COMMITTER_NAME="Kimi VPS"
-git commit -m "[VPS] what changed and why"
-git push origin main
-```
-
-**Before pushing:**
-1. Check `git status` — only commit files you intended to change
-2. NEVER commit `.env`, tokens, or API keys
-3. If `git push` fails with "rejected", see Workflow 3 (Pull + Merge)
-
----
-
-### 2. Pull Updates (Any Platform)
-
-```bash
-cd /root/chimera-deploy/
-git fetch origin
-git log --oneline HEAD..origin/main  # see what's coming
-git pull origin main
-```
-
-**After pulling:**
-1. Check if any files affect your platform
-2. If systemd service files changed → `systemctl daemon-reload`
-3. If scripts changed → test them
-4. If configs changed → validate JSON
-
----
-
-### 3. Resolve Merge Conflicts
-
-```bash
-cd /root/chimera-deploy/
-git pull origin main
-# CONFLICT message appears
-
-# See conflicts
-git status
-# Edit conflicted files, keep correct version
-# Mark resolved:
-git add <file>
-git commit -m "[VPS] merge conflict resolved"
-git push origin main
-```
-
-**Conflict resolution rules:**
-1. If conflict is in config → VPS config wins on VPS, Windows config wins on Windows
-2. If conflict is in script → compare timestamps, newer wins
-3. If unsure → ask architect agent, do NOT guess
-
----
-
-### 4. Cross-Platform Sync (Full)
-
-When Windows pushes changes that VPS needs:
-
-```bash
-# On VPS
-cd /root/chimera-deploy/
-git fetch origin
-git log --oneline HEAD..origin/main --grep="Windows"
-# Review each Windows commit
-git pull origin main
-# Test everything that changed
-systemctl restart openclaw-gateway  # if gateway config changed
-bash /root/chimera-deploy/scripts/gateway-watchdog.sh  # test scripts
-```
-
-When VPS pushes changes that Windows needs:
-
-```powershell
-# On Windows
-cd C:\Users\becke\claudecowork\chimera-vps-deploy\git fetch origin
-git log --oneline HEAD..origin/main --grep="VPS"
-git pull origin main
-# Review changes, test if applicable
-```
-
----
-
-## What to Commit
-
-### Always Commit
-- New skills and skill updates
-- Agent TOOLS.md / IDENTITY.md changes
-- Systemd service files
-- Cron job definitions
-- Scripts that are production-ready
-- Documentation updates
-- Handoff files that other platforms need to read
-
-### Never Commit
-- API keys, tokens, secrets
-- `.env` files
-- Log files
-- Temporary files
-- Node_modules, __pycache__
-
----
-
-## Sync Checklist (Run Weekly)
-
-```bash
-# On VPS
-cd /root/chimera-deploy/
-git status
-if [ -n "$(git status --porcelain)" ]; then
-    echo "Uncommitted changes on VPS — commit them"
-    git add -A
-    git commit -m "[VPS] weekly sync"
-    git push origin main
-fi
-
-# Check if Windows has new changes
-git fetch origin
-git log --oneline HEAD..origin/main
-# If output exists → pull and review
-```
-
----
-
-## Emergency: Force Sync (Only if repo is broken)
-
-```bash
-# Backup current work
-cp -r /root/chimera-deploy /root/chimera-deploy.backup-$(date +%Y%m%d)
-# Reset to remote
-cd /root/chimera-deploy/
-git fetch origin
-git reset --hard origin/main
-# Re-apply any local changes manually
-```
-
----
-
-## Quick Reference
-
-| Action | Command |
-|--------|---------|
-| Check status | `git status` |
-| See recent commits | `git log --oneline -10` |
-| See what Windows changed | `git log --oneline --grep="Windows"` |
-| See what VPS changed | `git log --oneline --grep="VPS"` |
-| Push VPS changes | `git commit -m "[VPS] ..." && git push` |
-| Pull latest | `git pull origin main` |
-| Discard local changes | `git checkout -- <file>` |
-| View diff | `git diff` |
-
----
+1. check whether the working tree is dirty
+2. check which branch the machine should consume
+3. if Linux home is validating `staging`, use the clean staging gate
+4. if VPS is pulling code, confirm it is consuming `production` only
 
 ## Verification Rule
 
-When the claim is "GitHub has the latest skills" or "other platforms can pull this now", verify all three when possible:
+Do not claim cross-platform sync is complete unless:
 
-1. the local skill copy exists in `C:\Users\becke\.codex\skills\` or the live platform home
-2. the shared copy exists in `chimera-vps-deploy/skills/`
-3. the deploy repo is not ahead of `origin/main` if you are claiming GitHub is current
+1. the source change exists where it was authored
+2. the shared GitHub or shared repo truth was updated when needed
+3. the target platform received the intended version
 
-If step 3 was not checked, say `shared locally but push not verified`.
-
----
-
-*github-manager skill v2.1 | Cross-platform sync for Chimera*
+If one of those is missing, say so plainly.
