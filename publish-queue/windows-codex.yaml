@@ -28,6 +28,6 @@ local_only_changes:
   - AI_SYSTEMS_INVENTORY.md
   - ARCHITECTURE.md
   - CHIMERA_AGENT_ARCHITECTURE.md
-  - CONTINUATION.md
+  - CLAUDE.md
 target_repo: saloomad/chimera
 next_action: Review intended files, commit the bounded slice, then push with explicit refspec and verify branch parity.
