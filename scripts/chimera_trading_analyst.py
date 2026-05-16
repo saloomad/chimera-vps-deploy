@@ -16,7 +16,7 @@ VPS_API = "http://100.67.172.114:3000"
 SPACE_DIR = "/srv/space/customware/L2/user/chimera-data"
 
 TIMEFRAMES = {
-    "1W":  {"granularity": "1day", "limit": 100, "aggregate": 7},  # 7 daily = 1 week
+    "1W":  {"granularity": "1week", "limit": 100, "aggregate": 1},  # 7 daily = 1 week
     "3D":  {"granularity": "1day", "limit": 100, "aggregate": 3},  # 3 daily = 3 days
     "1D":  {"granularity": "4h",   "limit": 100, "aggregate": 1},
     "4H":  {"granularity": "1h",   "limit": 200, "aggregate": 1},
@@ -54,15 +54,39 @@ def fetch_klines(symbol, granularity, limit, aggregate=1):
         print(f"  [!] {symbol} {granularity}: {e}")
         return None
 
+
+
+def get_tv_snapshot():
+    """Get TradingView daily snapshot - top movers for market context."""
+    try:
+        import sys
+        sys.path.insert(0, "C:/Users/becke/claudecowork/trading_system/scripts/data")
+        from tradingview_api import TradingViewAPI
+        tv = TradingViewAPI()
+        result = tv.scan_crypto(
+            columns=["name","close","change","volume","RSI","Recommend.All"],
+            sort_by="volume",
+            sort_order="desc",
+            limit=5
+        )
+        # Return top 5 by volume as market context
+        return {"top_volume": result.get("data", [])[:5]}
+    except Exception as e:
+        return {}
+
 def get_macro():
+    macro = {}
     try:
         url = f"{VPS_API}/api/file_read"
         data = json.dumps({"path": f"{SPACE_DIR}/MACRO.json"}).encode()
         req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
         resp = json.loads(urllib.request.urlopen(req, timeout=8).read())
-        return json.loads(resp.get("content", "{}"))
+        macro = json.loads(resp.get("content", "{}"))
     except:
-        return {}
+        pass
+    # Add TradingView snapshot
+    macro["tv_snapshot"] = get_tv_snapshot()
+    return macro
 
 def calc_rsi(series, period=14):
     import pandas as pd
@@ -166,6 +190,15 @@ def format_consultation(analyses, macro):
     lines.append("\n## MACRO OVERVIEW")
     if macro:
         lines.append(f"  BTC Dominance: {macro.get('BTC_Dominance','N/A')}  |  Fear & Greed: {macro.get('Fear_Greed_Index','N/A')}  |  Bias: {macro.get('Market_Bias','N/A')}")
+            # TradingView top volume as market context
+        tv = macro.get("tv_snapshot", {})
+        if tv and tv.get("top_volume"):
+            lines.append("\n  TV Top Volume:")
+            for item in tv.get("top_volume", [])[:3]:
+                sym = item.get("name","").replace("BINANCE:","")[:12]
+                chg = item.get("change", 0)
+                sign = "+" if chg > 0 else ""
+                lines.append(f"    {sym:<12} {sign}{chg:.2f}% change")
     else:
         lines.append("  [Macro data unavailable - VPS may be down]")
     
