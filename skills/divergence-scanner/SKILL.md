@@ -2,7 +2,7 @@
 name: divergence-scanner
 description: >
   Scan top 50 Binance coins (by 24h volume) for divergences across multiple timeframes.
-  Uses threading — 50 coins in ~30 seconds. Only outputs coins WITH active signals.
+  Uses threading â€” 50 coins in ~30 seconds. Only outputs coins WITH active signals.
   Uses v2 scoring: 3 independent categories (Volume/Trend/Momentum) with TF weighting.
   Output is ONE entry per coin with plain-English explanation and tier rating.
   Use when Sal asks: "scan for divs", "any divergences in the market", "scan 50 coins",
@@ -32,10 +32,10 @@ output_file: reports/auto/DIVERGENCES.json
 Scans the **top 50 Binance USDT pairs by 24h volume** for divergences across multiple timeframes.
 
 **Key v2 improvements:**
-- ONE entry per coin (not one per coin-per-timeframe — no duplicates)
-- Tier output (CRITICAL / STRONG / MODERATE / WEAK / MIXED) — instantly actionable
-- 3 independent scoring categories (Volume, Trend, Momentum) — no false amplification from correlated oscillators
-- Higher timeframe divergences weighted exponentially higher (1w = 5× more than 1h)
+- ONE entry per coin (not one per coin-per-timeframe â€” no duplicates)
+- Tier output (CRITICAL / STRONG / MODERATE / WEAK / MIXED) â€” instantly actionable
+- 3 independent scoring categories (Volume, Trend, Momentum) â€” no false amplification from correlated oscillators
+- Higher timeframe divergences weighted exponentially higher (1w = 5Ã— more than 1h)
 - Multi-timeframe alignment bonus (+50% for 3+ TFs, +20% for 2 TFs)
 - Plain English explanation per coin: what happened, what it means, what to watch for
 
@@ -52,7 +52,7 @@ Edit `trading_system/config/binance_config.json`:
 }
 ```
 - Without key: 1,200 req/min (still works)
-- With key: 6,000 req/min (5× more headroom, recommended)
+- With key: 6,000 req/min (5Ã— more headroom, recommended)
 
 ---
 
@@ -77,7 +77,7 @@ python trading_system/scripts/divergence_scanner.py --workers 16
 
 **Linux path:**
 ```bash
-cd /home/open-claw/chimera && python3 trading_system/scripts/divergence_scanner.py
+cd /root/openclawtrading && python3 trading_system/scripts/divergence_scanner.py
 ```
 
 ---
@@ -98,28 +98,28 @@ cd /home/open-claw/chimera && python3 trading_system/scripts/divergence_scanner.
 
 | Timeframe | Weight | Reason |
 |-----------|--------|--------|
-| 1w | 5.0× | Structural — months of data |
-| 1d | 3.0× | Swing — weekly rhythm |
-| 12h | 2.0× | Medium |
-| 4h | 1.5× | Swing entry timing |
-| 1h | 1.0× | Baseline |
+| 1w | 5.0Ã— | Structural â€” months of data |
+| 1d | 3.0Ã— | Swing â€” weekly rhythm |
+| 12h | 2.0Ã— | Medium |
+| 4h | 1.5Ã— | Swing entry timing |
+| 1h | 1.0Ã— | Baseline |
 
 ### Multi-Timeframe Bonus
 
 | Alignment | Bonus |
 |-----------|-------|
-| 3+ TFs aligned | ×1.5 |
-| 2 TFs aligned | ×1.2 |
+| 3+ TFs aligned | Ã—1.5 |
+| 2 TFs aligned | Ã—1.2 |
 | 1 TF only | no bonus |
 
 ### Tier Thresholds
 
 | Tier | Score | Meaning |
 |------|-------|---------|
-| **CRITICAL** | ≥12 | Major structural signal. Rare. High conviction. |
-| **STRONG** | ≥7 | High-conviction setup. Watch for entry trigger. |
-| **MODERATE** | ≥3 | Signal present. Needs more confirmation. |
-| **WEAK** | ≥1 | Too early. Monitor only. |
+| **CRITICAL** | â‰¥12 | Major structural signal. Rare. High conviction. |
+| **STRONG** | â‰¥7 | High-conviction setup. Watch for entry trigger. |
+| **MODERATE** | â‰¥3 | Signal present. Needs more confirmation. |
+| **WEAK** | â‰¥1 | Too early. Monitor only. |
 | **MIXED** | any | Conflicting signals. Skip. |
 
 ---
@@ -193,9 +193,9 @@ Location: `reports/auto/DIVERGENCES.json`
   "plain_english": {
     "what_happened": "AXS price pushed up (or held), but momentum indicators peaked earlier and are now declining. Buyers are running out of fuel.",
     "what_it_means": "The move is losing conviction. Reversal or continued drop likely.",
-    "timeframe_context": "Signal on 1d + 4h — moderate confirmation.",
-    "rsi_note": "RSI 41.2 — bearish zone.",
-    "adx_note": "ADX 31.5 — moderate trend strength.",
+    "timeframe_context": "Signal on 1d + 4h â€” moderate confirmation.",
+    "rsi_note": "RSI 41.2 â€” bearish zone.",
+    "adx_note": "ADX 31.5 â€” moderate trend strength.",
     "watch_for_entry": "RSI crossing below 50, or Stochastic K crossing below D. A rejection candle at resistance confirms the short setup.",
     "crossover_context": "Bear crossovers: MACD-bearcross, RSI<50(bear)."
   }
@@ -208,11 +208,11 @@ Location: `reports/auto/DIVERGENCES.json`
 
 ### Priority: Read by Tier
 ```
-CRITICAL → immediate attention
-STRONG → investigate, look for entry trigger
-MODERATE → monitor, not yet actionable
-MIXED → skip
-WEAK → ignore unless nothing else
+CRITICAL â†’ immediate attention
+STRONG â†’ investigate, look for entry trigger
+MODERATE â†’ monitor, not yet actionable
+MIXED â†’ skip
+WEAK â†’ ignore unless nothing else
 ```
 
 ### Step 1: Filter by Macro Bias
@@ -239,7 +239,7 @@ This tells you in plain words what the signal is saying.
 - `trend: "BEARISH"` = MACD divergence (solid)
 - `momentum: "BEARISH"` = 2+ oscillators (RSI/Stoch/CCI/WR)
 
-### Step 5: Top STRONG+ hits → run candle-analyzer
+### Step 5: Top STRONG+ hits â†’ run candle-analyzer
 For any CRITICAL or STRONG coin, run `candle-analyzer` to get:
 - AVWAP levels
 - Sweep detection
@@ -290,7 +290,7 @@ For any CRITICAL or STRONG coin, run `candle-analyzer` to get:
 
 Linux cron (already configured):
 ```
-*/30 * * * * cd /home/open-claw/chimera && python3 trading_system/scripts/divergence_scanner.py >> logs/div_scanner.log 2>&1
+*/30 * * * * cd /root/openclawtrading && python3 trading_system/scripts/divergence_scanner.py >> logs/div_scanner.log 2>&1
 ```
 
 Or run on demand:
@@ -304,15 +304,15 @@ python3 trading_system/scripts/divergence_scanner.py --top 50 --timeframes 1w 1d
 
 ```
 Every 30 min (cron on Linux):
-  divergence_scanner.py → DIVERGENCES.json
+  divergence_scanner.py â†’ DIVERGENCES.json
 
 Screener Agent reads DIVERGENCES.json:
-  → Filter by MACRO_BIAS direction
-  → Only STRONG+ tiers considered
-  → Score 75+ → alert_sal: true → Discord alert to Sal
+  â†’ Filter by MACRO_BIAS direction
+  â†’ Only STRONG+ tiers considered
+  â†’ Score 75+ â†’ alert_sal: true â†’ Discord alert to Sal
 
 When Sal reviews manually:
-  → Read DIVERGENCES.json, show CRITICAL + STRONG tiers
-  → Filter by macro bias
-  → For top hits → run candle-analyzer for entry confirmation
+  â†’ Read DIVERGENCES.json, show CRITICAL + STRONG tiers
+  â†’ Filter by macro bias
+  â†’ For top hits â†’ run candle-analyzer for entry confirmation
 ```
