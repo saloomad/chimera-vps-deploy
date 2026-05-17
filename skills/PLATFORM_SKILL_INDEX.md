@@ -163,6 +163,33 @@ Platform rule:
 
 ---
 
+## Workspace Registry Enforcement
+
+Shared source:
+
+- `chimera-vps-deploy/skills/workspace-document-registry/`
+
+Purpose:
+
+- forces all platforms to use one canonical document registry and one machine-readable file index
+- prevents new durable files from being created and forgotten
+- prevents dead temp indexes and duplicate wrapper paths from becoming fake front doors
+
+Canonical updater:
+
+- Windows: `python scripts/build_workspace_document_registry.py`
+- Linux VPS: `python3 /root/openclawtrading/scripts/build_workspace_document_registry.py`
+
+Required mirrors:
+
+- `C:\Users\becke\.codex\skills\workspace-document-registry`
+- `C:\Users\becke\.claude\skills\workspace-document-registry`
+- `C:\Users\becke\.openclaw\skills\workspace-document-registry`
+- `/root/openclawtrading/skills/workspace-document-registry`
+- `/root/.openclaw/kimi-skills/workspace-document-registry`
+
+---
+
 ## Testing Discoverability
 
 ### Claude Code

@@ -42,6 +42,8 @@ Resume prior coding-agent work with continuity. The agent must reconstruct what 
      - `NOT DONE`: not started or only discussed.
 
 6. Validate against the workspace.
+   - Load `branch-strategy-gate` and ensure you are on `main` (not a stale feature branch)
+   - Run `git for-each-ref --sort=-committerdate refs/heads/` to spot stale branches
    - Inspect git status before editing.
    - Read files touched or discussed in the prior session.
    - Preserve unrelated user changes.
@@ -80,3 +82,8 @@ Then continue immediately unless blocked.
 - Never treat a compact summary as equivalent to the full transcript when a full transcript is available.
 - Never mark a task `DONE` only because it was planned.
 - Never mark a task `PARTIALLY DONE` only because it appeared in a plan; there must be evidence work started.
+
+
+## Platform Notes
+
+_Optimized for Windows Claude Code (interactive). For Codex CLI or Linux automation, see the canonical version in ~/.codex/skills/.

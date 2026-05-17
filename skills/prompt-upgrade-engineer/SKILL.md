@@ -14,11 +14,27 @@ triggers:
   - turn this into professional terms
 ---
 
-# Prompt Upgrade Engineer
+## Redirection Pattern — RECOGNIZE AND HONOR IMMEDIATELY
+
+Sal will sometimes cut off a deep analysis with a redirect like:
+- "forget lobster / vps / architecture — what can Hermes do RIGHT NOW"
+- "doesnt have to be X, just look at Y"
+- "forget the details, just tell me what works"
+
+This is a FIRST-CLASS signal, not a vague prompt. When you see it:
+1. STOP the current analysis track
+2. Pivot directly to actionable implementation
+3. Give the practical answer in 2-3 paragraphs max
+4. Do NOT re-explain why you were going down that path
+5. Do NOT offer multiple options if Sal clearly wants one path
+
+Implementation is the default mode. Architecture is only for when Sal explicitly asks for it.
+
+## Use This Skill As Default First Pass
 
 Use this skill as the default first pass on every Sal instruction.
 
-The point is not cosmetic rewriting.  
+The point is not cosmetic rewriting.
 The point is to translate Sal's real intent into a stronger internal execution brief so the next agent:
 - understands the real objective
 - checks the right files, tools, skills, and workflow rules

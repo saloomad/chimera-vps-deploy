@@ -18,7 +18,7 @@ triggers:
 
 ## OpenClaw Configuration
 
-### API Keys (set in `/home/open-claw/.chimera.env`)
+### API Keys (set in `/root/.chimera.env`)
 ```bash
 TVREMIX_KEY_3="tvr_b_hLS7_ILX8RnNKoBrgyhMLl0QHJBPUlrTZN566"
 TVREMIX_KEY_4="tvr_CuI44g_Mv5QkYoW9oxwspLHojENahbiEaKbgXsf"
@@ -27,13 +27,13 @@ TVREMIX_KEY_4="tvr_CuI44g_Mv5QkYoW9oxwspLHojENahbiEaKbgXsf"
 ### Usage Tracker
 ```bash
 # Status check
-python3 /home/open-claw/openclawtrading/scripts/tvremix_usage_tracker.py --status --profile openclaw
+python3 /root/openclawtrading/scripts/tvremix_usage_tracker.py --status --profile openclaw
 
 # Test keys
-python3 /home/open-claw/openclawtrading/scripts/tvremix_usage_tracker.py --test-keys --profile openclaw
+python3 /root/openclawtrading/scripts/tvremix_usage_tracker.py --test-keys --profile openclaw
 
 # Make a tracked call
-python3 /home/open-claw/openclawtrading/scripts/tvremix_usage_tracker.py \
+python3 /root/openclawtrading/scripts/tvremix_usage_tracker.py \
   --call analyze_smc_tool \
   --json '{"symbol": "BINANCE:BTCUSDT", "interval": "4h"}' \
   --profile openclaw
@@ -70,25 +70,25 @@ curl -s http://localhost:9222/json/version
 
 ```bash
 # Daily macro check (tvremix: 1 call)
-0 6 * * * python3 /home/open-claw/openclawtrading/scripts/tvremix_usage_tracker.py \
+0 6 * * * python3 /root/openclawtrading/scripts/tvremix_usage_tracker.py \
   --call get_economic_calendar \
   --json '{"days_ahead": 3, "importance": ["high"]}' \
   --profile openclaw \
-  >> /home/open-claw/openclawtrading/reports/macro_calendar.json
+  >> /root/openclawtrading/reports/macro_calendar.json
 
 # Hourly news scan for BTC (tvremix: 1 call)
-0 * * * * python3 /home/open-claw/openclawtrading/scripts/tvremix_usage_tracker.py \
+0 * * * * python3 /root/openclawtrading/scripts/tvremix_usage_tracker.py \
   --call get_news \
   --json '{"symbol": "BTCUSDT", "limit": 5}' \
   --profile openclaw \
-  >> /home/open-claw/openclawtrading/reports/btc_news.json
+  >> /root/openclawtrading/reports/btc_news.json
 
 # Every 4h: SMC analysis for BTC (tvremix: 1 call)
-0 */4 * * * python3 /home/open-claw/openclawtrading/scripts/tvremix_usage_tracker.py \
+0 */4 * * * python3 /root/openclawtrading/scripts/tvremix_usage_tracker.py \
   --call analyze_smc_tool \
   --json '{"symbol": "BINANCE:BTCUSDT", "interval": "4h", "count": 300}' \
   --profile openclaw \
-  > /home/open-claw/openclawtrading/reports/btc_smc.json
+  > /root/openclawtrading/reports/btc_smc.json
 ```
 
 ---
@@ -97,12 +97,12 @@ curl -s http://localhost:9222/json/version
 
 | File | Linux Path |
 |------|-----------|
-| Usage tracker | `/home/open-claw/openclawtrading/scripts/tvremix_usage_tracker.py` |
-| Usage state | `/home/open-claw/.tvremix_usage.json` |
-| tradingview-jackson tools | `/home/open-claw/openclawtrading/agents/spawned/tradingview-chart/TOOLS.md` |
-| Main skill | `/home/open-claw/openclawtrading/skills/tradingview-mcp/SKILL.md` |
-| Hermes skill | `/home/open-claw/openclawtrading/skills/tradingview-mcp/SKILL-hermes.md` |
-| Prompt guide | `/home/open-claw/openclawtrading/skills/tradingview-mcp/TVREMIX_PROMPT_GUIDE.md` |
+| Usage tracker | `/root/openclawtrading/scripts/tvremix_usage_tracker.py` |
+| Usage state | `/root/.tvremix_usage.json` |
+| tradingview-jackson tools | `/root/openclawtrading/agents/spawned/tradingview-chart/TOOLS.md` |
+| Main skill | `/root/openclawtrading/skills/tradingview-mcp/SKILL.md` |
+| Hermes skill | `/root/openclawtrading/skills/tradingview-mcp/SKILL-hermes.md` |
+| Prompt guide | `/root/openclawtrading/skills/tradingview-mcp/TVREMIX_PROMPT_GUIDE.md` |
 
 ---
 

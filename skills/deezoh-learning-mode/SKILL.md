@@ -41,6 +41,8 @@ For each learning moment, classify the source content:
 - `market_hypothesis`: Sal's read on price, setup, direction, or timing
 - `factual_claim`: something presented as true about runtime, data, logs, or results
 
+**Hermes as source**: When Hermes identifies a gap through its active consultation loop (reading chimera-data + DEEZOH_CONTEXT.md and writing HERMES_CONSULTATION.md), treat the finding as an `experience_signal` — Hermes contributing to the learning loop without Sal explicitly asking. This is how Hermes's proactive monitoring feeds the learning system.
+
 Rules:
 
 - `preference_signal` can be adopted quickly if low-risk.

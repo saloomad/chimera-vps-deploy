@@ -41,6 +41,23 @@ Default order:
 
 Do not treat the helper script as the primary simulator when the point of the test is agent behavior.
 
+Important:
+
+- if the run only rendered prompts, scored tags, or compared canned outputs, do not claim real agent behavior was proven
+- call it prompt/scoring simulation unless isolated agents or councils actually ran
+
+## Agent-Run Evidence Contract
+
+If the result claims agent behavior was tested, capture:
+
+- per-variant transcript, session log, or equivalent output artifact
+- final decision artifact
+- questions asked
+- lanes consulted
+- why any helper-only or prompt-only run was downgraded
+
+Without that bundle, treat the run as preflight or prompt/scoring simulation only.
+
 ## Current Objective Queue
 
 Use this queue when continuing Sal's approved simulation and orchestration work:
@@ -166,3 +183,4 @@ If no local OpenClaw scenario folders are present, this lab falls back to bundle
 4. Current scenario and variant replay are fast desk regressions, not full every-agent historical life simulation unless agents actually ran.
 5. A snapshot compare is only `live` if the source was actually verified live. Otherwise call it a local snapshot and treat it as weaker evidence.
 6. Use this lab to prove whether a pipeline or instruction change helped before trusting live behavior.
+7. If a scenario grades itself from derived expectations inside the same artifact set, call out the circularity and downgrade the result.

@@ -198,7 +198,7 @@ News can override a perfect technical setup. A clean chart with a war starting =
 C:\Users\becke\AppData\Local\Programs\Python\Python313\python.exe trading_system/scripts/news_fetcher.py
 
 # Linux (via SSH)
-ssh open-claw@192.168.31.194 "cd /home/open-claw/chimera && python3 trading_system/scripts/news_fetcher.py"
+ssh root@100.67.172.114 "cd /root/openclawtrading && python3 trading_system/scripts/news_fetcher.py"
 ```
 
 ## Key Agent Rules for OpenClaw

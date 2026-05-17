@@ -1,6 +1,6 @@
 ---
 name: automation-design-best-practices
-description: Use when creating or updating Codex automations, reminders, recurring audits, heartbeats, cron jobs, or scheduled follow-up work. Helps choose heartbeat vs cron vs platform scheduler, anchor prompts to the real objective, resume from prior results, prevent drift, and keep recurring jobs from becoming dead ends. Triggers: automation, cron, heartbeat, recurring job, scheduled task, reminder, scheduler, follow-up loop.
+description: Design or update Codex automations, reminders, recurring audits, heartbeats, cron jobs, and scheduled follow-up work. Use when choosing between heartbeat, cron, or another scheduler, or when recurring work needs a clear objective, resume rule, and drift guard.
 metadata:
   short-description: Design safe, objective-anchored automations
 ---

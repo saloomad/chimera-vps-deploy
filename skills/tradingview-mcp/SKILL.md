@@ -27,6 +27,7 @@ Use these lanes in order:
 - daily screener snapshots
 - multi-timeframe sanity checks
 - validating whether a trade thesis matches the chart
+- confirming the public macro board `https://www.tradingview.com/chart/81pv7c9g/` for Section 6 context
 
 ## Do Not Use It For
 
@@ -43,6 +44,21 @@ The answer should say:
 3. what the chart or indicators support
 4. what remains unproven
 5. the better next question
+
+For the macro board, prefer:
+
+1. `1W`
+2. `1D`
+3. `4H`
+4. `1H`
+
+and explain what each lane means for:
+
+- BTC quality versus alt breadth
+- SPX risk appetite
+- DXY pressure
+- gold or oil defensiveness
+- USDT.D and OTHERS/TOTAL3 participation
 
 ## Important Limits
 

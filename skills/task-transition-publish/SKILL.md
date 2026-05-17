@@ -1,6 +1,6 @@
 ---
 name: task-transition-publish
-description: Publish shared task status before moving from one meaningful task to another, even when code is unfinished. Use when switching tasks, parking work, leaving a slice half-done, or telling another platform what still needs publishing. Triggers: switch tasks, move to next task, publish debt, unfinished work, before moving on.
+description: Publish shared task status before moving from one meaningful task to another, even when code is unfinished. Use when switching tasks, parking work, leaving a slice half-done, or telling another platform what still needs publishing.
 ---
 
 # Task Transition Publish

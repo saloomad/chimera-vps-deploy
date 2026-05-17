@@ -1,0 +1,4 @@
+interface:
+  display_name: "Automation Design Best Practices"
+  short_description: "Create or update Codex automations with clear titles, the right chat model, and a real owner or receiver."
+  default_prompt: "Use the Automation Design Best Practices skill to choose cron versus heartbeat, write an exact automation title, and make sure the prompt ends with a real receiver and next action."

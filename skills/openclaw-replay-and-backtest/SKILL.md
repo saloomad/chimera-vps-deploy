@@ -1,14 +1,6 @@
 ---
 name: openclaw-replay-and-backtest
 description: Use replay, scenario suites, snapshot re-runs, and historical artifact comparisons to test OpenClaw or Chimera behavior faster than waiting for live outcomes, while separating system replay from strategy backtest.
-triggers:
-  - replay this
-  - backtest this
-  - simulate this
-  - historical replay
-  - test without waiting
-  - scenario suite
-  - snapshot replay
 ---
 
 # OpenClaw Replay And Backtest
@@ -18,10 +10,15 @@ Use this skill when the fastest truthful proof is replaying the system against o
 ## Read First
 
 - `workflows/codex/build-test-verify-monitor-closeout.md`
-- `/mnt/c/Users/becke/claudecowork/_remote_edit/scripts/simulator/agent_scenario_tester.py`
+- `C:\Users\becke\claudecowork\scripts\full_lifecycle_replay.py`
 - `docs/OPENCLAW_T052_LIVE_DESK_CONTRACT_REPAIR_2026-04-18.md`
 - `tasks/TASK_REGISTRY.md`
 - the specific reports, snapshots, or scripts involved
+
+Historical note:
+
+- older `_remote_edit` simulator paths may still exist in the repo
+- do not treat them as current truth unless they are explicitly re-proven
 
 ## Modes
 
@@ -51,6 +48,21 @@ Do not blur those together.
 - Do not leak hindsight into current decision files or current live state.
 - Record the exact fixture set, command, outputs, and limitations.
 - If replay proves only local behavior, do not imply live integration is proven too.
+- Prefer current-path replay surfaces over retired `/home/open-claw/...` or stale `_remote_edit` references.
+
+## First-Divergence Protocol
+
+When replay is used as debug proof:
+
+1. freeze the fixture set
+2. run each producer, consumer, and state transition in order
+3. record the first divergence from the expected state
+4. classify the fault as:
+   - producer
+   - consumer
+   - ownership logic
+   - scoring/eval logic
+5. stop claiming "replay failed" without naming that first divergence
 
 ## Write Targets
 

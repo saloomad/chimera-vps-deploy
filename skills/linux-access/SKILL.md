@@ -45,6 +45,58 @@ Linux-home path defaults:
   - live VPS
   - Linux home draft/test lane
 
+## Linux Home PATH Fix
+
+**Symptom:** `openclaw`, `mcporter`, `claude` return "command not found" on Linux PC even though the binaries exist at `~/.npm-global/bin/`.
+
+**Root cause:** Linux PC's `.bashrc` has an early exit for non-interactive shells (`case $- in *i*) ;; *) return;; esac`). The PATH export must be inserted **before** that block, not after it.
+
+**Symptoms of wrong fix attempts:**
+- Adding PATH to `.bash_profile` alone does NOT help — `.bashrc` exits before reading it for non-interactive SSH
+- Appending PATH after the `return` line means it never executes for SSH sessions
+
+**Correct fix — insert BEFORE the interactive check:**
+
+```bash
+# In ~/.bashrc, find this line:
+# If not running interactively, don't do anything
+# Then insert BEFORE the "case $-" block:
+
+export PATH="$HOME/.npm-global/bin:$PATH"
+alias openclaw-tui='openclaw run --profile default'
+alias cdp='cd /home/open-claw/openclawtrading'
+```
+
+**Automated fix — use Python patch script on the remote:**
+
+```python
+# Run on the Linux PC to patch .bashrc correctly
+import os
+bashrc = os.path.expanduser("~/.bashrc")
+with open(bashrc, 'r') as f:
+    content = f.read()
+
+marker = "# If not running interactively, don't do anything"
+insert = '''export PATH="$HOME/.npm-global/bin:$PATH"
+alias openclaw-tui='openclaw run --profile default'
+alias cdp='cd /home/open-claw/openclawtrading'
+
+'''
+
+if marker in content and "NPM_GLOBAL" not in content:
+    content = content.replace(marker, insert + marker)
+    with open(bashrc, 'w') as f:
+        f.write(content)
+    print("Patched OK")
+```
+
+**Verified working on Linux PC (May 16, 2026):**
+```
+openclaw --version  →  OpenClaw 2026.5.7 ✅
+mcporter --version   →  0.7.3 ✅
+openclaw-tui         →  alias set ✅
+```
+
 ## Useful Checks
 
 ### VPS identity
@@ -53,11 +105,17 @@ Linux-home path defaults:
 ssh root@100.67.172.114 "echo OK && whoami && pwd"
 ```
 
+> **Status (May 17, 2026):** VPS SSH times out. Tailscale shows `linux -` (not peer). VPS is likely down or Tailscale client died. Do not assume it is up. Try `ssh root@100.67.172.114` but expect timeout. GitHub push remains the sync path when VPS is down.
+
 ### Linux-home identity
 
 ```bash
 ssh open-claw@100.116.214.127 "echo OK && whoami && pwd"
 ```
+
+> **Status (May 17, 2026):** Linux PC IS reachable via Tailscale SSH at `100.116.214.127`. User was physically at the machine when commands returned "command not found" — this was a PATH issue, not a connectivity issue. `ssh open-claw@100.116.214.127 "openclaw --version"` works and returns `OpenClaw 2026.5.7`. See "Linux Home PATH Fix" below.
+
+> **VPS Status (May 17, 2026):** `root@100.67.172.114` SSH times out. Tailscale shows `linux -` (not peer). VPS is likely down or Tailscale client died. GitHub push remains the sync path. Do not assume VPS is up — probe first.
 
 ### VPS logs
 

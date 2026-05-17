@@ -19,13 +19,14 @@ Before the first `plan`, classify the task as:
 
 | Phase | Preferred model | Preferred reasoning | Notes |
 |---|---|---|---|
-| plan | `gpt-5.5` | `high` or `xhigh` | use when available |
+| plan | `gpt-5.5` | `high` or `xhigh` | escalation lane, not the default new-session start |
 | execute | `gpt-5.4` | `medium` | current verified default |
 | review | `gpt-5.5` or `gpt-5.4` | `high` or `medium` | stronger review when ambiguous |
 
 Worker defaults:
 
-- orchestrator: `gpt-5.5 high`
+- default new session start: `gpt-5.4 medium`
+- orchestrator escalation: `gpt-5.5 high` only when the task truly needs the stronger lane
 - cheap workers: `gpt-5.3-codex-spark low` or `gpt-5.4-mini low`
 - reviewer or verifier: `gpt-5.5 high`
 

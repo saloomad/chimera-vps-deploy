@@ -1,6 +1,6 @@
 ---
 name: automation-platform-operator
-description: Create, audit, repair, and optimize recurring work across Codex automations, OpenClaw cron, Linux cron, and Windows Scheduled Tasks. Use when Sal asks about automations, cron jobs, heartbeats, recurring checks, scheduled tasks, drift, dead-end monitors, or scheduler best practices. Triggers: automation, cron job, scheduled task, task scheduler, recurring task, heartbeat, scheduler drift, recurring audit.
+description: Create, audit, repair, and optimize recurring work across Codex automations, OpenClaw cron, Linux cron, and Windows Scheduled Tasks. Use when working on automations, cron jobs, heartbeats, recurring checks, scheduled tasks, scheduler drift, or recurring audits.
 ---
 
 # Automation Platform Operator

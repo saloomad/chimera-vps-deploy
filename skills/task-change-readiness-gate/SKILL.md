@@ -1,6 +1,6 @@
 ---
 name: task-change-readiness-gate
-description: Confirm whether a platform is actually allowed to leave the current meaningful task and start another one. Use when switching tasks, parking unfinished work, closing a slice, or checking whether shared GitHub coordination is current enough to move on. Triggers: can I move on, switch tasks, task gate, readiness gate, before next task, allowed to start another task.
+description: Confirm whether a platform is actually allowed to leave the current meaningful task and start another one. Use when switching tasks, parking unfinished work, closing a slice, or checking whether shared GitHub coordination is current enough to move on.
 ---
 
 # Task Change Readiness Gate

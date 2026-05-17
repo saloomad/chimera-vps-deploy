@@ -15,24 +15,24 @@ triggers:
 # OpenClaw Workspace Skill
 
 This is the **local Codex counterpart** to the live OpenClaw standards in:
-- `/home/open-claw/openclawtrading/AGENT_OPTIMIZATION.md`
-- `/home/open-claw/openclawtrading/WORKSPACE_STANDARD.md`
+- `/root/openclawtrading/AGENT_OPTIMIZATION.md`
+- `/root/openclawtrading/WORKSPACE_STANDARD.md`
 
 Use this skill so agent-creation and agent-optimization work stops living in memory or one-off chat explanations.
 
 ## Overview
 
-OpenClaw workspace files form the agent's "soul and memory" — they are injected into the system prompt on every turn (or on relevant turns), giving the agent its identity, behavioral rules, environmental knowledge, and long-term memory. Managing these files well is critical: bloat wastes tokens, redundancy creates confusion, and stale content leads to bad decisions.
+OpenClaw workspace files form the agent's "soul and memory" â€” they are injected into the system prompt on every turn (or on relevant turns), giving the agent its identity, behavioral rules, environmental knowledge, and long-term memory. Managing these files well is critical: bloat wastes tokens, redundancy creates confusion, and stale content leads to bad decisions.
 
 **Token budget:** 20,000 chars per file, ~150,000 chars total across all bootstrap files.
 
 ## Read First
 
 When the Linux box is reachable, read these first:
-- `/home/open-claw/openclawtrading/AGENT_OPTIMIZATION.md`
-- `/home/open-claw/openclawtrading/WORKSPACE_STANDARD.md`
-- `/home/open-claw/openclawtrading/AGENT_STANDARDS.md`
-- `/home/open-claw/openclawtrading/STARTUP_SEQUENCE.md`
+- `/root/openclawtrading/AGENT_OPTIMIZATION.md`
+- `/root/openclawtrading/WORKSPACE_STANDARD.md`
+- `/root/openclawtrading/AGENT_STANDARDS.md`
+- `/root/openclawtrading/STARTUP_SEQUENCE.md`
 
 If Linux is not reachable, fall back to:
 - `docs/OPENCLAW_LIVE_MIRROR_2026-04-17_round8/AGENT_OPTIMIZATION.md`
@@ -129,12 +129,12 @@ If none of those are true, the skill is only available, not guaranteed.
 | `IDENTITY.md` | Name, emoji, avatar, self-description | Every turn | Yes |
 | `HEARTBEAT.md` | Periodic check tasks and health routines | Every heartbeat turn | Depends |
 | `BOOT.md` | Startup actions (requires `hooks.internal.enabled`) | On gateway startup | No |
-| `BOOTSTRAP.md` | First-time onboarding script — delete after use | New workspaces only | No |
+| `BOOTSTRAP.md` | First-time onboarding script â€” delete after use | New workspaces only | No |
 | `MEMORY.md` | Long-term curated facts and iron-law rules | Main sessions only | No |
 | `memory/YYYY-MM-DD.md` | Daily session logs | Loaded per AGENTS.md boot sequence | No |
 | `checklists/*.md` | Step-by-step ops guides | Referenced in AGENTS.md, loaded on demand | No |
 
-**Security rule:** MEMORY.md must NEVER be loaded in group chats or sub-agent sessions — it contains private context that should not leak.
+**Security rule:** MEMORY.md must NEVER be loaded in group chats or sub-agent sessions â€” it contains private context that should not leak.
 
 For full details on each file's design, anti-patterns, and section structure, see [references/workspace-files.md](references/workspace-files.md).
 
@@ -155,7 +155,7 @@ Config key: `agents.defaults.workspace` or per-agent `agents.list[].workspace`.
 
 Use when workspace files may be bloated, stale, or redundant.
 
-1. **Read all active files** — AGENTS.md, SOUL.md, TOOLS.md, USER.md, IDENTITY.md, HEARTBEAT.md, BOOT.md, MEMORY.md
+1. **Read all active files** â€” AGENTS.md, SOUL.md, TOOLS.md, USER.md, IDENTITY.md, HEARTBEAT.md, BOOT.md, MEMORY.md
 2. **Check character counts:**
    ```bash
    wc -c ~/.openclaw/workspace/AGENTS.md
@@ -167,13 +167,13 @@ Use when workspace files may be bloated, stale, or redundant.
    # Or all at once:
    wc -c ~/.openclaw/workspace/*.md
    ```
-3. **Flag files over 10,000 chars** — prime candidates for trimming or offloading to `docs/`
-4. **Check for redundancy** — same fact in SOUL.md and AGENTS.md? Same tool note in TOOLS.md and MEMORY.md?
-5. **Check for staleness** — outdated SSH hosts, old tool names, deprecated rules, historical context that's no longer needed
-6. **Check MEMORY.md discipline** — should contain curated facts, lessons learned, decisions, and critical rules — not raw session summaries or task-specific notes
-7. **Propose targeted edits** — trim, move to docs/, or restructure
-8. **Check startup breadcrumbs** — confirm the workspace points to real shared standards, registries, checklists, or supporting files instead of copying them badly
-9. **Check child handoff design** — if the agent acts as a persistent parent, decide whether it needs `SPAWN_CONTEXT.md`, `THOUGHTS.md`, `CURRENT_BRIEF.md`, or `STATE.json`
+3. **Flag files over 10,000 chars** â€” prime candidates for trimming or offloading to `docs/`
+4. **Check for redundancy** â€” same fact in SOUL.md and AGENTS.md? Same tool note in TOOLS.md and MEMORY.md?
+5. **Check for staleness** â€” outdated SSH hosts, old tool names, deprecated rules, historical context that's no longer needed
+6. **Check MEMORY.md discipline** â€” should contain curated facts, lessons learned, decisions, and critical rules â€” not raw session summaries or task-specific notes
+7. **Propose targeted edits** â€” trim, move to docs/, or restructure
+8. **Check startup breadcrumbs** â€” confirm the workspace points to real shared standards, registries, checklists, or supporting files instead of copying them badly
+9. **Check child handoff design** â€” if the agent acts as a persistent parent, decide whether it needs `SPAWN_CONTEXT.md`, `THOUGHTS.md`, `CURRENT_BRIEF.md`, or `STATE.json`
 
 See [references/optimization-guide.md](references/optimization-guide.md) for specific optimization strategies.
 
@@ -183,15 +183,15 @@ Use when creating a workspace for a new agent from scratch.
 
 **File creation order** (matters for boot sequence to work):
 
-1. `SOUL.md` — persona and values first; everything else follows from identity
-2. `AGENTS.md` — boot sequence, safety rules, checklist table
-3. `IDENTITY.md` — name, emoji, avatar
-4. `USER.md` — human profile and preferences (main agent only)
-5. `TOOLS.md` — environment-specific notes (add as you discover env details)
-6. `MEMORY.md` — start minimal; only truly universal iron laws
-7. `HEARTBEAT.md` — periodic health checks (optional, add when needed)
-8. `BOOT.md` — startup hooks (optional, only if `hooks.internal.enabled = true`)
-9. `BOOTSTRAP.md` — first-run onboarding (optional; delete after first successful startup)
+1. `SOUL.md` â€” persona and values first; everything else follows from identity
+2. `AGENTS.md` â€” boot sequence, safety rules, checklist table
+3. `IDENTITY.md` â€” name, emoji, avatar
+4. `USER.md` â€” human profile and preferences (main agent only)
+5. `TOOLS.md` â€” environment-specific notes (add as you discover env details)
+6. `MEMORY.md` â€” start minimal; only truly universal iron laws
+7. `HEARTBEAT.md` â€” periodic health checks (optional, add when needed)
+8. `BOOT.md` â€” startup hooks (optional, only if `hooks.internal.enabled = true`)
+9. `BOOTSTRAP.md` â€” first-run onboarding (optional; delete after first successful startup)
 
 **Minimal viable workspace:** AGENTS.md + SOUL.md + TOOLS.md. Everything else is optional.
 
@@ -217,10 +217,10 @@ Use periodically (weekly or monthly) to keep MEMORY.md lean.
    - Rules violated more than once (recurring mistakes)
    - Hard-won discoveries that aren't in skills docs
    - Env-specific facts that should always be in context (not left to memory_search recall)
-3. **Check what's already in MEMORY.md** — avoid duplicates
-4. **Draft additions** — use iron-law format: concise, action-oriented, unambiguous
-5. **Archive old daily logs** — move files older than 30 days to `memory/archive/` or delete
-6. **Check MEMORY.md total size** — keep under 10,000 chars; if larger, review for rules that are now stable enough to move to a skill's SKILL.md instead
+3. **Check what's already in MEMORY.md** â€” avoid duplicates
+4. **Draft additions** â€” use iron-law format: concise, action-oriented, unambiguous
+5. **Archive old daily logs** â€” move files older than 30 days to `memory/archive/` or delete
+6. **Check MEMORY.md total size** â€” keep under 10,000 chars; if larger, review for rules that are now stable enough to move to a skill's SKILL.md instead
 
 **Do NOT put in MEMORY.md:**
 - Long narratives or session summaries
@@ -248,11 +248,11 @@ Use when adding a new high-risk operation type or updating an existing checklist
    - [ ] Confirm outcome
    - [ ] Log result in memory
    ```
-3. **Register in AGENTS.md** — add a row to the checklists table:
+3. **Register in AGENTS.md** â€” add a row to the checklists table:
    ```markdown
    | <Operation description> | `checklists/<filename>.md` |
    ```
-4. **Keep checklists short** — if a checklist exceeds ~50 lines, it's probably trying to be documentation; move narrative content to `docs/` and keep only the actionable steps
+4. **Keep checklists short** â€” if a checklist exceeds ~50 lines, it's probably trying to be documentation; move narrative content to `docs/` and keep only the actionable steps
 
 ## Workflow: Optimize Agent Instructions
 
@@ -318,7 +318,7 @@ Use when adding a new tool, device, or environment capability.
 
 ### Boot sequence not loading files
 **Symptom:** Agent doesn't know about content in SOUL.md, USER.md, or MEMORY.md at session start.
-**Fix:** Check that AGENTS.md boot sequence explicitly names each file to read. The agent won't auto-load files — it follows the boot sequence instructions in AGENTS.md. Verify `hooks.internal.enabled = true` in config if using BOOT.md.
+**Fix:** Check that AGENTS.md boot sequence explicitly names each file to read. The agent won't auto-load files â€” it follows the boot sequence instructions in AGENTS.md. Verify `hooks.internal.enabled = true` in config if using BOOT.md.
 
 ### MEMORY.md growing too large
 **Symptom:** File approaches or exceeds 10,000 chars; reading it on every turn wastes significant context.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Coding Provider Config"
+  short_description: "Enter the right Kimi or MiniMax provider settings without mixing protocols."
+  default_prompt: "Use the Coding Provider Config skill to choose the correct provider mode, protocol, base URL, model name, and API key source for Kimi coding, Kimi OpenAI-compatible, or MiniMax Token Plan / Coding Plan."

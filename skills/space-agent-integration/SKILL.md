@@ -1,6 +1,6 @@
 ---
 name: space-agent-integration
-description: Space Agent visual dashboard layer for Chimera. How to access, configure LLM, push data, create widgets, and extend with skills. Triggers: space agent, dashboard, visual layer, widget, space-agent.ai, browser dashboard.
+description: Work with the Space Agent visual dashboard layer for Chimera. Use when accessing the dashboard, configuring the LLM, pushing data, creating widgets, or extending the space-agent.ai visual layer with skills.
 ---
 
 # Space Agent — Chimera Integration
@@ -28,23 +28,30 @@ curl http://127.0.0.1:3000
 
 ## How to Configure LLM
 
-Space Agent defaults to OpenRouter. To use Chimera models:
+Provider configs are stored as per-agent YAML files. **Desktop app configs** at:
+```
+C:/Users/becke/AppData/Roaming/space-agent/customware/L2/user/conf/
+├── admin-chat.yaml      ← primary agent (Kimi)
+└── onscreen-agent.yaml  ← secondary agent (MiniMax)
+```
 
-1. Open Space Agent in browser
-2. Click agent panel (bottom-right)
-3. Settings → API tab
+**VPS server config** at `/root/space-agent/params.yaml`.
 
-### MiniMax
-- API Endpoint: `https://api.minimax.io/v1/chat/completions`
-- Model: `MiniMax-M2.7-highspeed`
-- API Key: `sk-cp-...` (from `.chimera.env`)
-- Max Tokens: `200000`
+### MiniMax (onscreen-agent.yaml — confirmed working)
+```yaml
+api_endpoint: "https://api.minimax.io/anthropic"
+model: MiniMax-M2.7-highspeed
+api_key: sk-cp-...
+```
 
-### Kimi
-- API Endpoint: `https://api.kimi.com/coding/v1/chat/completions`
-- Model: `kimi-for-coding`
-- API Key: `sk-kimi-...` (from `.chimera.env`)
-- Max Tokens: `256000`
+### Kimi (admin-chat.yaml — confirmed working)
+```yaml
+api_endpoint: "https://api.kimi.com/coding"
+model: kimi-for-coding
+api_key: sk-kimi-...
+```
+
+**Critical**: `api_endpoint` is the **base URL only** — no `/v1` or `/v1/chat/completions`. The app appends the path internally. Wrong: `https://api.kimi.com/coding/v1/chat/completions` — correct: `https://api.kimi.com/coding`
 
 ---
 

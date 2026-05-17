@@ -1,6 +1,6 @@
 ---
 name: vibe-coding-operator
-description: Beginner-friendly operating and enforcement skill for agents helping Sal build and finish software work without assuming coding fluency. Use when building, fixing, refactoring, testing, shipping, closing out, or organizing work needs plain-English guidance plus companion-skill routing. Triggers: vibe coding, beginner coding, build this, finish this, github help, commit, pull request, refactor, software engineering basics, keep project organized, testing, ship it.
+description: Beginner-friendly operating and enforcement skill for agents helping Sal build and finish software work without assuming coding fluency. Use when building, fixing, refactoring, testing, shipping, closing out, or organizing work needs plain-English guidance plus companion-skill routing.
 ---
 
 # Vibe Coding Operator
@@ -107,6 +107,8 @@ This skill should push agents to do these things by default:
 - run a short preflight before meaningful work
 - use `sal-communication-contract` on meaningful replies so Sal gets context, teaching, proof translation, and a clear conclusion
 - route to prompt, PM, GitHub, testing, verification, continuity, and lesson-capture skills when needed
+- route to `hook-opportunity-detector` when a repeated reminder should become an automatic event reaction
+- route to `pipeline-enforcement-detector` when a recurring or risky workflow needs a clearer runtime owner
 - activate `vibe-coding-monitor` when repeated friction, unclear ownership, weak proof, or project-management drift shows up
 - explain the work simply while still doing the real engineering steps
 - close work out cleanly instead of stopping after code changes only
@@ -139,6 +141,19 @@ That receipt should record:
 - platform
 - enforcement level
 - proof result
+
+## Detector Companions
+
+Use these detector skills when the problem is not only implementation but repeatability:
+
+- `C:\Users\becke\.codex\skills\codex-workflow-detector\SKILL.md`
+  - when ordered steps should become a named workflow
+- `C:\Users\becke\.codex\skills\codex-skill-opportunity-detector\SKILL.md`
+  - when repeated behavior should become a reusable skill
+- `C:\Users\becke\.codex\skills\hook-opportunity-detector\SKILL.md`
+  - when a repeated correction should become an automatic event reaction
+- `C:\Users\becke\.codex\skills\pipeline-enforcement-detector\SKILL.md`
+  - when a workflow or trading lane needs a stronger runtime owner
 
 ## Research-Backed Patterns
 

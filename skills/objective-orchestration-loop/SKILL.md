@@ -34,6 +34,68 @@ Important:
 
 Do not silently shrink the user's objective into whatever slice happened to be convenient in the current pass.
 
+## Same-Objective Remaining Work Rule
+
+If there is still meaningful remaining work that belongs to the same `ultimate_objective`, the review outcome cannot be `complete`.
+
+This remains true even if the remaining work is described as:
+
+- `future work`
+- `follow-up`
+- `second wave`
+- `next phase`
+- `later improvement`
+- `nice to have`
+
+unless the user explicitly narrowed the objective enough that those items no longer belong to the same request.
+
+If the remaining work is still required to satisfy the user's request to improve, iterate, harden, or keep going, then:
+
+- the correct review outcome is `iterate`
+- the continuation owner must stay alive
+- the carry-forward block must keep those items visible
+
+Do not relabel same-objective work as optional just to justify stop or cleanup.
+
+## Dynamic Improvement Objective Mode
+
+When the user's objective is improvement-oriented, the orchestration layer should treat the objective as dynamic.
+
+This applies to requests shaped like:
+
+- improve this until it is strong
+- keep iterating
+- keep fixing and improving
+- continue while meaningful improvements remain
+- harden this
+- debug and refine this
+
+In this mode:
+
+1. the `ultimate_objective` stays stable
+   - for example: `make the orchestration system reliable enough that it stops only when the real objective is done`
+2. the `current_slice` is reselected after each review
+   - choose the highest-value remaining same-objective gap
+3. the next slice may change dynamically
+   - from rule gap
+   - to proof gap
+   - to mirror gap
+   - to runtime gap
+   - to publication gap
+4. the loop should continue automatically while:
+   - meaningful same-objective improvements remain
+   - the next slice is safe and bounded
+   - the work has not drifted into a different project
+
+Only stop dynamic-improvement mode when one of these is true:
+
+- no meaningful same-objective improvements remain
+- the remaining work is blocked
+- the user explicitly narrows or replaces the objective
+- the next remaining work belongs to a different approved objective
+
+Do not require the user to restate the next obvious same-objective improvement if the loop can identify it honestly.
+
 ## Objective Hierarchy Rule
 
 For any multi-pass task, the skill must track **two levels** of goal:
@@ -58,6 +120,41 @@ Examples:
 - if the user wants `compare these repos and implement the highest-value first slice`, then:
   - that first slice can be a real completion
   - but only if the original wording actually limited the objective to that slice
+
+## Nested Loop Rule
+
+Every new smaller objective discovered during the run must be recorded as a task **inside** the bigger objective, not as a replacement for it.
+
+For every non-trivial pass, carry this objective stack explicitly:
+
+1. `ultimate_objective`
+   - the real end goal the user actually cares about
+2. `parent_loop`
+   - the broader same-objective loop that is still alive right now
+   - in many runs this is identical to `ultimate_objective`
+3. `current_slice`
+   - the bounded task being worked in this pass
+4. `slice_relation`
+   - say plainly: `this slice is a task inside the bigger goal, not the goal itself`
+
+When a better smaller slice appears during execution:
+
+- do **not** replace the `ultimate_objective`
+- do **not** silently rewrite the `parent_loop`
+- do record the new smaller item as the next `current_slice`
+- do keep it attached to the same broader loop unless the user explicitly changes the project objective
+
+If the conversation drifts into a narrower proof, bug, or subtask:
+
+- the narrower item becomes the new `current_slice`
+- the broader loop stays visible in the carry-forward block
+- review must still decide completion against the broader objective, not the narrower task
+
+The model must never act as if:
+
+- `new slice discovered` means `new goal`
+- `subtask closed` means `project closed`
+- `inner loop complete` means `outer loop complete`
 
 ## Mandatory Per-Message Precheck
 
@@ -132,6 +229,99 @@ Pick the lightest owner that can honestly finish the job.
 
 Do not keep a Codex heartbeat alive forever just because it already exists.
 
+## Heartbeat Delete Checklist
+
+Before deleting a same-thread heartbeat or other continuation owner, confirm all of these are true:
+
+1. the `ultimate_objective` is actually `complete` or honestly `blocked`
+2. the carry-forward block says `remaining project work: none` for that same objective, or explicitly marks the leftovers as a different deferred objective
+3. the remaining items are not merely being renamed as `second wave`, `future improvement`, or similar language while still belonging to the same user request
+4. the proof and checkpoint state match the claimed completion or blocked status
+
+If any of those checks fail, do not delete the continuation owner.
+
+## Stale Sub-Objective Heartbeat Rule
+
+If an existing heartbeat is scoped to a narrower or older `current_slice`, but the broader same-objective improvement loop is still open:
+
+1. do not treat the stale heartbeat as disposable cleanup
+2. first update that heartbeat to the broader still-open objective, or create a successor heartbeat in the same pass
+3. only then retire the stale narrower heartbeat if the continuation owner was actually replaced
+4. if no successor continuation owner was created or updated, the review outcome stays `iterate`
+
+This means:
+
+- a stale sub-objective heartbeat is not proof that the objective is done
+- deleting a stale heartbeat without a same-pass successor is an orchestration miss
+- the broader same-objective backlog stays attached to a live continuation owner until it is actually complete or blocked
+
+## Continuation Owner Decision States
+
+When deciding what to do with a heartbeat or other continuation owner, classify the action explicitly:
+
+- `keep_alive`
+  - use when same-objective remaining work still exists
+  - use when proof does not yet match the claimed completion
+  - use when a stale narrower heartbeat has no live successor yet
+
+- `replace_then_retire`
+  - use when the current heartbeat is stale and narrower than the still-open broader objective
+  - only use this when a same-pass successor continuation owner is already created or updated
+
+- `retire`
+  - use only when the objective is honestly `complete` or `blocked`
+  - and same-objective remaining work is clear
+  - and proof state matches the claimed terminal state
+
+Do not invent a softer cleanup category for a still-open same-objective backlog.
+
+## Default Continuation Proof Stack
+
+When continuation or heartbeat retirement logic was changed, default to this proof stack:
+
+0. one-shot pack when available
+   - `python scripts/tests/orchestration_proof_pack.py`
+1. policy shape proof
+   - `python scripts/tests/orchestration_policy_matrix.py`
+2. continuation-owner decision smoke
+   - `python scripts/tests/orchestration_continuation_owner_smoke.py`
+3. continuation-owner action smoke
+   - `python scripts/tests/orchestration_continuation_action_smoke.py`
+4. replace-then-retire receipt smoke
+   - `python scripts/tests/orchestration_replace_then_retire_receipt_smoke.py`
+5. dynamic next-slice reselection smoke
+   - `python scripts/tests/orchestration_dynamic_slice_smoke.py`
+6. dynamic carry-forward visibility smoke
+   - `python scripts/tests/orchestration_dynamic_carry_forward_smoke.py`
+7. live-proof debt narrowing smoke
+   - `python scripts/tests/orchestration_live_gap_narrowing_smoke.py`
+8. heartbeat prompt-contract smoke
+   - `python scripts/tests/orchestration_prompt_contract_smoke.py`
+9. heartbeat XML-contract smoke
+   - `python scripts/tests/orchestration_heartbeat_contract_smoke.py`
+10. closeout carry-forward honesty smoke
+   - `python scripts/tests/orchestration_closeout_contract_smoke.py`
+11. synthetic live-event decision smoke
+   - `python scripts/tests/orchestration_live_event_smoke.py`
+12. publish visibility honesty smoke
+   - `python scripts/tests/orchestration_publish_visibility_smoke.py`
+13. publish branch-drift evidence smoke
+   - `python scripts/tests/orchestration_publish_drift_smoke.py`
+14. skill validation
+   - `python -X utf8 C:\Users\becke\.codex\skills\.system\skill-creator\scripts\quick_validate.py C:\Users\becke\.codex\skills\objective-orchestration-loop`
+15. mirror proof on the live VPS surface when repo-backed or runtime-facing files changed
+   - rerun the same orchestration smoke from `/root/openclawtrading`
+
+When a real stale-scope replacement lands, the durable proof should leave a receipt that names:
+
+- stale owner id
+- successor owner id
+- broader still-open objective scope
+- proof that the replacement happened in the same pass
+- the remaining same-objective work that kept the broader loop alive
+
+Use the one-shot pack or the full stack before claiming the continuation rule is fixed.
+
 ## Automation Prompt Contract
 
 If orchestration chooses an automation or recurring loop, the prompt must name:
@@ -147,6 +337,8 @@ If orchestration chooses an automation or recurring loop, the prompt must name:
 - `output contract`
 
 The automation must continue from the last unresolved blocker or proof gap before widening scope.
+If the objective is in dynamic-improvement mode, the automation should also promote the next bounded same-objective improvement slice automatically instead of stopping after one landed slice.
+If the previous heartbeat prompt was too narrow for the still-open broader objective, update the prompt or replace the heartbeat in the same pass instead of deleting it and relying on chat memory.
 
 ## Previous-Stage Resume Rule
 
@@ -164,6 +356,7 @@ If those disagree:
 - prefer fresh proof over older summaries
 - say what changed
 - keep the original objective unless the user explicitly replaced it
+- if the original objective is improvement-oriented, reselect the next same-objective slice from the freshest remaining gap instead of asking for a restatement
 
 ## Drift And Objective-Loss Guard
 
@@ -175,6 +368,7 @@ Allowed:
 - next unresolved blocker
 - next safe bounded fix
 - next missing owner or receiver
+- next same-objective improvement slice when the objective is dynamic
 
 Not allowed:
 
@@ -309,6 +503,7 @@ Every meaningful pass should be able to restate the current state in this shape:
 
 - `ultimate_objective`
 - `current_slice`
+- `objective_mode`
 - `orchestration_class`
 - `chosen_path`
 - `current_phase`
@@ -327,6 +522,11 @@ Use `review_outcome` with only:
 - `complete`
 - `iterate`
 - `blocked`
+
+Use `objective_mode` with:
+
+- `fixed`
+- `dynamic_improvement`
 
 Interpret them strictly:
 
@@ -374,6 +574,7 @@ Formatting rule:
 Do not let those items disappear just because the thread temporarily shifted to a side topic.
 Do not pull in unrelated older work.
 If a slice finished but the larger objective is still open, the carry-forward block must still show the unresolved work.
+If the objective is `dynamic_improvement`, the carry-forward block should also make the next highest-value remaining slice visible.
 
 ## Mandatory Phases
 
@@ -395,6 +596,7 @@ Plan output must name:
 
 - ultimate objective
 - current slice
+- objective mode
 - orchestration class
 - chosen path
 - current reality
@@ -464,6 +666,9 @@ If a bounded implementation slice is done but the broader requested mission stil
 - say `iterate`
 - restate the next slice against the same `ultimate_objective`
 
+If the user explicitly asked for continued improvement, repeated iteration, or to keep going until no more meaningful improvements remain, then `second-wave improvements` are still part of the same objective unless the user later de-scopes them.
+In that case, the next slice should be reselected dynamically from the remaining same-objective gaps instead of waiting for a new user prompt.
+
 Review must check:
 
 - did the objective actually move
@@ -476,7 +681,7 @@ Review must check:
 
 ## Test And Verification Rule
 
-Do not hide testing inside vague “review” language.
+Do not hide testing inside vague "review" language.
 
 For meaningful implementation work, call out:
 
@@ -624,5 +829,15 @@ Every meaningful pass should capture:
 - result quality: `strong`, `acceptable`, or `weak`
 - review outcome: `complete`, `iterate`, or `blocked`
 - next better route if the result was weak
+- GitHub publish decision:
+  - `committed and pushed`
+  - `committed locally only`
+  - `not committed because unsafe right now`
+  - `not committed because no durable repo-side changes were made`
+- repo branch visibility:
+  - whether the result is visible on `main`
+  - whether later `production` promotion is expected after testing and approval
 
 If the direct route was chosen, say why the full loop was not worth invoking.
+
+For repo-backed work, consult `github-manager` and `branch-strategy-gate` before claiming the work is fully published.

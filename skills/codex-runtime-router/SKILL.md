@@ -97,6 +97,13 @@ Current local default on Windows Codex:
 - model: `gpt-5.4`
 - reasoning: `medium`
 
+Default session-start rule:
+
+- new Windows Codex sessions should start on the local default above
+- do not start fresh sessions on `gpt-5.5` just because a task may include planning or review
+- treat `gpt-5.5` as an escalation lane after an explicit decision, not as the implicit front door
+- if a session already began on a stronger lane, report that honestly in the header, but do not let that rewrite the platform default
+
 Supported model overrides for spawned agents in this runtime:
 
 - `gpt-5.5`
@@ -146,7 +153,8 @@ Use for:
 Preferred routing:
 
 - Windows Claude or a strong planning-capable lead
-- `gpt-5.5`
+- first consider whether a separate stronger planning split is actually worth it
+- if yes, use `gpt-5.5`
 - reasoning `high` or `xhigh`
 
 ### Planning lane
@@ -187,6 +195,10 @@ Preferred routing:
 
 - `gpt-5.5` with `high` when the review needs judgment
 - `gpt-5.4` with `medium` when the review is bounded and code-focused
+
+Important:
+
+- the planning and review preferences above are escalation targets, not the automatic startup lane for every new session
 
 ### Research
 

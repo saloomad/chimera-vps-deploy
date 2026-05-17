@@ -1,6 +1,6 @@
 ---
 name: platform-live-repo-router
-description: Route Chimera changes to the correct repo so shared coordination, project code, Windows live state, and Linux live state do not get mixed together. Use when deciding where a file belongs, where to push a change, or which repo another platform should pull. Triggers: which repo, live repo, windows live, linux live, shared coordination, route this change.
+description: Route Chimera changes to the correct repo so shared coordination, project code, Windows live state, and Linux live state do not get mixed together. Use when deciding where a file belongs, where to push a change, or which repo another platform should pull.
 ---
 
 # Platform Live Repo Router
