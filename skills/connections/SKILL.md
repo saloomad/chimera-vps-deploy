@@ -60,29 +60,32 @@ mcporter --version  → 0.7.3
 - Binary: `~/.npm-global/bin/openclaw` (symlinked)
 - npm global root: `~/.npm-global/lib/node_modules/`
 
-### CRITICAL .bashrc PATH FIX (2026-05-16)
+### Linux PC PATH Fix — .bashrc / .bash_profile Layering (2026-05-17)
 
-The Ubuntu default `.bashrc` has an early exit for non-interactive shells:
-```bash
-case $- in
-    *i*) ;;
-      *) return;;   # ← NON-INTERACTIVE SHELLS EXIT HERE
-esac
+**Problem:** SSH commands don't source `.bashrc` on Linux PC — they hit `.bash_profile` first.
+
+**Ubuntu shell startup chain for login shells:**
+```
+~/.bash_profile  →  sources ~/.bashrc  →  sources ~/.bashrc.bak
+~/.bashrc       →  has "return" for non-interactive, then exits early
 ```
 
-**This means PATH exports placed AFTER this block are NEVER read for SSH commands.**
+**For SSH `ssh host "command"`** → login shell → reads `.bash_profile` → reads `.bashrc` → `.bashrc` exits early for non-interactive → PATH never set.
 
-The fix: insert PATH exports **BEFORE** the `case` block.
+**For interactive SSH (`ssh host`):** → `.bash_profile` loads → `.bashrc` loads → PATH set correctly.
 
-Current fix applied:
+**The `.bash_profile` already had the PATH fix** from a previous install, but `.bashrc` was exiting early. The fix inserts PATH exports **inside** `.bashrc` before the interactive check, AND ensures `.bash_profile` is correct.
+
+**Verified working PATH for non-interactive SSH:**
 ```bash
-# Inserted BEFORE the "If not running interactively" block in .bashrc:
 export PATH="$HOME/.npm-global/bin:$PATH"
 alias openclaw-tui='openclaw run --profile default'
 alias cdp='cd /home/open-claw/openclawtrading'
 ```
 
-Verified: `ssh open-claw@100.116.214.127 "openclaw --version"` now returns `OpenClaw 2026.5.7`.
+**Test:** `ssh open-claw@100.116.214.127 "openclaw --version"` → `OpenClaw 2026.5.7` ✅
+
+**If `.bash_profile` did NOT exist**, the fix would need to create it and source `.bashrc` from there.
 
 ### Terminal Tool Limitation
 
